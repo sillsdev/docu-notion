@@ -1,7 +1,7 @@
 {
-  "name": "typescript-npm-package-template",
+  "name": "notion-pull",
   "version": "0.0.0-development",
-  "description": "A template for creating npm packages using TypeScript and VSCode",
+  "description": "Download Notion pages as markdown and image files, preserving hierarchy and enabling workflow properties. Works with Docusaurus.",
   "main": "./lib/src/index.js",
   "files": [
     "lib/**/*"
@@ -9,8 +9,6 @@
   "scripts": {
     "build": "tsc",
     "clean": "rm -rf ./lib/",
-    "cm": "cz",
-    "coverage": "codecov",
     "lint": "eslint ./src/ --fix",
     "prepare": "husky install",
     "semantic-release": "semantic-release",
@@ -20,39 +18,29 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ryansonshine/typescript-npm-package-template.git"
+    "url": "git+https://github.com/sillsdev/notion-pull.git"
   },
   "license": "MIT",
   "author": {
-    "name": "Ryan Sonshine",
-    "email": "ryansonshine@users.noreply.github.com",
-    "url": "https://github.com/ryansonshine"
+    "name": "SIL Language Software Development",
+    "email": "sillsdev@users.noreply.github.com",
+    "url": "https://github.com/sillsdev"
   },
   "engines": {
     "node": ">=12.0"
   },
   "keywords": [
-    "boilerplate",
-    "template",
-    "typescript",
-    "vscode",
-    "jest",
-    "husky",
-    "commitizen",
-    "semantic-release",
-    "codecov"
+    "docusaurus", "notion", "markdown"
   ],
   "bugs": {
-    "url": "https://github.com/ryansonshine/typescript-npm-package-template/issues"
+    "url": "https://github.com/sillsdev/notion-pull/issues"
   },
-  "homepage": "https://github.com/ryansonshine/typescript-npm-package-template#readme",
+  "homepage": "https://github.com/sillsdev/notion-pull#readme",
   "devDependencies": {
     "@types/jest": "^26.0.24",
     "@types/node": "^12.20.11",
     "@typescript-eslint/eslint-plugin": "^4.22.0",
     "@typescript-eslint/parser": "^4.22.0",
-    "codecov": "^3.8.3",
-    "commitizen": "^4.2.4",
     "cz-conventional-changelog": "^3.3.0",
     "eslint": "^7.25.0",
     "eslint-config-prettier": "^8.3.0",
@@ -67,17 +55,7 @@
     "ts-node": "^10.2.1",
     "typescript": "^4.2.4"
   },
-  "config": {
-    "commitizen": {
-      "path": "./node_modules/cz-conventional-changelog"
-    }
-  },
   "lint-staged": {
     "*.ts": "eslint --cache --cache-location .eslintcache --fix"
-  },
-  "release": {
-    "branches": [
-      "main"
-    ]
   }
 }
