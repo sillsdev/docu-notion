@@ -13,7 +13,7 @@
     "typecheck": "tsc --noEmit",
     "notion-download": "node lib/index.js",
     "// quick run without running a build": "",
-    "try": "ts-node --compiler-options \"{\\\"module\\\": \\\"commonjs\\\"}\" src/index.ts -n %SIL_BLOOM_DOCS_NOTION% -m ./temp -i ./temp_img"
+    "try": "ts-node --compiler-options \"{\\\"module\\\": \\\"commonjs\\\"}\" src/index.ts -n %SIL_BLOOM_DOCS_NOTION% -r %SIL_BLOOM_DOCS_ROOT% -m ./temp -i ./temp_img"
   },
   "repository": {
     "type": "git",

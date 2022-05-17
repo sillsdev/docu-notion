@@ -42,9 +42,7 @@ export async function notionPull(options: any): Promise<void> {
 
   console.log("Connecting");
 
-  const kIdOfOutlineBlockInNotion = "4e0e73118b8d4f72846fdddca00e2da4";
-
-  await getPagesRecursively(kIdOfOutlineBlockInNotion, markdownOutputPath);
+  await getPagesRecursively(options.rootPage, markdownOutputPath);
 }
 
 async function getPagesRecursively(id: string, parentPath: string) {
