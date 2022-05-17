@@ -17,11 +17,9 @@ jobs:
         with:
           node-version: lts/*
       - name: Install dependencies
-        run: npm ci
-      - name: Test
-        run: npm test
+        run: yarn
       - name: Build
-        run: npm run build
+        run: yarn build
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
