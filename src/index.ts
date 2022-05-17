@@ -23,7 +23,10 @@ let docsOutputPath = "not set yet";
 let notionToMarkdown: NotionToMarkdown;
 let notionClient: Client;
 
-export async function notionPull(): Promise<void> {
+// this is the entry point for use npm/yarn/npx
+void notionPull().then(() => console.log("finished"));
+
+async function notionPull(): Promise<void> {
   if (process.argv.length < 3 || process.argv.length > 5) {
     console.error(
       "Arguments error.\r\nnotionPull(notion_token, docsOutputPath (default='./docs'), imageOutputPath (default='./static/notion_img'))"
@@ -54,18 +57,6 @@ export async function notionPull(): Promise<void> {
   const kIdOfOutlineBlockInNotion = "4e0e73118b8d4f72846fdddca00e2da4";
 
   await getPagesRecursively(kIdOfOutlineBlockInNotion, docsOutputPath);
-}
-void notionPull().then(() => console.log("finished"));
-
-async function getDatabasePageMetadata(id: string): Promise<GetPageResponse> {
-  if (notionLimiter.getTokensRemaining() < 1) {
-    console.log("*** delaying for rate limit");
-  }
-  await notionLimiter.removeTokens(1);
-
-  return await notionClient.pages.retrieve({
-    page_id: id,
-  });
 }
 
 async function getPagesRecursively(id: string, parentPath: string) {
@@ -114,6 +105,14 @@ async function getPagesRecursively(id: string, parentPath: string) {
       }
     }
   }
+}
+
+async function getDatabasePageMetadata(id: string): Promise<GetPageResponse> {
+  await rateLimit();
+
+  return await notionClient.pages.retrieve({
+    page_id: id,
+  });
 }
 
 // Notion has 2 kinds of pages: a normal one which is just content, and what I'm calling a "database page", which has whatever properties you put on it.
@@ -206,10 +205,7 @@ async function getBlockChildren(
   let start_cursor = undefined;
 
   do {
-    if (notionLimiter.getTokensRemaining() < 1) {
-      console.log("*** delaying for rate limit");
-    }
-    await notionLimiter.removeTokens(1);
+    await rateLimit();
 
     const response: ListBlockChildrenResponse =
       await notionClient.blocks.children.list({
@@ -227,13 +223,6 @@ async function getBlockChildren(
   return overallResult;
 }
 
-// function uuid() {
-//   const url = URL.createObjectURL(new Blob());
-//   const [id] = url.toString().split("/").reverse();
-//   URL.revokeObjectURL(url);
-//   return id;
-// }
-
 async function saveImage(
   url: string,
   imageFolderPath: string
@@ -243,19 +232,12 @@ async function saveImage(
   const buffer = Buffer.from(arrayBuffer);
   const fileType = await FileType.fromBuffer(buffer);
   if (fileType?.ext) {
-    // too hard to figure out the original file name, if there was one, so make a hash of the url
-
-    /*
-           https://s3.us-west-2.amazonaws.com/secure.notion-static.com/d1058f46-4d2f-4292-8388-4ad393383439/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45EIPT3X45%2F20220516%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20220516T233630Z&X-Amz-Expires=3600&X-Amz-Signature=f215704094fcc884d37073b0b108cf6d1c9da9b7d57a898da38bc30c30b4c4b5&X-Amz-SignedHeaders=host&x-id=GetObject
-      from "view original"
-      https://s3.us-west-2.amazonaws.com/secure.notion-static.com/d1058f46-4d2f-4292-8388-4ad393383439/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45EIPT3X45%2F20220516%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20220516T234003Z&X-Amz-Expires=86400&X-Amz-Signature=cd514b3de76beaf264f3ce36a53a7ece4f00d3df74b2c871cd5120713724d7a4&X-Amz-SignedHeaders=host&response-content-disposition=filename%20%3D%22Untitled.png%22&x-id=GetObject
-      https://s3.us-west-2.amazonaws.com/secure.notion-static.com/d1058f46-4d2f-4292-8388-4ad393383439/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45EIPT3X45%2F20220517%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20220517T134055Z&X-Amz-Expires=3600&X-Amz-Signature=dc6f05833bc2f426430afcad6d7c73c4ff9c741e2c8a4f1e6e3d8af886262860&X-Amz-SignedHeaders=host&x-id=GetObject
-      */
-    // images that are stored by notion come to use with a complex url that changes over time. Pick out the UUID that doesn't change.
+    // Since most images come from pasting screenshots, there isn't normally a filename. That's fine, we just make a hash of the url
+    // Images that are stored by notion come to us with a complex url that changes over time, so we pick out the UUID that doesn't change. Example:
+    //    https://s3.us-west-2.amazonaws.com/secure.notion-static.com/d1058f46-4d2f-4292-8388-4ad393383439/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45EIPT3X45%2F20220516%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20220516T233630Z&X-Amz-Expires=3600&X-Amz-Signature=f215704094fcc884d37073b0b108cf6d1c9da9b7d57a898da38bc30c30b4c4b5&X-Amz-SignedHeaders=host&x-id=GetObject
 
     let thingToHash = url;
     const m = /.*secure\.notion-static\.com\/(.*)\//gm.exec(url);
-    //console.log(`m: ${JSON.stringify(m)}`);
     if (m && m.length > 1) {
       console.log("got aws image");
       thingToHash = m[1];
@@ -340,4 +322,11 @@ function getPlainTextProperty(
   return textArray && textArray.length
     ? (textArray[0].plain_text as string)
     : undefined;
+}
+
+async function rateLimit() {
+  if (notionLimiter.getTokensRemaining() < 1) {
+    console.log("*** delaying for rate limit");
+  }
+  await notionLimiter.removeTokens(1);
 }
