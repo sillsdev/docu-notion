@@ -9,15 +9,14 @@
 npm install notion-pull
 ```
 
-## Usage
-
-```ts
-import { notionPull } from 'notion-pull';
-
-notionPull(process.env.MY_NOTION_TOKEN, "./docs","./static/notion_images");
+## Usage with defaults that work for Docusaurus
 
 ```
+npx notion-pull -n %MY_NOTION_TOKEN_ENV_VAR%
+```
 
-## API
+## Usage with customized output locations
 
-### notionPull(token, docs-destination-path, image-destination-path)
+```
+npx notion-pull -n %MY_NOTION_TOKEN_ENV_VAR%  --markdown-output-path "./docs" --img-output-path"./static/notion_images"
+```

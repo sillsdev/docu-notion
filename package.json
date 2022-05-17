@@ -13,7 +13,7 @@
     "typecheck": "tsc --noEmit",
     "notion-download": "node lib/index.js",
     "// quick run without running a build": "",
-    "try": "ts-node --compiler-options \"{\\\"module\\\": \\\"commonjs\\\"}\" src/index.ts %SIL_BLOOM_DOCS_NOTION% ./temp ./temp_img"
+    "try": "ts-node --compiler-options \"{\\\"module\\\": \\\"commonjs\\\"}\" src/index.ts -n %SIL_BLOOM_DOCS_NOTION% -m ./temp -i ./temp_img"
   },
   "repository": {
     "type": "git",
@@ -40,13 +40,14 @@
   "//file-type": "have to use this version before they switched to ESM, which gives a compile error related to require()",
   "//node-fetch@2.6.6file-type": "have to use this version before they switched to ESM, which gives a compile error related to require()",
   "dependencies": {
-    "sanitize-filename": "^1.6.3",
-    "notion-to-md": "^2.3.3",
+    "@notionhq/client": "^1.0.4",
+    "commander": "^9.2.0",
     "file-type": "16.5.1",
     "fs-extra": "^10.1.0",
     "limiter": "^2.1.0",
     "node-fetch": "2.6.6",
-    "@notionhq/client": "^1.0.4"
+    "notion-to-md": "^2.3.3",
+    "sanitize-filename": "^1.6.3"
   },
   "devDependencies": {
     "@types/fs-extra": "^9.0.13",
