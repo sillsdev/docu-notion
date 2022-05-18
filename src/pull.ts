@@ -19,6 +19,7 @@ const notionLimiter = new RateLimiter({
 });
 
 let imageOutputPath = "not set yet";
+let imagePrefix = "not set yet";
 let markdownOutputPath = "not set yet";
 let notionToMarkdown: NotionToMarkdown;
 let notionClient: Client;
@@ -29,6 +30,11 @@ export async function notionPull(options: any): Promise<void> {
 
   markdownOutputPath = options.markdownOutputPath;
   imageOutputPath = options.imgOutputPath;
+  imagePrefix = options.imgPrefixInMarkdown || imageOutputPath;
+
+  // If they gave us a trailing slash, remove it because we add it back later.
+  // Note that it's up to the caller to have a *leading* slash or not.
+  imagePrefix = imagePrefix.replace(/\/$/, "");
 
   notionClient = new Client({
     auth: options.notionToken,
@@ -269,8 +275,7 @@ async function processImageBlock(b: any) {
     url = b.image.external.url; // image still pointing somewhere else. I've see this happen when copying a Google Doc into Notion. Notion kep pointing at the google doc.
   }
 
-  const newPath =
-    imageOutputPath + "/" + (await saveImage(url, imageOutputPath));
+  const newPath = imagePrefix + "/" + (await saveImage(url, imageOutputPath));
 
   // change the src to point to our copy of the image
   if ("file" in b.image) {

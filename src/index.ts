@@ -17,6 +17,10 @@ program
   .requiredOption(
     "-i, --img-output-path  <string>",
     "path to directory where images will be stored"
+  )
+  .option(
+    "-p, --img-prefix-in-markdown <string>",
+    "when referencing an image from markdown, prefix with this path instead of the full img-output-path"
   );
 
 program.showHelpAfterError();
