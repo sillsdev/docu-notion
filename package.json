@@ -14,7 +14,7 @@
     "typecheck": "tsc --noEmit",
     "notion-download": "node lib/index.js",
     "// quick run without running a build": "",
-    "try": "ts-node --compiler-options \"{\\\"module\\\": \\\"commonjs\\\"}\" src/index.ts -n %SIL_BLOOM_DOCS_NOTION_TOKEN% -r %SIL_BLOOM_DOCS_NOTION_ROOT_PAGE% -m ./temp -i ./temp_img/inner -p /inner/"
+    "try": "ts-node --compiler-options \"{\\\"module\\\": \\\"commonjs\\\"}\" src/index.ts -n %NOTION_PULL_INTEGRATION_TOKEN% -r %NOTION_PULL_ROOT_PAGE% -m ./temp -i ./temp_img/inner -p /inner/"
   },
   "repository": {
     "type": "git",

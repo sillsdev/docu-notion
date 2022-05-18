@@ -6,8 +6,9 @@ notion-pull lets you use Notion as your editor for markdown-based static site ge
 
 First, prepare your markdown-based static file system like [Docusaurus](https://docusaurus.io/). You can then use notion-pull to populate your repository with markdown files and images.
 
-## 2. In Notion, create page to serve as the root of your documentation
+## 2. In Notion, duplicate the notion-pull template
 
+While you are logged into Notion, go to [this template page](https://hattonjohn.notion.site/Documentation-Template-Docusaurus-0e998b32da3c47edad0f62a25b49818c). Duplicate it into your own workspace.
 You can name it anything you like, e.g. "Documentation Root".
 
 ## 3. Create a Notion Integration
@@ -24,7 +25,7 @@ In Notion, click "Share" on the root of your documentation and "invite" your int
 
 ## 6. Add your pages under your Outline page.
 
-Currently, notion-pull expects that each page has only one of the following: subpages, links to other pages, or normal content. Do not mix them.
+Currently, notion-pull expects that each page has only one of the following: subpages, links to other pages, or normal content. Do not mix them. You can add content pages directly here, but then you won't be able to make use of the workflow features. If those matter to you, instead make new pages under the "Database" and then link to them in your outline pages.
 
 ## 7. Pull your pages
 
