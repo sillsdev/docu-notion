@@ -1,22 +1,20 @@
--- THIS PROJECT HAS NOT ACTUALLY LAUNCHED YET --
-
 # notion-pull
 
-notion-pull lets you use Notion as your front end for large documentation projects based on projects like [Docusaurus](https://docusaurus.io/). Using Notion instead of raw markdown files means that you don't have to teach non-developers how to make git commits and PRs. It also allows you to leverage Notion's database tools to control workflow, commenting feature to discuss changes, etc.
+notion-pull lets you use Notion as your editor for markdown-based static site generators like [Docusaurus](https://docusaurus.io/). Using Notion instead of raw markdown files means that you don't have to teach non-developers how to make git commits and PRs. It also allows you to leverage Notion's database tools to control workflow, commenting feature to discuss changes, etc.
 
 ## 1. Set up your documentation site.
 
-notion-pull is not the actual website. You'll need to set up a markdown-based static file system like [Docusaurus](https://docusaurus.io/). You can then use notion-pull to populate your repository with markdown files and images.
+First, prepare your markdown-based static file system like [Docusaurus](https://docusaurus.io/). You can then use notion-pull to populate your repository with markdown files and images.
 
-## 2. Create page in Notion to serve as the root of your documentation
+## 2. In Notion, create page to serve as the root of your documentation
 
 You can name it anything you like, e.g. "Documentation Root".
 
-## 3. Set up Notion Integration
+## 3. Create a Notion Integration
 
 Follow [these instructions](https://developers.notion.com/docs/getting-started) to make an "integration" and get your token. Limit your integration to "READ" access.
 
-## 4. "Invite" your api integration
+## 4. "Invite" your Notion Integration to read you page
 
 In Notion, click "Share" on the root of your documentation and "invite" your integration to it.
 
@@ -30,29 +28,29 @@ Currently, notion-pull expects that each page has only one of the following: sub
 
 ## 7. Pull your pages
 
-In the following, you can get the root ID (-r) by copying a link to the root page and finding the ID inside. E.g.
+First, determine the id of your root page by clicking "Share" and looking at the the url it gives you. E.g.
 https://www.notion.so/hattonjohn/My-Docs-0456aa5842946bdbea3a4f37c97a0e5
-would have a page id of "0456aa5842946bdbea3a4f37c97a0e5".
+means that the id is "0456aa5842946PRETEND4f37c97a0e5".
 
-{% note %}
+**Be Careful:** notion-pull will delete the markdown output directory before starting.
 
-**Note:** that notion-pull will delete the markdown directory before starting.
+notion-pull does not delete the image directory because it avoids re-downloading an image if you already have the image from a previous run. The downside of this is that if you delete or replace an image in Notion, notion-pull isn't yet smart enough to remove your local copy.
 
-{% endnote %}
-
-```
-npx notion-pull -n %MY_NOTION_TOKEN_ENV_VAR% -r %MY_NOTION_DOCS_ROOT_PAGE_ID%
-```
-
-The defaults work for Docusaurus instances, or you can customize the output locations:
+Determine where you want the markdown files and images to land. The following works well for Docusaurus instances:
 
 ```
---markdown-output-path "./docs" --img-output-path"./static/notion_images"
+npx notion-pull -n secret_PRETEND123456789PRETEND123456789PRETEND6789 -r 0456aa5842946PRETEND4f37c97a0e5 -m "./docs" -i "./images"
+```
+
+Likely, you will want to store these codes in your environment variables and then use them like this:
+
+```
+npx notion-pull -n %MY_NOTION_TOKEN% -r %MY_NOTION_DOCS_ROOT_PAGE_ID% -m "./docs" -i "./static/notion_images"
 ```
 
 ## 8. Commit (or not)
 
-It's up to you whether you want to keep these files in the git history of your site. If you don't, `.gitignore` these locations.
+It's up to you whether you want to keep these files in the git history of your site. If you don't, `.gitignore` the two output directories.
 
 # Advanced: using a Notion database
 
@@ -63,3 +61,7 @@ One of the big attractions of Notion for large documentation projects is that yo
 `notion-pull` supports this by letting you link to database pages from your outline.
 
 ![image](https://user-images.githubusercontent.com/8448/168929668-f83d7c86-75d2-48e9-940c-84c5268a2854.png)
+
+# Localization
+
+Localize your files in Crowdin (or whatever) based on the markdown files, not in Notion. For how to do this with Docusaurus, see [Docusaurus i18n](https://docusaurus.io/docs/i18n/crowdin).

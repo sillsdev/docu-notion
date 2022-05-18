@@ -37,7 +37,12 @@ export async function notionPull(options: any): Promise<void> {
 
   console.log(`Deleting existing markdown in ${markdownOutputPath}`);
   deleteDirectorySync(markdownOutputPath);
-  fs.mkdirSync(markdownOutputPath);
+  await fs.mkdir(markdownOutputPath, { recursive: true });
+  // Currently we don't delete the image directory, because if an image
+  // changes, it gets a new id. This way can then prevent downloading
+  // and image after the 1st time. The downside is currently we don't
+  // have the smarts to remove unused images.
+  await fs.mkdir(imageOutputPath, { recursive: true });
   if (!fs.pathExistsSync(imageOutputPath)) fs.mkdirSync(imageOutputPath);
 
   console.log("Connecting");

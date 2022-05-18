@@ -12,13 +12,11 @@ program
   )
   .option(
     "-m, --markdown-output-path  <string>",
-    "root of the hierarchy for md files",
-    "./docs" // this default works for Docusaurus
+    "root of the hierarchy for md files. WARNING: node-pull will delete this directory."
   )
   .option(
     "-i, --img-output-path  <string>",
-    "path to directory where images will be stored",
-    "/static/notion_img" // this default works for Docusaurus
+    "path to directory where images will be stored"
   );
 
 program.showHelpAfterError();
