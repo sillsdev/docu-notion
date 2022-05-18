@@ -1,4 +1,3 @@
-
 -- THIS PROJECT HAS NOT ACTUALLY LAUNCHED YET --
 
 # notion-pull
@@ -35,6 +34,12 @@ In the following, you can get the root ID (-r) by copying a link to the root pag
 https://www.notion.so/hattonjohn/My-Docs-0456aa5842946bdbea3a4f37c97a0e5
 would have a page id of "0456aa5842946bdbea3a4f37c97a0e5".
 
+{% note %}
+
+**Note:** that notion-pull will delete the markdown directory before starting.
+
+{% endnote %}
+
 ```
 npx notion-pull -n %MY_NOTION_TOKEN_ENV_VAR% -r %MY_NOTION_DOCS_ROOT_PAGE_ID%
 ```
@@ -52,7 +57,6 @@ It's up to you whether you want to keep these files in the git history of your s
 # Advanced: using a Notion database
 
 One of the big attractions of Notion for large documentation projects is that you can treat your pages as database items. The advantage of this is that they can then have metadata properties that fit your workflow. For example, we use a simple kanban board view to see where each page is in our workflow:
-
 
 ![image](https://user-images.githubusercontent.com/8448/168929745-e6529375-bb1e-47e9-b8a6-7a1467c8900f.png)
 
