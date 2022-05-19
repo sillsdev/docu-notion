@@ -33,10 +33,6 @@ First, determine the id of your root page by clicking "Share" and looking at the
 https://www.notion.so/hattonjohn/My-Docs-0456aa5842946bdbea3a4f37c97a0e5
 means that the id is "0456aa5842946PRETEND4f37c97a0e5".
 
-**Be Careful:** notion-pull will delete the markdown output directory before starting.
-
-notion-pull does not delete the image directory because it avoids re-downloading an image if you already have the image from a previous run. The downside of this is that if you delete or replace an image in Notion, notion-pull isn't yet smart enough to remove your local copy.
-
 Determine where you want the markdown files and images to land. The following works well for Docusaurus instances:
 
 ```
@@ -57,7 +53,7 @@ npx notion-pull -n $MY_NOTION_TOKEN -r $MY_NOTION_DOCS_ROOT_PAGE_ID -m "./docs" 
 
 ## 8. Commit (or not)
 
-It's up to you whether you want to keep these files in the git history of your site. If you don't, `.gitignore` the two output directories.
+It's up to you whether you want to keep these files in the git history of your site. If you don't, `.gitignore` the two output directories. Note that if you are using the workflow feature, and a document that previously had a `Status` property of `Publish` and now has a different status, you probably want to keep publishing the old version. But if you don't commit files, your CI system (e.g. Github Actions) won't have the old version around, so it will disappear from your site.
 
 # Advanced: using a Notion database
 

@@ -24,6 +24,7 @@ let notionToMarkdown: NotionToMarkdown;
 let notionClient: Client;
 let currentSidebarPosition = 0;
 let existingPagesNotSeenYetInPull: string[] = [];
+let existingImagesNotSeenYetInPull: string[] = [];
 
 export async function notionPull(options: any): Promise<void> {
   console.log("Notion-Pull");
@@ -50,6 +51,7 @@ export async function notionPull(options: any): Promise<void> {
   notionToMarkdown = new NotionToMarkdown({ notionClient: notionClient });
 
   existingPagesNotSeenYetInPull = getFiles(markdownOutputPath);
+  existingImagesNotSeenYetInPull = getFiles(imageOutputPath);
 
   //if (!fs.pathExistsSync(markdownOutputPath)) {
   await fs.mkdir(markdownOutputPath, { recursive: true });
@@ -66,7 +68,12 @@ export async function notionPull(options: any): Promise<void> {
 
   // Remove any pre-existing files that aren't around anymore; this indicates that they were removed or renamed in Notion.
   for (const p of existingPagesNotSeenYetInPull) {
-    console.log(`Removing old file: ${p}`);
+    console.log(`Removing old doc: ${p}`);
+    await fs.rm(p);
+  }
+
+  for (const p of existingImagesNotSeenYetInPull) {
+    console.log(`Removing old image: ${p}`);
     await fs.rm(p);
   }
 }
@@ -141,15 +148,15 @@ async function getDatabasePage(id: string, parentPath: string) {
 
   const title = getPlainTextProperty(contentPage, "Name") || "missing title";
   const slug = getPlainTextProperty(contentPage, "slug");
-  const mdBlocks = await notionToMarkdown.blocksToMarkdown(blocks);
-  let mdString = "---\n";
-  mdString += `title: ${title}\n`;
-  mdString += `sidebar_position: ${currentSidebarPosition}\n`;
-  if (slug) {
-    mdString += `slug: ${slug}\n`;
+  const status = getSelectProperty(contentPage, "Status") || "";
+
+  if (!status) {
+    console.error(
+      `The page "${title}" was missing a Status property. It will not be published.`
+    );
   }
-  mdString += "---\n\n";
-  mdString += notionToMarkdown.toMarkdownString(mdBlocks);
+  const path = parentPath + "/" + sanitize(title) + ".md";
+  pageWasSeen(path);
 
   //helpful when debugging changes we make before serializing to markdown
   // fs.writeFileSync(
@@ -157,9 +164,21 @@ async function getDatabasePage(id: string, parentPath: string) {
   //   JSON.stringify({ contentPage, blocks }, null, 2)
   // );
 
-  const path = parentPath + "/" + sanitize(title) + ".md";
-  fs.writeFileSync(path, mdString, {});
-  pageWasSeen(path);
+  if (status == "Publish") {
+    const mdBlocks = await notionToMarkdown.blocksToMarkdown(blocks);
+    let mdString = "---\n";
+    mdString += `title: ${title}\n`;
+    mdString += `sidebar_position: ${currentSidebarPosition}\n`;
+    if (slug) {
+      mdString += `slug: ${slug}\n`;
+    }
+    mdString += "---\n\n";
+    mdString += notionToMarkdown.toMarkdownString(mdBlocks);
+
+    fs.writeFileSync(path, mdString, {});
+  } else {
+    console.log(`Skipping ${title} because its status is "${status}"`);
+  }
 }
 
 async function geContentPageInOutline(id: string, path: string) {
@@ -268,6 +287,7 @@ async function saveImage(
     const hash = hashOfString(thingToHash);
     const outputFileName = `${hash}.${fileType.ext}`;
     const path = imageFolderPath + "/" + outputFileName;
+    imageWasSeen(path);
     if (!fs.pathExistsSync(path)) {
       // // I think that this ok that this is writing async as we continue
       console.log("Adding image " + path);
@@ -345,6 +365,29 @@ function getPlainTextProperty(
     : undefined;
 }
 
+function getSelectProperty(
+  o: Record<string, unknown>,
+  property: string
+): string | undefined {
+  /* Notion select values look like this
+   "properties": {
+      "Status": {
+        "id": "oB~%3D",
+        "type": "select",
+        "select": {
+          "id": "1",
+          "name": "Ready For Review",
+          "color": "red"
+        }
+      },
+      */
+
+  const p = (o as any).properties?.[property];
+  if (!p) return undefined;
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+  return p.select?.name || undefined;
+}
+
 async function rateLimit() {
   if (notionLimiter.getTokensRemaining() < 1) {
     console.log("*** delaying for rate limit");
@@ -360,6 +403,12 @@ function pageWasSeen(path: string) {
   );
   // console.log(`after`);
   // console.log(JSON.stringify(existingPagesNotSeenYetInPull, null, 2));
+}
+
+function imageWasSeen(path: string) {
+  existingImagesNotSeenYetInPull = existingImagesNotSeenYetInPull.filter(
+    p => p !== path
+  );
 }
 
 function getFiles(dir: string): string[] {
