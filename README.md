@@ -21,13 +21,11 @@ In Notion, click "Share" on the root of your documentation and "invite" your int
 
 ![image](https://user-images.githubusercontent.com/8448/168930238-1dcf46df-a690-4839-bf4c-c63157f104d8.png)
 
-## 5. Under your documentation root, add a page named "Outline"
-
-## 6. Add your pages under your Outline page.
+## 5. Add your pages under your Outline page.
 
 Currently, notion-pull expects that each page has only one of the following: subpages, links to other pages, or normal content. Do not mix them. You can add content pages directly here, but then you won't be able to make use of the workflow features. If those matter to you, instead make new pages under the "Database" and then link to them in your outline pages.
 
-## 7. Pull your pages
+## 6. Pull your pages
 
 First, determine the id of your root page by clicking "Share" and looking at the the url it gives you. E.g.
 https://www.notion.so/hattonjohn/My-Docs-0456aa5842946bdbea3a4f37c97a0e5
@@ -51,9 +49,11 @@ npx notion-pull -n %MY_NOTION_TOKEN% -r %MY_NOTION_DOCS_ROOT_PAGE_ID% -m "./docs
 npx notion-pull -n $MY_NOTION_TOKEN -r $MY_NOTION_DOCS_ROOT_PAGE_ID -m "./docs" -i "./static/notion_images" -p "/notion_images/"
 ```
 
-## 8. Commit (or not)
+## 7. Commit
 
-It's up to you whether you want to keep these files in the git history of your site. If you don't, `.gitignore` the two output directories. Note that if you are using the workflow feature, and a document that previously had a `Status` property of `Publish` and now has a different status, you probably want to keep publishing the old version. But if you don't commit files, your CI system (e.g. Github Actions) won't have the old version around, so it will disappear from your site.
+Most projects should probably commit the current markdown and image files each time you run notion-pull.
+
+Note that if you choose not to commit, the workflow feature won't work for you. Imagine the case where a document that previously had a `Status` property of `Publish` now has a different status. You probably want to keep publishing the old version until the new one is ready. But if you don't commit files, your CI system (e.g. Github Actions) won't have the old version around, so it will disappear from your site.
 
 # Advanced: using a Notion database
 
