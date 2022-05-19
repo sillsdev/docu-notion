@@ -23,10 +23,18 @@ let markdownOutputPath = "not set yet";
 let notionToMarkdown: NotionToMarkdown;
 let notionClient: Client;
 let currentSidebarPosition = 0;
+let existingPagesNotSeenYetInPull: string[] = [];
 
 export async function notionPull(options: any): Promise<void> {
   console.log("Notion-Pull");
-  console.log(JSON.stringify(options, null, 2));
+
+  // It's helpful when troubleshooting CI secrets and environment variables to see what options actually made it to notion-pull.
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+  const optionsForLogging = { ...options };
+  // Just show the first few letters of the notion token, which start with "secret" anyhow.
+  optionsForLogging.notionToken =
+    (optionsForLogging.notionToken as string).substring(0, 3) + "...";
+  console.log(JSON.stringify(optionsForLogging, null, 2));
 
   markdownOutputPath = options.markdownOutputPath;
   imageOutputPath = options.imgOutputPath;
@@ -41,19 +49,26 @@ export async function notionPull(options: any): Promise<void> {
   });
   notionToMarkdown = new NotionToMarkdown({ notionClient: notionClient });
 
-  console.log(`Deleting existing markdown in ${markdownOutputPath}`);
-  deleteDirectorySync(markdownOutputPath);
+  existingPagesNotSeenYetInPull = getFiles(markdownOutputPath);
+
+  //if (!fs.pathExistsSync(markdownOutputPath)) {
   await fs.mkdir(markdownOutputPath, { recursive: true });
+  //}
   // Currently we don't delete the image directory, because if an image
   // changes, it gets a new id. This way can then prevent downloading
   // and image after the 1st time. The downside is currently we don't
   // have the smarts to remove unused images.
   await fs.mkdir(imageOutputPath, { recursive: true });
-  if (!fs.pathExistsSync(imageOutputPath)) fs.mkdirSync(imageOutputPath);
 
   console.log("Connecting");
 
   await getPagesRecursively(options.rootPage, markdownOutputPath);
+
+  // Remove any pre-existing files that aren't around anymore; this indicates that they were removed or renamed in Notion.
+  for (const p of existingPagesNotSeenYetInPull) {
+    console.log(`Removing old file: ${p}`);
+    await fs.rm(p);
+  }
 }
 
 async function getPagesRecursively(id: string, parentPath: string) {
@@ -80,7 +95,7 @@ async function getPagesRecursively(id: string, parentPath: string) {
           path = parentPath + "/" + title;
           //console.log("parentPath: " + parentPath);
           //console.log("will mk dir " + path);
-          fs.mkdirSync(path);
+          fs.mkdirSync(path, { recursive: true });
         }
         for (const b of children.results) {
           if ("child_page" in b) {
@@ -142,7 +157,9 @@ async function getDatabasePage(id: string, parentPath: string) {
   //   JSON.stringify({ contentPage, blocks }, null, 2)
   // );
 
-  fs.writeFileSync(parentPath + "/" + sanitize(title) + ".md", mdString);
+  const path = parentPath + "/" + sanitize(title) + ".md";
+  fs.writeFileSync(path, mdString, {});
+  pageWasSeen(path);
 }
 
 async function geContentPageInOutline(id: string, path: string) {
@@ -167,25 +184,26 @@ async function geContentPageInOutline(id: string, path: string) {
 
   //console.log(`writing to ${path}`);
   fs.writeFileSync(path + ".md", mdString);
+  pageWasSeen(path + ".md");
 }
 
 /**
  * Remove directory recursively
  * @see https://stackoverflow.com/a/42505874/3027390
  */
-function deleteDirectorySync(directory: string) {
-  if (fs.existsSync(directory)) {
-    fs.readdirSync(directory).forEach(entry => {
-      const entryPath = Path.join(directory, entry);
-      if (fs.lstatSync(entryPath).isDirectory()) {
-        deleteDirectorySync(entryPath);
-      } else {
-        fs.unlinkSync(entryPath);
-      }
-    });
-    fs.rmdirSync(directory);
-  }
-}
+// function deleteDirectorySync(directory: string) {
+//   if (fs.existsSync(directory)) {
+//     fs.readdirSync(directory).forEach(entry => {
+//       const entryPath = Path.join(directory, entry);
+//       if (fs.lstatSync(entryPath).isDirectory()) {
+//         deleteDirectorySync(entryPath);
+//       } else {
+//         fs.unlinkSync(entryPath);
+//       }
+//     });
+//     fs.rmdirSync(directory);
+//   }
+// }
 
 async function processBlocks(
   blocks: (
@@ -332,4 +350,25 @@ async function rateLimit() {
     console.log("*** delaying for rate limit");
   }
   await notionLimiter.removeTokens(1);
+}
+
+function pageWasSeen(path: string) {
+  // console.log(`before writing ${path}`);
+  // console.log(JSON.stringify(existingPagesNotSeenYetInPull, null, 2));
+  existingPagesNotSeenYetInPull = existingPagesNotSeenYetInPull.filter(
+    p => p !== path
+  );
+  // console.log(`after`);
+  // console.log(JSON.stringify(existingPagesNotSeenYetInPull, null, 2));
+}
+
+function getFiles(dir: string): string[] {
+  return fs.readdirSync(dir).flatMap(item => {
+    const path = `${dir}/${item}`;
+    if (fs.statSync(path).isDirectory()) {
+      return getFiles(path);
+    }
+    return [path];
+  });
+  return [];
 }
