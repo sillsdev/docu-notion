@@ -1,19 +1,21 @@
 # notion-pull
 
-notion-pull lets you use Notion as your editor for markdown-based static site generators like [Docusaurus](https://docusaurus.io/). Using Notion instead of raw markdown files means that you don't have to teach non-developers how to make git commits and PRs. It also allows you to leverage Notion's database tools to control workflow, commenting feature to discuss changes, etc.
+notion-pull lets you use Notion as your editor for markdown-based static site generators like [Docusaurus](https://docusaurus.io/). Using Notion instead of raw markdown files means that you don't have to teach non-developers how to make git commits and pull requests. It also allows you to leverage Notion's database tools to control workflow, Notion's commenting feature to discuss changes, etc.
+
+Note that notion-pull is not a service that could be reading your data. `node-pull` is just open-source code that will run on your computer or your continuous integration system.
 
 ## 1. Set up your documentation site.
 
-First, prepare your markdown-based static file system like [Docusaurus](https://docusaurus.io/). You can then use notion-pull to populate your repository with markdown files and images.
+First, prepare your markdown-based static file system like [Docusaurus](https://docusaurus.io/).
 
 ## 2. In Notion, duplicate the notion-pull template
 
-While you are logged into Notion, go to [this template page](https://hattonjohn.notion.site/Documentation-Template-Docusaurus-0e998b32da3c47edad0f62a25b49818c). Duplicate it into your own workspace.
+Go to [this template page](https://hattonjohn.notion.site/Documentation-Template-Docusaurus-0e998b32da3c47edad0f62a25b49818c). Duplicate it into your own workspace.
 You can name it anything you like, e.g. "Documentation Root".
 
 ## 3. Create a Notion Integration
 
-Follow [these instructions](https://developers.notion.com/docs/getting-started) to make an "integration" and get your token. Limit your integration to "READ" access.
+In order for notion-pull to read your site via Notion's API, you need to create what Notion calls an "integration". Follow [these instructions](https://developers.notion.com/docs/getting-started) to make an integration and get your token. Limit your integration to "READ" access.
 
 ## 4. "Invite" your Notion Integration to read you page
 
@@ -65,9 +67,13 @@ One of the big attractions of Notion for large documentation projects is that yo
 
 ![image](https://user-images.githubusercontent.com/8448/168929668-f83d7c86-75d2-48e9-940c-84c5268a2854.png)
 
-## Limitations
+## Known Limitations
 
 notion-pull is not doing anything smart with regards to previously Published but now not Published documents. All it does is ignore every Notion document that doesn't have `status == Publish`. So if the old version of the document is still in your file tree when your static site generator (e.g. Docusaurus) runs, then it will appear on your website. If it isn't there, it won't. If you rename directories or move the document, notion-pull will not realize this and will delete the previously published markdown file.
+
+Links from one document to another in Notion are not yet converted to local links.
+
+Notion-pull makes some attempt to keep the right order of things, but there are definitely cases where it isn't smart enough yet.
 
 # Localization
 
