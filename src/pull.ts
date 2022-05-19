@@ -11,7 +11,6 @@ import {
 import { RateLimiter } from "limiter";
 import fetch from "node-fetch";
 import sanitize from "sanitize-filename";
-import { exit } from "process";
 
 const notionLimiter = new RateLimiter({
   tokensPerInterval: 3,
@@ -23,6 +22,7 @@ let imagePrefix = "not set yet";
 let markdownOutputPath = "not set yet";
 let notionToMarkdown: NotionToMarkdown;
 let notionClient: Client;
+let currentSidebarPosition = 0;
 
 export async function notionPull(options: any): Promise<void> {
   console.log("Notion-Pull");
@@ -122,11 +122,14 @@ async function getDatabasePage(id: string, parentPath: string) {
 
   await processBlocks(blocks);
 
+  currentSidebarPosition++;
+
   const title = getPlainTextProperty(contentPage, "Name") || "missing title";
   const slug = getPlainTextProperty(contentPage, "slug");
   const mdBlocks = await notionToMarkdown.blocksToMarkdown(blocks);
   let mdString = "---\n";
   mdString += `title: ${title}\n`;
+  mdString += `sidebar_position: ${currentSidebarPosition}\n`;
   if (slug) {
     mdString += `slug: ${slug}\n`;
   }
@@ -147,9 +150,14 @@ async function geContentPageInOutline(id: string, path: string) {
   const blocks = (await getBlockChildren(id)).results;
   await processBlocks(blocks);
 
+  currentSidebarPosition++;
+  let mdString = "---\n";
+  mdString += `sidebar_position: ${currentSidebarPosition}\n`;
+  mdString += "---\n\n";
+
   //const title = getPlainTextProperty(outlinePage, "title");
   const mdBlocks = await notionToMarkdown.blocksToMarkdown(blocks);
-  const mdString = notionToMarkdown.toMarkdownString(mdBlocks);
+  mdString += notionToMarkdown.toMarkdownString(mdBlocks);
 
   //helpful when debugging changes we make before serializing to markdown
   // fs.writeFileSync(

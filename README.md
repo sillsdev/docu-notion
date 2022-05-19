@@ -46,7 +46,13 @@ npx notion-pull -n secret_PRETEND123456789PRETEND123456789PRETEND6789 -r 0456aa5
 Likely, you will want to store these codes in your environment variables and then use them like this:
 
 ```
+(windows)
 npx notion-pull -n %MY_NOTION_TOKEN% -r %MY_NOTION_DOCS_ROOT_PAGE_ID% -m "./docs" -i "./static/notion_images" -p "/notion_images/"
+```
+
+```
+(linux / mac)
+npx notion-pull -n $MY_NOTION_TOKEN -r $MY_NOTION_DOCS_ROOT_PAGE_ID -m "./docs" -i "./static/notion_images" -p "/notion_images/"
 ```
 
 ## 8. Commit (or not)
