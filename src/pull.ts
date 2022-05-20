@@ -1,6 +1,5 @@
 import { Client } from "@notionhq/client";
 import FileType from "file-type";
-import * as Path from "path";
 import * as fs from "fs-extra";
 
 import { NotionToMarkdown } from "notion-to-md";
@@ -10,7 +9,9 @@ import {
 } from "@notionhq/client/build/src/api-endpoints";
 import { RateLimiter } from "limiter";
 import fetch from "node-fetch";
-import sanitize from "sanitize-filename";
+import { HierarchicalNamedLayoutStrategy } from "./HierarchicalNamedLayoutStrategy";
+import { FlatGuidLayoutStrategy } from "./FlatGuidLayoutStrategy";
+import { LayoutStrategy } from "./LayoutStrategy";
 
 const notionLimiter = new RateLimiter({
   tokensPerInterval: 3,
@@ -23,8 +24,8 @@ let markdownOutputPath = "not set yet";
 let notionToMarkdown: NotionToMarkdown;
 let notionClient: Client;
 let currentSidebarPosition = 0;
-let existingPagesNotSeenYetInPull: string[] = [];
 let existingImagesNotSeenYetInPull: string[] = [];
+let layoutStrategy: LayoutStrategy;
 
 export async function notionPull(options: any): Promise<void> {
   console.log("Notion-Pull");
@@ -50,8 +51,10 @@ export async function notionPull(options: any): Promise<void> {
   });
   notionToMarkdown = new NotionToMarkdown({ notionClient: notionClient });
 
-  existingPagesNotSeenYetInPull = getFiles(markdownOutputPath);
-  existingImagesNotSeenYetInPull = getFiles(imageOutputPath);
+  layoutStrategy = new HierarchicalNamedLayoutStrategy();
+  //layoutStrategy = new FlatGuidLayoutStrategy();
+
+  layoutStrategy.setRootDirectoryForMarkdown(markdownOutputPath);
 
   //if (!fs.pathExistsSync(markdownOutputPath)) {
   await fs.mkdir(markdownOutputPath, { recursive: true });
@@ -64,13 +67,9 @@ export async function notionPull(options: any): Promise<void> {
 
   console.log("Connecting");
 
-  await getPagesRecursively(options.rootPage, markdownOutputPath);
+  await getPagesRecursively("", options.rootPage, true);
 
-  // Remove any pre-existing files that aren't around anymore; this indicates that they were removed or renamed in Notion.
-  for (const p of existingPagesNotSeenYetInPull) {
-    console.log(`Removing old doc: ${p}`);
-    await fs.rm(p);
-  }
+  await layoutStrategy.cleanupOldFiles();
 
   for (const p of existingImagesNotSeenYetInPull) {
     console.log(`Removing old image: ${p}`);
@@ -78,55 +77,55 @@ export async function notionPull(options: any): Promise<void> {
   }
 }
 
-async function getPagesRecursively(id: string, parentPath: string) {
-  const outlinePage = await getDatabasePageMetadata(id);
+async function getPagesRecursively(
+  incomingContext: string,
+  pageId: string,
+  hideThisLevel: boolean
+) {
+  const pageInTheOutline = await getPageMetadata(pageId);
 
   // A note on all these `if()` statements. Notion API's GetPageResponse type is union,
   // and Typescript will give type errors unless it sees code that proves that your
   // object is an instance of the union element that you are using.
-  if ("properties" in outlinePage) {
-    const title = getPlainTextProperty(outlinePage, "title");
+  if ("properties" in pageInTheOutline) {
+    const title = getPlainTextProperty(pageInTheOutline, "title");
     if (title) {
-      console.log(`Reading "${parentPath}/${title}"`);
+      console.log(`Reading Outline Page ${incomingContext}/${title}`);
       const children = await notionClient.blocks.children.list({
-        block_id: id,
+        block_id: pageId,
         page_size: 100, // max hundred links in a page
       });
-      let path = parentPath;
 
+      // Is this an outline page...
       if (
         children.results.some(b => "child_page" in b || "link_to_page" in b)
       ) {
+        let context = incomingContext;
         // don't make a level for "Outline"
-        if (title !== "Outline") {
-          path = parentPath + "/" + title;
-          //console.log("parentPath: " + parentPath);
-          //console.log("will mk dir " + path);
-          fs.mkdirSync(path, { recursive: true });
+        if (!hideThisLevel && title !== "Outline") {
+          context = layoutStrategy.newLevel(incomingContext, title);
         }
         for (const b of children.results) {
           if ("child_page" in b) {
-            //console.log(JSON.stringify(b, null, 2));
-            //console.log("getting one child of " + title);
-
-            await getPagesRecursively(b.id, path);
+            await getPagesRecursively(context, b.id, false);
           } else if ("link_to_page" in b && "page_id" in b.link_to_page) {
-            await getDatabasePage(b.link_to_page.page_id, path);
+            await getDatabasePage(context, b.link_to_page.page_id);
             //          console.log(JSON.stringify(children, null, 2));
           } else {
             // skipping this block
             //console.log("skipping block:" + JSON.stringify(b, null, 2));
           }
         }
-      } else {
-        path = parentPath + "/" + sanitize(title);
-        await geContentPageInOutline(id, path);
+      }
+      // ..or a content page sitting in the outline (unusual, but supported)
+      else {
+        await getContentPageInOutline(incomingContext, pageId);
       }
     }
   }
 }
 
-async function getDatabasePageMetadata(id: string): Promise<GetPageResponse> {
+async function getPageMetadata(id: string): Promise<GetPageResponse> {
   await rateLimit();
 
   return await notionClient.pages.retrieve({
@@ -138,9 +137,9 @@ async function getDatabasePageMetadata(id: string): Promise<GetPageResponse> {
 // notion-pull supports the later via links from outline pages. That is, you put the database pages in a database, then separately, in the outline, you
 // create pages for each node of the outline and then add links from those to the database pages. In this way, we get the benefits of database
 // pages (metadata, workflow, etc) and also normal pages (order, position in the outline).
-async function getDatabasePage(id: string, parentPath: string) {
-  const contentPage = await getDatabasePageMetadata(id);
-  const blocks = (await getBlockChildren(id)).results;
+async function getDatabasePage(context: string, pageId: string) {
+  const contentPage = await getPageMetadata(pageId);
+  const blocks = (await getBlockChildren(pageId)).results;
 
   await processBlocks(blocks);
 
@@ -150,13 +149,15 @@ async function getDatabasePage(id: string, parentPath: string) {
   const slug = getPlainTextProperty(contentPage, "slug");
   const status = getSelectProperty(contentPage, "Status") || "";
 
+  console.log(`Reading Database Page ${context}/${title}`);
+
   if (!status) {
     console.error(
       `The page "${title}" was missing a Status property. It will not be published.`
     );
   }
-  const path = parentPath + "/" + sanitize(title) + ".md";
-  pageWasSeen(path);
+  const path = layoutStrategy.getPathForPage(context, pageId, title, ".md");
+  layoutStrategy.pageWasSeen(context, pageId, title);
 
   //helpful when debugging changes we make before serializing to markdown
   // fs.writeFileSync(
@@ -169,9 +170,8 @@ async function getDatabasePage(id: string, parentPath: string) {
     let mdString = "---\n";
     mdString += `title: ${title}\n`;
     mdString += `sidebar_position: ${currentSidebarPosition}\n`;
-    if (slug) {
-      mdString += `slug: ${slug}\n`;
-    }
+    mdString += `slug: ${slug ? slug : pageId}\n`;
+
     mdString += "---\n\n";
     mdString += notionToMarkdown.toMarkdownString(mdBlocks);
 
@@ -181,48 +181,36 @@ async function getDatabasePage(id: string, parentPath: string) {
   }
 }
 
-async function geContentPageInOutline(id: string, path: string) {
-  //console.log(`****geContentPageInOutline(${id},${path})`);
-  const blocks = (await getBlockChildren(id)).results;
+// Handle a page that is not coming from a database, but is just a normal Notion page sitting in the outline.
+// Such a page has no properties that we need to read.
+async function getContentPageInOutline(context: string, pageId: string) {
+  const metadata = await getPageMetadata(pageId);
+  const title = getPlainTextProperty(metadata, "title") || "missing title";
+  const blocks = (await getBlockChildren(pageId)).results;
+  console.log(`Reading Raw Content Page ${context}/${title})`);
+
   await processBlocks(blocks);
 
   currentSidebarPosition++;
-  let mdString = "---\n";
-  mdString += `sidebar_position: ${currentSidebarPosition}\n`;
-  mdString += "---\n\n";
+  let markdown = "---\n";
+  markdown += `sidebar_position: ${currentSidebarPosition}\n`;
+  markdown += `slug: ${pageId}\n`;
+  markdown += "---\n\n";
 
   //const title = getPlainTextProperty(outlinePage, "title");
   const mdBlocks = await notionToMarkdown.blocksToMarkdown(blocks);
-  mdString += notionToMarkdown.toMarkdownString(mdBlocks);
+  markdown += notionToMarkdown.toMarkdownString(mdBlocks);
 
   //helpful when debugging changes we make before serializing to markdown
   // fs.writeFileSync(
-  //   parentPath + "/" + id + ".json",
-  //   JSON.stringify({ contentPage, blocks }, null, 2)
+  //   layoutStrategy.getPathForPage(context, pageId, title, ".json"),
+  //   JSON.stringify({ contentPage: metadata, blocks }, null, 2)
   // );
 
-  //console.log(`writing to ${path}`);
-  fs.writeFileSync(path + ".md", mdString);
-  pageWasSeen(path + ".md");
+  const path = layoutStrategy.getPathForPage(context, pageId, title, ".md");
+  await fs.writeFile(path, markdown);
+  layoutStrategy.pageWasSeen(context, pageId, title);
 }
-
-/**
- * Remove directory recursively
- * @see https://stackoverflow.com/a/42505874/3027390
- */
-// function deleteDirectorySync(directory: string) {
-//   if (fs.existsSync(directory)) {
-//     fs.readdirSync(directory).forEach(entry => {
-//       const entryPath = Path.join(directory, entry);
-//       if (fs.lstatSync(entryPath).isDirectory()) {
-//         deleteDirectorySync(entryPath);
-//       } else {
-//         fs.unlinkSync(entryPath);
-//       }
-//     });
-//     fs.rmdirSync(directory);
-//   }
-// }
 
 async function processBlocks(
   blocks: (
@@ -292,8 +280,6 @@ async function saveImage(
       // // I think that this ok that this is writing async as we continue
       console.log("Adding image " + path);
       fs.createWriteStream(path).write(buffer);
-    } else {
-      console.log("Already have image " + path);
     }
     return outputFileName;
   } else {
@@ -395,29 +381,8 @@ async function rateLimit() {
   await notionLimiter.removeTokens(1);
 }
 
-function pageWasSeen(path: string) {
-  // console.log(`before writing ${path}`);
-  // console.log(JSON.stringify(existingPagesNotSeenYetInPull, null, 2));
-  existingPagesNotSeenYetInPull = existingPagesNotSeenYetInPull.filter(
-    p => p !== path
-  );
-  // console.log(`after`);
-  // console.log(JSON.stringify(existingPagesNotSeenYetInPull, null, 2));
-}
-
 function imageWasSeen(path: string) {
   existingImagesNotSeenYetInPull = existingImagesNotSeenYetInPull.filter(
     p => p !== path
   );
-}
-
-function getFiles(dir: string): string[] {
-  return fs.readdirSync(dir).flatMap(item => {
-    const path = `${dir}/${item}`;
-    if (fs.statSync(path).isDirectory()) {
-      return getFiles(path);
-    }
-    return [path];
-  });
-  return [];
 }
