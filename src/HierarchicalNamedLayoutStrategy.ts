@@ -1,6 +1,7 @@
 import * as fs from "fs-extra";
 import sanitize from "sanitize-filename";
 import { LayoutStrategy } from "./LayoutStrategy";
+import { NotionPage } from "./NotionPage";
 
 // This strategy gives us a file tree that mirrors that of notion.
 // Each level in the outline becomes a directory, and each file bears the name of the Notion document.
@@ -13,25 +14,31 @@ import { LayoutStrategy } from "./LayoutStrategy";
 // doesn't buy us much... it would give protection against name changes, but not changes to the outline structure.
 
 export class HierarchicalNamedLayoutStrategy extends LayoutStrategy {
-  public newLevel(context: string, levelLabel: string): string {
+  public newLevel(
+    dirRoot: string,
+    context: string,
+    levelLabel: string
+  ): string {
     const path = context + "/" + sanitize(levelLabel);
-    fs.mkdirSync(path, { recursive: true });
+
+    //console.log("Creating level " + path);
+    fs.mkdirSync(dirRoot + "/" + path, { recursive: true });
     return path;
   }
 
-  public getPathForPage(
-    context: string,
-    pageId: string,
-    title: string,
-    extensionWithDot: string
-  ): string {
+  public getPathForPage(page: NotionPage, extensionWithDot: string): string {
     let path =
-      this.rootDirectory + "/" + context + sanitize(title) + extensionWithDot;
+      this.rootDirectory +
+      "/" +
+      page.context +
+      "/" +
+      sanitize(page.nameOrTitle) +
+      extensionWithDot;
 
     path = path.replace("//", "/");
-    console.log(
-      `getPathForPage(${context}, ${pageId}, ${title}) with  root ${this.rootDirectory} --> ${path}`
-    );
+    // console.log(
+    //   `getPathForPage(${context}, ${pageId}, ${title}) with  root ${this.rootDirectory} --> ${path}`
+    // );
     return path;
   }
 }

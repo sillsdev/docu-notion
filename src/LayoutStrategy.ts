@@ -1,4 +1,5 @@
 import * as fs from "fs-extra";
+import { NotionPage } from "./NotionPage";
 
 // Here a fuller name would be File Tree Layout Strategy. That is,
 // as we walk the Notion outline and create files, where do we create them, what do we name them, etc.
@@ -20,16 +21,18 @@ export abstract class LayoutStrategy {
     }
   }
 
-  public abstract newLevel(context: string, levelLabel: string): string;
+  public abstract newLevel(
+    rootDir: string,
+    ontext: string,
+    levelLabel: string
+  ): string;
   public abstract getPathForPage(
-    context: string,
-    pageId: string,
-    title: string,
+    page: NotionPage,
     extensionWithDot: string
   ): string;
 
-  public pageWasSeen(context: string, pageId: string, title: string): void {
-    const path = this.getPathForPage(context, pageId, title, ".md");
+  public pageWasSeen(page: NotionPage): void {
+    const path = this.getPathForPage(page, ".md");
     this.existingPagesNotSeenYetInPull =
       this.existingPagesNotSeenYetInPull.filter(p => p !== path);
   }
