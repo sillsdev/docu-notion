@@ -10,6 +10,10 @@ import {
   processImageBlock,
   cleanupOldImages,
 } from "./NotionImage";
+import chalk from "chalk";
+
+const warning = chalk.hex("#FFA500"); // Orange color
+const error = chalk.bold.red;
 
 let markdownOutputPath = "not set yet";
 
@@ -79,45 +83,57 @@ async function outputPages(pages: Array<NotionPage>) {
 async function getPagesRecursively(
   incomingContext: string,
   pageId: string,
-  hideThisLevel: boolean
+  rootLevel: boolean
 ) {
   const pageInTheOutline = await NotionPage.fromPageId(incomingContext, pageId);
 
   console.log(
     `Reading Outline Page ${incomingContext}/${pageInTheOutline.nameOrTitle}`
   );
-  const children = await pageInTheOutline.getChildren();
 
-  // Is this an outline page that just creates a level and points to database pages?
-  if (
-    children &&
-    children.results.some(b => "child_page" in b || "link_to_page" in b)
-  ) {
+  const pageInfo = await pageInTheOutline.getContentInfo();
+
+  if (!rootLevel && pageInfo.hasParagraphs && pageInfo.childPages.length) {
+    console.error(
+      error(
+        `Skipping "${pageInTheOutline.nameOrTitle}"  and its children. Notion-pull does not support pages that are both levels and have content at the same time.`
+      )
+    );
+    return;
+  }
+  if (!rootLevel && pageInfo.hasParagraphs) {
+    pages.push(pageInTheOutline);
+    if (pageInfo.linksPages)
+      console.log(
+        warning(
+          `Ambiguity: The page "${pageInTheOutline.nameOrTitle}" is in the outline, has content, and also points at other pages. It will be treated as a simple content page.`
+        )
+      );
+  }
+  // a normal outline page that exists just to create the level, pointing at database pages that belong in this level
+  else if (pageInfo.childPages.length || pageInfo.linksPages.length) {
     let context = incomingContext;
     // don't make a level for "Outline"
-    if (!hideThisLevel && pageInTheOutline.nameOrTitle !== "Outline") {
+    if (!rootLevel && pageInTheOutline.nameOrTitle !== "Outline") {
       context = layoutStrategy.newLevel(
         markdownOutputPath,
         incomingContext,
         pageInTheOutline.nameOrTitle
       );
     }
-    for (const b of children.results) {
-      if ("child_page" in b) {
-        await getPagesRecursively(context, b.id, false);
-      } else if ("link_to_page" in b && "page_id" in b.link_to_page) {
-        pages.push(
-          await NotionPage.fromPageId(context, b.link_to_page.page_id)
-        );
-      } else {
-        // skipping this block
-        //console.log("skipping block:" + JSON.stringify(b, null, 2));
-      }
+    for (const id of pageInfo.childPages) {
+      await getPagesRecursively(context, id, false);
     }
-  }
-  // ..or a content page sitting in the outline (unusual, but supported)
-  else {
-    pages.push(pageInTheOutline);
+
+    for (const id of pageInfo.linksPages) {
+      pages.push(await NotionPage.fromPageId(context, id));
+    }
+  } else {
+    console.info(
+      warning(
+        `Warning: The page "${pageInTheOutline.nameOrTitle}" is in the outline but appears to not have content, links to other pages, or child pages. It will be skipped.`
+      )
+    );
   }
 }
 

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 import {
   GetPageResponse,
@@ -5,7 +6,6 @@ import {
 } from "@notionhq/client/build/src/api-endpoints";
 import { RateLimiter } from "limiter";
 import { Client } from "@notionhq/client";
-import { NotionToMarkdown } from "notion-to-md";
 
 const notionLimiter = new RateLimiter({
   tokensPerInterval: 3,
@@ -93,8 +93,7 @@ export class NotionPage {
     return this.getSelectProperty("Status");
   }
 
-  public async getChildren(): Promise<ListBlockChildrenResponse> {
-    // TODO: cache this
+  private async getChildren(): Promise<ListBlockChildrenResponse> {
     const children = await notionClient.blocks.children.list({
       block_id: this.pageId,
       page_size: 100, // max hundred links in a page
@@ -191,6 +190,28 @@ export class NotionPage {
       start_cursor = response?.next_cursor;
     } while (start_cursor != null);
     return overallResult;
+  }
+
+  public async getContentInfo(): Promise<{
+    childPages: any[];
+    linksPages: any[];
+    hasParagraphs: boolean;
+  }> {
+    const children = await this.getChildren();
+
+    return {
+      childPages: children.results
+        .filter((b: any) => b.type === "child_page")
+        .map((b: any) => b.id),
+      linksPages: children.results
+        .filter((b: any) => b.type === "link_to_page")
+        .map((b: any) => b.link_to_page.page_id),
+      hasParagraphs: children.results.some(
+        b =>
+          (b as any).type === "paragraph" &&
+          (b as any).paragraph.rich_text.length > 0
+      ),
+    };
   }
 }
 
