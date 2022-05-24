@@ -167,6 +167,7 @@ async function outputPage(page: NotionPage) {
   mdString += `title: ${page.nameOrTitle}\n`;
   mdString += `sidebar_position: ${currentSidebarPosition}\n`;
   mdString += `slug: ${page.slug ? page.slug : page.pageId}\n`;
+  if (page.keywords) mdString += `keywords: ${page.keywords}\n`;
 
   mdString += "---\n\n";
   mdString += notionToMarkdown.toMarkdownString(mdBlocks);
