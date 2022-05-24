@@ -11,7 +11,7 @@ import {
   cleanupOldImages,
 } from "./NotionImage";
 import chalk from "chalk";
-import { FlatGuidLayoutStrategy } from "./FlatGuidLayoutStrategy";
+//import { FlatGuidLayoutStrategy } from "./FlatGuidLayoutStrategy";
 
 const warning = chalk.hex("#FFA500"); // Orange color
 const error = chalk.bold.red;
@@ -25,7 +25,7 @@ let notionToMarkdown: NotionToMarkdown;
 const pages = new Array<NotionPage>();
 
 export async function notionPull(options: any): Promise<void> {
-  console.log("Notion-Pull");
+  console.log(`Notion-Pull version ${process.env.npm_package_version ?? ""}`);
 
   // It's helpful when troubleshooting CI secrets and environment variables to see what options actually made it to notion-pull.
   // eslint-disable-next-line @typescript-eslint/no-unsafe-call
@@ -33,8 +33,8 @@ export async function notionPull(options: any): Promise<void> {
   // Just show the first few letters of the notion token, which start with "secret" anyhow.
   optionsForLogging.notionToken =
     (optionsForLogging.notionToken as string).substring(0, 3) + "...";
-  console.log(JSON.stringify(optionsForLogging, null, 2));
 
+  console.log(JSON.stringify(optionsForLogging, null, 2));
   markdownOutputPath = options.markdownOutputPath;
   await initImageHandling(
     options.imgPrefixInMarkdown || options.imgOutputPath,

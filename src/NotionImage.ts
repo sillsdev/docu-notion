@@ -15,7 +15,6 @@ export async function initImageHandling(
   imagePrefix = prefix.replace(/\/$/, "");
   imageOutputPath = outputPath;
 
-  console.log("initimg " + imagePrefix + ", " + imageOutputPath);
   // Currently we don't delete the image directory, because if an image
   // changes, it gets a new id. This way can then prevent downloading
   // and image after the 1st time. The downside is currently we don't
