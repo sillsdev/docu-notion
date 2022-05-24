@@ -11,9 +11,11 @@ import {
   cleanupOldImages,
 } from "./NotionImage";
 import chalk from "chalk";
+import { FlatGuidLayoutStrategy } from "./FlatGuidLayoutStrategy";
 
 const warning = chalk.hex("#FFA500"); // Orange color
 const error = chalk.bold.red;
+const notice = chalk.blue;
 
 let markdownOutputPath = "not set yet";
 
@@ -41,8 +43,8 @@ export async function notionPull(options: any): Promise<void> {
 
   const notionClient = initNotionClient(options.notionToken);
   notionToMarkdown = new NotionToMarkdown({ notionClient });
-  layoutStrategy = new HierarchicalNamedLayoutStrategy();
-  //layoutStrategy = new FlatGuidLayoutStrategy();
+  //layoutStrategy = new HierarchicalNamedLayoutStrategy();
+  layoutStrategy = new FlatGuidLayoutStrategy();
 
   layoutStrategy.setRootDirectoryForMarkdown(markdownOutputPath);
   await fs.mkdir(markdownOutputPath, { recursive: true });
@@ -140,7 +142,7 @@ async function getPagesRecursively(
 async function outputPage(page: NotionPage) {
   const blocks = (await page.getBlockChildren()).results;
 
-  await processBlocks(blocks);
+  await outputImages(blocks);
 
   currentSidebarPosition++;
 
@@ -156,6 +158,11 @@ async function outputPage(page: NotionPage) {
   layoutStrategy.pageWasSeen(page);
 
   const mdBlocks = await notionToMarkdown.blocksToMarkdown(blocks);
+
+  // if (page.nameOrTitle === "Bananas") {
+  //   console.log(JSON.stringify(blocks, null, 2));
+  //   console.log(JSON.stringify(mdBlocks, null, 2));
+  // }
   let mdString = "---\n";
   mdString += `title: ${page.nameOrTitle}\n`;
   mdString += `sidebar_position: ${currentSidebarPosition}\n`;
@@ -164,10 +171,12 @@ async function outputPage(page: NotionPage) {
   mdString += "---\n\n";
   mdString += notionToMarkdown.toMarkdownString(mdBlocks);
 
+  mdString = convertInternalLinks(mdString);
+
   fs.writeFileSync(path, mdString, {});
 }
 
-async function processBlocks(
+async function outputImages(
   blocks: (
     | ListBlockChildrenResponse
     | /* not avail in types: BlockObjectResponse so we use any*/ any
@@ -178,4 +187,65 @@ async function processBlocks(
       await processImageBlock(b);
     }
   }
+}
+
+function convertInternalLinks(markdown: string): string {
+  //console.log(JSON.stringify(pages, null, 2));
+
+  return transformLinks(markdown, (url: string) => {
+    const p = pages.find(p => {
+      return p.linkTargetId === url;
+    });
+    if (p) {
+      console.log(
+        notice(
+          `Convering Link ${url} --> ${layoutStrategy.getLinkPathForPage(p)}`
+        )
+      );
+      return layoutStrategy.getLinkPathForPage(p);
+    }
+    return url;
+  });
+}
+// function convertInternalLinks(
+//   blocks: (
+//     | ListBlockChildrenResponse
+//     | /* not avail in types: BlockObjectResponse so we use any*/ any
+//   )[]
+// ): void {
+//   // Note. Waiting on https://github.com/souvikinator/notion-to-md/issues/31 before we can get at raw links to other pages.
+//   // But we can do the conversion now... they just won't actually make it out to the markdown until that gets fixed.
+//   // blocks
+//   //   .filter((b: any) => b.type === "link_to_page")
+//   //   .forEach((b: any) => {
+//   //     const targetId = b.link_to_page.page_id;
+//   //   });
+
+//     blocks
+//     .filter((b: any) => b.paragraph.rich_text. === "link_to_page")
+//     .forEach((b: any) => {
+//       const targetId = b.text.link.url;
+//     });
+// }
+
+function transformLinks(input: string, transform: (url: string) => string) {
+  const linkRegExp = /\[([^\]]+)?\]\(\/([^),^/]+)\)/g;
+  let output = input;
+  let match;
+
+  // The key to understanding this while is that linkRegExp actually has state, and
+  // it gives you a new one each time. https://stackoverflow.com/a/1520853/723299
+  while ((match = linkRegExp.exec(input)) !== null) {
+    const string = match[0];
+    const text = match[1] || "";
+    const url = match[2];
+
+    const replacement = transform(url);
+
+    if (replacement) {
+      output = output.replace(string, `[${text}](${replacement})`);
+    }
+  }
+
+  return output;
 }

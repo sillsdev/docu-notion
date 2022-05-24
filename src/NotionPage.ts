@@ -52,7 +52,12 @@ export class NotionPage {
     pageId: string
   ): Promise<NotionPage> {
     const metadata = await getPageMetadata(pageId);
+    //console.log(JSON.stringify(metadata));
     return new NotionPage(context, pageId, metadata);
+  }
+
+  public get linkTargetId(): string {
+    return this.pageId.replace(/-/g, ""); // notion has dashes in the page_id but then no dashes in links that point to the page
   }
 
   public get type(): PageType {

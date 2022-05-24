@@ -18,6 +18,10 @@ program
     "-i, --img-output-path  <string>",
     "path to directory where images will be stored"
   )
+  // .option(
+  //   "-l, --internal-link-prefix <string>",
+  //   "when converting a link from one page to another, prefix the with this path instead of the default, which is rooted at the markdown-output-path."
+  // )
   .option(
     "-p, --img-prefix-in-markdown <string>",
     "when referencing an image from markdown, prefix with this path instead of the full img-output-path"
