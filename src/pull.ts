@@ -25,7 +25,6 @@ let notionToMarkdown: NotionToMarkdown;
 const pages = new Array<NotionPage>();
 
 export async function notionPull(options: any): Promise<void> {
-  console.log(`Notion-Pull version ${process.env.npm_package_version ?? ""}`);
 
   // It's helpful when troubleshooting CI secrets and environment variables to see what options actually made it to notion-pull.
   // eslint-disable-next-line @typescript-eslint/no-unsafe-call

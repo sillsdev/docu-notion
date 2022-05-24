@@ -8,13 +8,15 @@
     "lib/**/*"
   ],
   "scripts": {
-    "build": "tsc",
+    "write-version": "cross-var echo {\\\"version\\\":\\\"$npm_package_version\\\"} > version.json",
+    "build": "npm run write-version && tsc",
     "clean": "rm -rf ./lib/",
     "semantic-release": "semantic-release",
     "typecheck": "tsc --noEmit",
     "notion-download": "node lib/index.js",
-    "// quick run without running a build": "",
-    "try": "ts-node --compiler-options \"{\\\"module\\\": \\\"commonjs\\\"}\" src/index.ts -n %NOTION_PULL_INTEGRATION_TOKEN% -r %NOTION_PULL_ROOT_PAGE% -m ./temp -i ./temp_img/inner -p /inner/"
+    "test": "ts-node --compiler-options \"{\\\"module\\\": \\\"commonjs\\\"}\" src/index.ts",
+    "// test out with my sample notion db": "",
+    "sample": "cross-var ts-node --compiler-options \"{\\\"module\\\": \\\"commonjs\\\"}\" src/index.ts -n %NOTION_PULL_INTEGRATION_TOKEN% -r %NOTION_PULL_ROOT_PAGE% -m ./temp -i ./temp_img/inner -p /inner/"
   },
   "repository": {
     "type": "git",
@@ -58,6 +60,7 @@
     "@types/node": "^12.20.11",
     "@typescript-eslint/eslint-plugin": "^4.22.0",
     "@typescript-eslint/parser": "^4.22.0",
+    "cross-var": "^1.1.0",
     "cz-conventional-changelog": "^3.3.0",
     "eslint": "^7.25.0",
     "eslint-config-prettier": "^8.3.0",
