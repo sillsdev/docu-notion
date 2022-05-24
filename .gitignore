@@ -2,3 +2,5 @@ lib/
 temp/
 node_modules/
 temp_img/
+
+version.json

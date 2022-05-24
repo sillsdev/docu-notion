@@ -11,6 +11,8 @@ import {
   cleanupOldImages,
 } from "./NotionImage";
 import chalk from "chalk";
+import { tweakForDocusaurus } from "./DocusaurusTweaks";
+
 //import { FlatGuidLayoutStrategy } from "./FlatGuidLayoutStrategy";
 
 const warning = chalk.hex("#FFA500"); // Orange color
@@ -25,7 +27,6 @@ let notionToMarkdown: NotionToMarkdown;
 const pages = new Array<NotionPage>();
 
 export async function notionPull(options: any): Promise<void> {
-
   // It's helpful when troubleshooting CI secrets and environment variables to see what options actually made it to notion-pull.
   // eslint-disable-next-line @typescript-eslint/no-unsafe-call
   const optionsForLogging = { ...options };
@@ -162,18 +163,20 @@ async function outputPage(page: NotionPage) {
   //   console.log(JSON.stringify(blocks, null, 2));
   //   console.log(JSON.stringify(mdBlocks, null, 2));
   // }
-  let mdString = "---\n";
-  mdString += `title: ${page.nameOrTitle}\n`;
-  mdString += `sidebar_position: ${currentSidebarPosition}\n`;
-  mdString += `slug: ${page.slug ?? ""}\n`;
-  if (page.keywords) mdString += `keywords: [${page.keywords}]\n`;
+  let markdown = "---\n";
+  markdown += `title: ${page.nameOrTitle}\n`;
+  markdown += `sidebar_position: ${currentSidebarPosition}\n`;
+  markdown += `slug: ${page.slug ?? ""}\n`;
+  if (page.keywords) markdown += `keywords: [${page.keywords}]\n`;
 
-  mdString += "---\n\n";
-  mdString += notionToMarkdown.toMarkdownString(mdBlocks);
+  markdown += "---\n\n";
+  markdown += notionToMarkdown.toMarkdownString(mdBlocks);
 
-  mdString = convertInternalLinks(mdString);
+  markdown = convertInternalLinks(markdown);
 
-  fs.writeFileSync(path, mdString, {});
+  markdown = tweakForDocusaurus(markdown);
+
+  fs.writeFileSync(path, markdown, {});
 }
 
 async function outputImages(
