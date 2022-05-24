@@ -166,7 +166,7 @@ async function outputPage(page: NotionPage) {
   let mdString = "---\n";
   mdString += `title: ${page.nameOrTitle}\n`;
   mdString += `sidebar_position: ${currentSidebarPosition}\n`;
-  mdString += `slug: ${page.slug ? page.slug : page.pageId}\n`;
+  mdString += `slug: ${page.slug}\n`;
   if (page.keywords) mdString += `keywords: ${page.keywords}\n`;
 
   mdString += "---\n\n";

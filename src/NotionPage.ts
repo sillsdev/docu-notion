@@ -91,8 +91,15 @@ export class NotionPage {
   private get name(): string {
     return this.getPlainTextProperty("Name", "name missing");
   }
-  public get slug(): string | undefined {
-    return this.getPlainTextProperty("slug", "");
+  public get slug(): string {
+    const explicitSlug = this.getPlainTextProperty("Slug", "");
+    if (explicitSlug) return explicitSlug;
+    return encodeURIComponent(
+      this.nameOrTitle.toLowerCase().replaceAll(" ", "-")
+    );
+  }
+  public get keywords(): string | undefined {
+    return this.getPlainTextProperty("Keywords", "");
   }
   public get status(): string | undefined {
     return this.getSelectProperty("Status");
