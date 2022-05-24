@@ -43,8 +43,8 @@ export async function notionPull(options: any): Promise<void> {
 
   const notionClient = initNotionClient(options.notionToken);
   notionToMarkdown = new NotionToMarkdown({ notionClient });
-  //layoutStrategy = new HierarchicalNamedLayoutStrategy();
-  layoutStrategy = new FlatGuidLayoutStrategy();
+  layoutStrategy = new HierarchicalNamedLayoutStrategy();
+  //layoutStrategy = new FlatGuidLayoutStrategy();
 
   layoutStrategy.setRootDirectoryForMarkdown(markdownOutputPath);
   await fs.mkdir(markdownOutputPath, { recursive: true });
@@ -150,7 +150,7 @@ async function outputPage(page: NotionPage) {
 
   if (page.type === PageType.DatabasePage && page.status !== "Publish") {
     console.log(
-      `Skipping page because status is not Publish: ${page.nameOrTitle}`
+      notice(`Skipping page because status is not Publish: ${page.nameOrTitle}`)
     );
     return;
   }
