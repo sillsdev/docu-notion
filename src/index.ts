@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { program } from "commander";
+
 import { notionPull } from "./pull";
 // note: just getting process.en.npm_package_version will return the version of the client package!
 // So in our npm scripts we write out this version info and then pull it in here (tsc can
@@ -9,6 +10,9 @@ import { notionPull } from "./pull";
 
 // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
 //console.log(`notion-pull version ${version.version}`);
+const pkg = require("../package.json");
+// eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+console.log(`notion-pull version ${pkg.version}`);
 
 program.name("notion-pull").description("");
 program
