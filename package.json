@@ -8,7 +8,7 @@
     "lib/**/*"
   ],
   "scripts": {
-    "build": "npm run write-version && tsc",
+    "build": "tsc",
     "clean": "rm -rf ./lib/",
     "semantic-release": "semantic-release",
     "typecheck": "tsc --noEmit",
