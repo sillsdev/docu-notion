@@ -5,5 +5,9 @@
   },
   "cSpell.words": [
     "callouts"
-  ]
+  ],
+  "workbench.colorCustomizations": {
+    "statusBar.noFolderBackground": "#49d6a0",
+    "statussBar.prominentBackground": "#49d6a0"
+  }
 }

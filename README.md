@@ -2,11 +2,13 @@
 
 notion-pull lets you use Notion as your editor for markdown-based static site generators like [Docusaurus](https://docusaurus.io/). Using Notion instead of raw markdown files means that you don't have to teach non-developers how to make git commits and pull requests. It also allows you to leverage Notion's database tools to control workflow, Notion's commenting feature to discuss changes, etc.
 
-Note that notion-pull is not a service that could be reading your data. `node-pull` is just open-source code that will run on your computer or your continuous integration system.
+Example Site: https://sillsdev.github.io/notion-pull-sample-site/
+
+# Instructions
 
 ## 1. Set up your documentation site.
 
-First, prepare your markdown-based static file system like [Docusaurus](https://docusaurus.io/).
+First, prepare your markdown-based static file system like [Docusaurus](https://docusaurus.io/). For a shortcut with github actions, search, and deployment to github pages, you can just copy [this template](https://github.com/sillsdev/notion-pull-sample-site).
 
 ## 2. In Notion, duplicate the notion-pull template
 
