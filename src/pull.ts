@@ -46,8 +46,9 @@ export async function notionPull(options: any): Promise<void> {
   layoutStrategy = new HierarchicalNamedLayoutStrategy();
   //layoutStrategy = new FlatGuidLayoutStrategy();
 
-  layoutStrategy.setRootDirectoryForMarkdown(markdownOutputPath);
   await fs.mkdir(markdownOutputPath, { recursive: true });
+  layoutStrategy.setRootDirectoryForMarkdown(markdownOutputPath);
+
   console.log("Connecting to Notion...");
   // About the complication here of getting all the pages first and then output
   // them all. It would be simpler to just do it all in one pass, however the

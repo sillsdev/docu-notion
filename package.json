@@ -8,7 +8,6 @@
     "lib/**/*"
   ],
   "scripts": {
-    "write-version": "cross-var echo {\\\"version\\\":\\\"$npm_package_version\\\"} > version.json",
     "build": "npm run write-version && tsc",
     "clean": "rm -rf ./lib/",
     "semantic-release": "semantic-release",

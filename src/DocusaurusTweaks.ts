@@ -19,7 +19,7 @@ export function tweakForDocusaurus(input: string): string {
     if (docusaurusAdmonition) {
       output = output.replace(
         string,
-        `${docusaurusAdmonition}:::\n\n${content}\n\n:::\n\n`
+        `:::${docusaurusAdmonition}\n\n${content}\n\n:::\n\n`
       );
     }
   }
