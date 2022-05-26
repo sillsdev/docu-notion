@@ -7,7 +7,8 @@
     "callouts"
   ],
   "workbench.colorCustomizations": {
-    "statusBar.noFolderBackground": "#49d6a0",
-    "statussBar.prominentBackground": "#49d6a0"
+    "statusBar.background": "#d649ca",
+    "statusBar.noFolderBackground": "#d649ca",
+    "statussBar.prominentBackground": "#d649ca"
   }
 }

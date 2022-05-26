@@ -160,24 +160,26 @@ async function outputPage(page: NotionPage) {
 
   const mdBlocks = await notionToMarkdown.blocksToMarkdown(blocks);
 
-  // if (page.nameOrTitle === "Bananas") {
+  // if (page.nameOrTitle.startsWith("Embed")) {
   //   console.log(JSON.stringify(blocks, null, 2));
   //   console.log(JSON.stringify(mdBlocks, null, 2));
   // }
-  let markdown = "---\n";
-  markdown += `title: ${page.nameOrTitle}\n`;
-  markdown += `sidebar_position: ${currentSidebarPosition}\n`;
-  markdown += `slug: ${page.slug ?? ""}\n`;
-  if (page.keywords) markdown += `keywords: [${page.keywords}]\n`;
+  let frontmatter = "---\n";
+  frontmatter += `title: ${page.nameOrTitle}\n`;
+  frontmatter += `sidebar_position: ${currentSidebarPosition}\n`;
+  frontmatter += `slug: ${page.slug ?? ""}\n`;
+  if (page.keywords) frontmatter += `keywords: [${page.keywords}]\n`;
 
-  markdown += "---\n\n";
-  markdown += notionToMarkdown.toMarkdownString(mdBlocks);
+  frontmatter += "---\n";
+
+  let markdown = notionToMarkdown.toMarkdownString(mdBlocks);
 
   markdown = convertInternalLinks(markdown);
 
-  markdown = tweakForDocusaurus(markdown);
+  const { body, imports } = tweakForDocusaurus(markdown);
+  const output = `${frontmatter}\n${imports}\n${body}`;
 
-  fs.writeFileSync(path, markdown, {});
+  fs.writeFileSync(path, output, {});
 }
 
 async function outputImages(
