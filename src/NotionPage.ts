@@ -56,8 +56,11 @@ export class NotionPage {
     return new NotionPage(context, pageId, metadata);
   }
 
-  public get linkTargetId(): string {
-    return this.pageId.replace(/-/g, ""); // notion has dashes in the page_id but then no dashes in links that point to the page
+  public matchesLinkId(id: string): boolean {
+    return (
+      id === this.pageId || // from a link_to_page.pageId, which still has the dashes
+      id === this.pageId.replace(/-/g, "")
+    ); // from inline links, which are lacking the dashes
   }
 
   public get type(): PageType {

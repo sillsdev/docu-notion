@@ -116,7 +116,7 @@ async function getPagesRecursively(
   // a normal outline page that exists just to create the level, pointing at database pages that belong in this level
   else if (pageInfo.childPages.length || pageInfo.linksPages.length) {
     let context = incomingContext;
-    // don't make a level for "Outline"
+    // don't make a level for "Outline" page at the root
     if (!rootLevel && pageInTheOutline.nameOrTitle !== "Outline") {
       context = layoutStrategy.newLevel(
         markdownOutputPath,
@@ -173,7 +173,6 @@ async function outputPage(page: NotionPage) {
   frontmatter += "---\n";
 
   let markdown = notionToMarkdown.toMarkdownString(mdBlocks);
-
   markdown = convertInternalLinks(markdown);
 
   const { body, imports } = tweakForDocusaurus(markdown);
@@ -200,7 +199,7 @@ function convertInternalLinks(markdown: string): string {
 
   return transformLinks(markdown, (url: string) => {
     const p = pages.find(p => {
-      return p.linkTargetId === url;
+      return p.matchesLinkId(url);
     });
     if (p) {
       console.log(
@@ -210,6 +209,13 @@ function convertInternalLinks(markdown: string): string {
       );
       return layoutStrategy.getLinkPathForPage(p);
     }
+
+    console.log(
+      warning(
+        `Could not find the target of this link. Note that links to outline sections are not supported. ${url}`
+      )
+    );
+
     return url;
   });
 }

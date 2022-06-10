@@ -15,7 +15,8 @@
     "notion-download": "node lib/index.js",
     "test": "ts-node --compiler-options \"{\\\"module\\\": \\\"commonjs\\\"}\" src/index.ts",
     "// test out with my sample notion db": "",
-    "sample": "cross-var ts-node --compiler-options \"{\\\"module\\\": \\\"commonjs\\\"}\" src/index.ts -n %NOTION_PULL_INTEGRATION_TOKEN% -r %NOTION_PULL_ROOT_PAGE% -m ./temp -i ./temp_img/inner -p /inner/"
+    "sample": "cross-var ts-node --compiler-options \"{\\\"module\\\": \\\"commonjs\\\"}\" src/index.ts -n %NOTION_PULL_INTEGRATION_TOKEN% -r %NOTION_PULL_ROOT_PAGE% -m ./temp -i ./temp_img/inner -p /inner/",
+    "postinstall": "patch-package"
   },
   "repository": {
     "type": "git",
@@ -51,6 +52,8 @@
     "limiter": "^2.1.0",
     "node-fetch": "2.6.6",
     "notion-to-md": "^2.3.3",
+    "patch-package": "^6.4.7",
+    "postinstall-postinstall": "^2.1.0",
     "sanitize-filename": "^1.6.3"
   },
   "devDependencies": {
