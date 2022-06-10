@@ -64,14 +64,15 @@ function notionEmbedsToMDX(input: string): {
       ...gif,
     },
     // This is included in notion-pull just because we built notion-pull for our own doc site, and it needs this.
-    bloomPUB: {
-      regex: /\[.*\]\((.*bloomlibrary\.org.*.*book.*)\)/gm,
-      // enhance: it would be nice if we could fill in the `host` parameter for analytics
-      output: `<iframe width="100%" height="500px" allow="fullscreen"    allowFullScreen={true}
-      src="https://embed.bloomlibrary.org/bloom-player/bloomplayer.htm?url=$1_url_encoded&initiallyShowAppBar=false&allowToggleAppBar=false"
-  ></iframe>`,
-      import: "", // it's just an iframe, nothing to import
-    },
+    // bloomPUB: {
+    //   regex: /\[.*\]\((.*bloomlibrary\.org.*.*book.*)\)/gm,
+    //   // enhance: it would be nice if we could fill in the `host` parameter for analytics
+    //   //     output: `<iframe width="100%" height="500px" allow="fullscreen"    allowFullScreen={true}
+    //   //     src="https://embed.bloomlibrary.org/bloom-player/bloomplayer.htm?url=$1_url_encoded&initiallyShowAppBar=false&allowToggleAppBar=false"
+    //   // ></iframe>`,
+    //   output: `<iframe width="100%" height="450px" allow="fullscreen" allowFullScreen={true} src="https://bloomlibrary.org/player/$1"></iframe>`,
+    //   import: "", // it's just an iframe, nothing to import
+    // },
   };
 
   let body = input;
