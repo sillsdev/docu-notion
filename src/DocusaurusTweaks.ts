@@ -96,7 +96,7 @@ function notionEmbedsToMDX(input: string): {
 // In Notion, you can make a callout and change its emoji. We map 5 of these
 // to the 5 Docusaurus admonition styles.
 function notionCalloutsToAdmonitions(input: string): string {
-  const notionCalloutPattern = />\s(ℹ️|⚠️|💡|❗|🔥)\s(.*)\n/gmu;
+  const notionCalloutPattern = />\s(ℹ️|⚠️|💡|❗|🔥|.)\s(.*)\n/gmu;
   const calloutsToAdmonitions = {
     /* prettier-ignore */ "ℹ️": "note",
     "💡": "tip",
@@ -117,6 +117,12 @@ function notionCalloutsToAdmonitions(input: string): string {
         string,
         `:::${docusaurusAdmonition}\n\n${content}\n\n:::\n\n`
       );
+    }
+    // For Notion callouts with other emojis, pass them through using hte emoji as the name.
+    // For this to work on a Docusaurus site, it will need to define that time on the remark-admonitions options in the docusaurus.config.js.
+    // See https://github.com/elviswolcott/remark-admonitions and https://docusaurus.io/docs/using-plugins#using-presets.
+    else {
+      output = output.replace(string, `:::${emoji}\n\n${content}\n\n:::\n\n`);
     }
   }
 
