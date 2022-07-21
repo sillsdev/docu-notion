@@ -2,10 +2,10 @@
   "name": "notion-pull",
   "version": "0.0.0-development",
   "description": "Download Notion pages as markdown and image files, preserving hierarchy and enabling workflow properties. Works with Docusaurus.",
-  "main": "./lib/src/index.js",
-  "bin": "lib/index.js",
+  "main": "./dist/index.js",
+  "bin": "dist/index.js",
   "files": [
-    "lib/**/*"
+    "dist/**/*"
   ],
   "scripts": {
     "build": "tsc",

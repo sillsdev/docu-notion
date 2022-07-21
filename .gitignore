@@ -1,4 +1,4 @@
-lib/
+dist/
 temp/
 node_modules/
 temp_img/
