@@ -12,6 +12,7 @@ import {
 } from "./NotionImage";
 import chalk from "chalk";
 import { tweakForDocusaurus } from "./DocusaurusTweaks";
+import { setupCustomTransformers } from "./CustomTranformers";
 
 //import { FlatGuidLayoutStrategy } from "./FlatGuidLayoutStrategy";
 
@@ -43,6 +44,7 @@ export async function notionPull(options: any): Promise<void> {
 
   const notionClient = initNotionClient(options.notionToken);
   notionToMarkdown = new NotionToMarkdown({ notionClient });
+  setupCustomTransformers(notionToMarkdown, notionClient);
   layoutStrategy = new HierarchicalNamedLayoutStrategy();
   //layoutStrategy = new FlatGuidLayoutStrategy();
 
