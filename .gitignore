@@ -1,6 +1,5 @@
 dist/
-temp/
+sample/
+sample_img/
 node_modules/
-temp_img/
-
 version.json
