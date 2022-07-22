@@ -5,9 +5,9 @@ import { program } from "commander";
 import { notionPull } from "./pull";
 const pkg = require("../package.json");
 // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-console.log(`notion-pull version ${pkg.version}`);
+console.log(`notion-pull-mdx version ${pkg.version}`);
 
-program.name("notion-pull").description("");
+program.name("notion-pull-mdx").description("");
 program
   .requiredOption("-n, --notion-token <string>", "notion api token")
   .requiredOption(
@@ -35,5 +35,5 @@ program.showHelpAfterError();
 program.parse();
 
 void notionPull(program.opts()).then(() =>
-  console.log("Notion-pull Finished.")
+  console.log("notion-pull-mdx Finished.")
 );

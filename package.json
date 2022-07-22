@@ -1,5 +1,5 @@
 {
-  "name": "notion-pull",
+  "name": "notion-pull-mdx",
   "version": "0.0.0-development",
   "description": "Download Notion pages as markdown and image files, preserving hierarchy and enabling workflow properties. Works with Docusaurus.",
   "main": "./dist/index.js",
@@ -20,7 +20,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sillsdev/notion-pull.git"
+    "url": "git+https://github.com/sillsdev/notion-pull-mdx.git"
   },
   "license": "MIT",
   "author": {
@@ -37,9 +37,9 @@
     "markdown"
   ],
   "bugs": {
-    "url": "https://github.com/sillsdev/notion-pull/issues"
+    "url": "https://github.com/sillsdev/notion-pull-mdx/issues"
   },
-  "homepage": "https://github.com/sillsdev/notion-pull#readme",
+  "homepage": "https://github.com/sillsdev/notion-pull-mdx#readme",
   "//file-type": "have to use this version before they switched to ESM, which gives a compile error related to require()",
   "//node-fetch@2.6.6file-type": "have to use this version before they switched to ESM, which gives a compile error related to require()",
   "//chalk@4": "also ESM related problem",

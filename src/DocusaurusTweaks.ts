@@ -63,7 +63,7 @@ function notionEmbedsToMDX(input: string): {
       regex: /\[.*\]\((http.*(\.(gif|GIF)))\)/gm,
       ...gif,
     },
-    // This is included in notion-pull just because we built notion-pull for our own doc site, and it needs this.
+    // This is included in notion-pull-mdx just because we built notion-pull-mdx for our own doc site, and it needs this.
     // bloomPUB: {
     //   regex: /\[.*\]\((.*bloomlibrary\.org.*.*book.*)\)/gm,
     //   // enhance: it would be nice if we could fill in the `host` parameter for analytics

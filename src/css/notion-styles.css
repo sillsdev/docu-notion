@@ -23,7 +23,7 @@
 .notion-row {
   display: grid;
   grid-auto-flow: column;
-  /* at the moment, notion-pull doesn't give us column widths or ratios. So we
+  /* at the moment, notion-pull-mdx doesn't give us column widths or ratios. So we
   could let css layout decide the widths. Instead at the moment we're saying
   let's just have each column be equal. This is easier for the author using
   Notion to remember than having to guess at what the layout will be. */
