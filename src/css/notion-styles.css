@@ -1,0 +1,49 @@
+/* some things copied from https://github1s.com/NotionX/react-notion-x/blob/master/packages/react-notion-x/src/styles.css#L934 */
+/* note, I haven't figure out how a Docusaurus app can actually include this, yet */
+
+.notion-column {
+  display: flex;
+  flex-direction: column;
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+.notion-column > *:first-child {
+  margin-top: 0;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.notion-column > *:last-child {
+  margin-left: 0;
+  margin-right: 0;
+  margin-bottom: 0;
+}
+
+.notion-row {
+  display: grid;
+  grid-auto-flow: column;
+  /* at the moment, notion-pull doesn't give us column widths or ratios. So we
+  could let css layout decide the widths. Instead at the moment we're saying
+  let's just have each column be equal. This is easier for the author using
+  Notion to remember than having to guess at what the layout will be. */
+  grid-auto-columns: 1fr;
+  overflow: hidden;
+  width: 100%;
+  max-width: 100%;
+  gap: 30px;
+}
+
+@media (max-width: 640px) {
+  .notion-row {
+    flex-direction: column;
+  }
+
+  .notion-row .notion-column {
+    width: 100% !important;
+  }
+
+  .notion-row .notion-spacer {
+    display: none;
+  }
+}

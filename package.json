@@ -8,7 +8,7 @@
     "dist/**/*"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "cp ./src/css/*.css ./dist && tsc",
     "clean": "rm -rf ./dist/",
     "semantic-release": "semantic-release",
     "typecheck": "tsc --noEmit",
