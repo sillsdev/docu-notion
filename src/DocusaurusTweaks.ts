@@ -40,9 +40,15 @@ function notionEmbedsToMDX(input: string): {
     import: `import ReactPlayer from "react-player";`,
     output: `<ReactPlayer controls url="$1" />`,
   };
-  const gif = {
+  /* GifPlayer worked with some sources but not imgur which is the most important for my project. It would just give CORS errors.
+    And it is unmaintained. So let's just let the raw gif link do its thing.
+    const gif = {
     import: `import GifPlayer from "react-gif-player";`,
     output: `<GifPlayer gif="$1" />`,
+  };
+  */ const gif = {
+    import: "",
+    output: `![]($1.gif)`, // note: imgur links to gifs need a .gif at the end, but the url they give you doesn't have one.
   };
   const embeds = {
     youtube: {
