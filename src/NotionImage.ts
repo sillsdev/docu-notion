@@ -66,17 +66,33 @@ function hashOfString(s: string) {
   return Math.abs(hash);
 }
 
+type LocalizableImageWithCaption = {
+  url: string;
+  caption?: string;
+  localizedUrls: Array<{ iso632Code: string; url: string }>;
+};
+export function parseImageBlock(b: any): LocalizableImageWithCaption {
+  const img: LocalizableImageWithCaption = {
+    url: "",
+    localizedUrls: [],
+  };
+
+  if ("file" in b.image) {
+    img.url = b.image.file.url; // image saved on notion (actually AWS)
+  } else {
+    img.url = b.image.external.url; // image still pointing somewhere else. I've see this happen when copying a Google Doc into Notion. Notion kep pointing at the google doc.
+  }
+
+  return img;
+}
+
 // Download the image if we don't have it, give it a good name, and
 // change the src to point to our copy of the image.
 export async function processImageBlock(b: any): Promise<void> {
-  let url = "";
-  if ("file" in b.image) {
-    url = b.image.file.url; // image saved on notion (actually AWS)
-  } else {
-    url = b.image.external.url; // image still pointing somewhere else. I've see this happen when copying a Google Doc into Notion. Notion kep pointing at the google doc.
-  }
+  const img = parseImageBlock(b);
 
-  const newPath = imagePrefix + "/" + (await saveImage(url, imageOutputPath));
+  const newPath =
+    imagePrefix + "/" + (await saveImage(img.url, imageOutputPath));
 
   // change the src to point to our copy of the image
   if ("file" in b.image) {
