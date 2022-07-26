@@ -124,13 +124,16 @@ export function parseImageBlock(b: any): ImageSet {
     const match = /\s*(..)\s*(https:\/\/.*)/.exec(l);
     if (match) {
       imageSet.localizedUrls.push({
-        iso632Code: match[1].toUpperCase(),
+        iso632Code: match[1].toLowerCase(),
         url: match[2],
       });
     } else {
-      imageSet.caption += l + "\n";
+      // NB: carriage returns seem to mess up the markdown, so should be removed
+      imageSet.caption += l + " ";
     }
   });
+  // NB: currently notion-md puts the caption in Alt, which noone sees (unless the image isn't found)
+  // We could inject a custom element handler to emit a <figure> in order to show the caption.
   imageSet.caption = imageSet.caption?.trim();
   //console.log(JSON.stringify(imageSet, null, 2));
 
@@ -141,15 +144,28 @@ export function parseImageBlock(b: any): ImageSet {
 // change the src to point to our copy of the image.
 export async function processImageBlock(b: any): Promise<void> {
   //console.log(JSON.stringify(b));
-  const img = parseImageBlock(b);
+  const imageSet = parseImageBlock(b);
 
-  const newPath = imagePrefix + "/" + (await saveImage(img, imageOutputPath));
+  const newPath =
+    imagePrefix + "/" + (await saveImage(imageSet, imageOutputPath));
 
   // change the src to point to our copy of the image
   if ("file" in b.image) {
     b.image.file.url = newPath;
   } else {
     b.image.external.url = newPath;
+  }
+  // put back the simplified caption, stripped of the meta information
+  if (imageSet.caption) {
+    b.image.caption = [
+      {
+        type: "text",
+        text: { content: imageSet.caption, link: null },
+        plain_text: imageSet.caption,
+      },
+    ];
+  } else {
+    b.image.caption = [];
   }
 }
 

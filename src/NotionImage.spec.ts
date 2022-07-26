@@ -13,7 +13,8 @@ test("primary caption content after image links are removed", async () => {
   const img = parseImageBlock(
     kImageBlockWithTwoLocalizedImagesWrappedWithActualCaptionText
   );
-  expect(img.caption).toBe("Caption before images.\nCaption after images.");
+  // carriage returns seem to mess up the markdown, so should be removed
+  expect(img.caption).toBe("Caption before images. Caption after images.");
 });
 
 test("gets localized image links", async () => {
@@ -21,8 +22,8 @@ test("gets localized image links", async () => {
     kImageBlockWithTwoLocalizedImagesWrappedWithActualCaptionText
   );
   expect(img.localizedUrls.length).toBe(2);
-  expect(img.localizedUrls[0].iso632Code).toBe("FR");
-  expect(img.localizedUrls[1].iso632Code).toBe("ES");
+  expect(img.localizedUrls[0].iso632Code).toBe("fr");
+  expect(img.localizedUrls[1].iso632Code).toBe("es");
   expect(img.localizedUrls[0].url).toBe("https://i.imgur.com/pYmE7OJ.png");
   expect(img.localizedUrls[1].url).toBe("https://i.imgur.com/8paSZ0i.png");
 });
