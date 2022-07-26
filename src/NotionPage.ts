@@ -99,7 +99,9 @@ export class NotionPage {
     if (explicitSlug) return explicitSlug;
     return encodeURIComponent(
       this.nameOrTitle.toLowerCase().replaceAll(" ", "-")
-    );
+    )
+      .replaceAll("%3A", "-")
+      .replaceAll("--", "-");
   }
   public get keywords(): string | undefined {
     return this.getPlainTextProperty("Keywords", "");

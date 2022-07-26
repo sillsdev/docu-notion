@@ -169,7 +169,7 @@ async function outputPage(page: NotionPage) {
   let frontmatter = "---\n";
   frontmatter += `title: ${page.nameOrTitle.replaceAll(":", "&#58;")}\n`; // markdown can't handle the ":" here
   frontmatter += `sidebar_position: ${currentSidebarPosition}\n`;
-  frontmatter += `slug: ${page.slug.replaceAll(":", "-") ?? ""}\n`; // markdown can't handle the ":" or "&#58;" here
+  frontmatter += `slug: ${page.slug ?? ""}\n`;
   if (page.keywords) frontmatter += `keywords: [${page.keywords}]\n`;
 
   frontmatter += "---\n";
