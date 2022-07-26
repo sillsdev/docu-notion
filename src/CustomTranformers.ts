@@ -51,7 +51,7 @@ async function notionColumnToMarkdown(
   notionClient: Client,
   block: ListBlockChildrenResponseResult
 ): Promise<string> {
-  console.log(JSON.stringify(block));
+  //console.log(JSON.stringify(block));
   const { id, has_children } = block as any; // "any" because the notion api type system is complex with a union that don't know how to help TS to cope with
 
   if (!has_children) return "";

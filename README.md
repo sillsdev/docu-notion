@@ -81,6 +81,8 @@ notion-pull-mdx makes some attempt to keep the right order of things, but there 
 
 Localize your files in Crowdin (or whatever) based on the markdown files, not in Notion. For how to do this with Docusaurus, see [Docusaurus i18n](https://docusaurus.io/docs/i18n/crowdin).
 
+You may also need to localize screenshots. Crowdin can also handle localizing assets, but this library currently supports a different approach. If you place for example `fr https:\\imgur.com\1234.png` in the caption of a screenshot in Notion, `notion-pull-mdx` will fetch that image and save it locally with the same name as the primary screenshot, but with "-fr" appended. So you'd get for example `static\img\9876.png` and `static\img\9876-fr.png`. To get the French version to show, you'd need to add that "-fr" to the markdown link when you localize the page's text in crowdin. If there is a way, maybe this modification of the markdown can be made automatic in the future so that you automatically get the right image version.
+
 # Automated builds with Github Actions
 
 Here is a working Github Action script to copy and customize: https://github.com/BloomBooks/bloom-docs/blob/master/.github/workflows/release.yml
