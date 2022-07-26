@@ -143,13 +143,13 @@ async function getPagesRecursively(
 }
 
 async function outputPage(page: NotionPage) {
+  console.log(`Reading Page ${page.context}/${page.nameOrTitle}`);
+
   const blocks = (await page.getBlockChildren()).results;
 
   await outputImages(blocks);
 
   currentSidebarPosition++;
-
-  console.log(`Reading Page ${page.context}/${page.nameOrTitle}`);
 
   if (page.type === PageType.DatabasePage && page.status !== "Publish") {
     console.log(
@@ -167,9 +167,9 @@ async function outputPage(page: NotionPage) {
   //   console.log(JSON.stringify(mdBlocks, null, 2));
   // }
   let frontmatter = "---\n";
-  frontmatter += `title: ${page.nameOrTitle}\n`;
+  frontmatter += `title: ${page.nameOrTitle.replaceAll(":", "&#58;")}\n`; // markdown can't handle the ":" here
   frontmatter += `sidebar_position: ${currentSidebarPosition}\n`;
-  frontmatter += `slug: ${page.slug ?? ""}\n`;
+  frontmatter += `slug: ${page.slug.replaceAll(":", "-") ?? ""}\n`; // markdown can't handle the ":" or "&#58;" here
   if (page.keywords) frontmatter += `keywords: [${page.keywords}]\n`;
 
   frontmatter += "---\n";
