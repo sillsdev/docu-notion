@@ -1,5 +1,6 @@
 dist/
 sample/
 sample_img/
+i18n/
 node_modules/
 version.json

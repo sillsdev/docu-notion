@@ -6,6 +6,7 @@ import {
 } from "@notionhq/client/build/src/api-endpoints";
 import { RateLimiter } from "limiter";
 import { Client } from "@notionhq/client";
+import { logDebug } from "./log";
 
 const notionLimiter = new RateLimiter({
   tokensPerInterval: 3,
@@ -52,7 +53,7 @@ export class NotionPage {
     pageId: string
   ): Promise<NotionPage> {
     const metadata = await getPageMetadata(pageId);
-    //console.log(JSON.stringify(metadata));
+    //logDebug(JSON.stringify(metadata));
     return new NotionPage(context, pageId, metadata);
   }
 
@@ -242,7 +243,7 @@ async function getPageMetadata(id: string): Promise<GetPageResponse> {
 
 async function rateLimit() {
   if (notionLimiter.getTokensRemaining() < 1) {
-    console.log("*** delaying for rate limit");
+    logDebug("", "*** delaying for rate limit");
   }
   await notionLimiter.removeTokens(1);
 }

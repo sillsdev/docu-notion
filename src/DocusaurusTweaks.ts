@@ -1,4 +1,4 @@
-import chalk from "chalk";
+import { logDebug } from "./log";
 
 export function tweakForDocusaurus(input: string): {
   body: string;
@@ -90,7 +90,10 @@ function notionEmbedsToMDX(input: string): {
     while ((match = v.regex.exec(input)) !== null) {
       const string = match[0];
       const url = match[1];
-      console.log(chalk.green(`${string} --> ${v.output.replace("$1", url)}`));
+      logDebug(
+        "DocusaurusTweaks",
+        `${string} --> ${v.output.replace("$1", url)}`
+      );
       body = body.replace(string, v.output.replace("$1", url));
       imports.add(v.import);
     }

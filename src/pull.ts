@@ -10,36 +10,44 @@ import {
   processImageBlock,
   cleanupOldImages,
 } from "./NotionImage";
-import chalk from "chalk";
+
 import { tweakForDocusaurus } from "./DocusaurusTweaks";
 import { setupCustomTransformers } from "./CustomTranformers";
+import * as Path from "path";
+import { error, info, verbose, warning } from "./log";
 
 //import { FlatGuidLayoutStrategy } from "./FlatGuidLayoutStrategy";
 
-const warning = chalk.hex("#FFA500"); // Orange color
-const error = chalk.bold.red;
-const notice = chalk.blue;
+export type Options = {
+  notionToken: string;
+  rootPage: string;
+  markdownOutputPath: string;
+  imgOutputPath: string;
+  imgPrefixInMarkdown: string;
+  statusTag: string;
+};
 
-let markdownOutputPath = "not set yet";
+let options: Options;
 
 let currentSidebarPosition = 0;
 let layoutStrategy: LayoutStrategy;
 let notionToMarkdown: NotionToMarkdown;
 const pages = new Array<NotionPage>();
 
-export async function notionPull(options: any): Promise<void> {
+export async function notionPull(incomingOptions: Options): Promise<void> {
+  options = incomingOptions;
+
   // It's helpful when troubleshooting CI secrets and environment variables to see what options actually made it to notion-pull-mdx.
   // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-  const optionsForLogging = { ...options };
+  const optionsForLogging = { ...incomingOptions };
   // Just show the first few letters of the notion token, which start with "secret" anyhow.
   optionsForLogging.notionToken =
-    (optionsForLogging.notionToken as string).substring(0, 3) + "...";
+    optionsForLogging.notionToken.substring(0, 3) + "...";
 
-  console.log(JSON.stringify(optionsForLogging, null, 2));
-  markdownOutputPath = options.markdownOutputPath;
+  verbose(JSON.stringify(optionsForLogging, null, 2));
   await initImageHandling(
-    options.imgPrefixInMarkdown || options.imgOutputPath,
-    options.imgOutputPath
+    options.imgPrefixInMarkdown || options.imgOutputPath || "",
+    options.imgOutputPath || ""
   );
 
   const notionClient = initNotionClient(options.notionToken);
@@ -48,8 +56,8 @@ export async function notionPull(options: any): Promise<void> {
   layoutStrategy = new HierarchicalNamedLayoutStrategy();
   //layoutStrategy = new FlatGuidLayoutStrategy();
 
-  await fs.mkdir(markdownOutputPath, { recursive: true });
-  layoutStrategy.setRootDirectoryForMarkdown(markdownOutputPath);
+  await fs.mkdir(options.markdownOutputPath, { recursive: true });
+  layoutStrategy.setRootDirectoryForMarkdown(options.markdownOutputPath);
 
   console.log("Connecting to Notion...");
   // About the complication here of getting all the pages first and then output
@@ -92,27 +100,24 @@ async function getPagesRecursively(
 ) {
   const pageInTheOutline = await NotionPage.fromPageId(incomingContext, pageId);
 
-  console.log(
+  info(
     `Reading Outline Page ${incomingContext}/${pageInTheOutline.nameOrTitle}`
   );
 
   const pageInfo = await pageInTheOutline.getContentInfo();
 
   if (!rootLevel && pageInfo.hasParagraphs && pageInfo.childPages.length) {
-    console.error(
-      error(
-        `Skipping "${pageInTheOutline.nameOrTitle}"  and its children. notion-pull-mdx does not support pages that are both levels and have content at the same time.`
-      )
+    error(
+      `Skipping "${pageInTheOutline.nameOrTitle}"  and its children. notion-pull-mdx does not support pages that are both levels and have content at the same time.`
     );
+
     return;
   }
   if (!rootLevel && pageInfo.hasParagraphs) {
     pages.push(pageInTheOutline);
     if (pageInfo.linksPages)
-      console.log(
-        warning(
-          `Ambiguity: The page "${pageInTheOutline.nameOrTitle}" is in the outline, has content, and also points at other pages. It will be treated as a simple content page.`
-        )
+      warning(
+        `Ambiguity: The page "${pageInTheOutline.nameOrTitle}" is in the outline, has content, and also points at other pages. It will be treated as a simple content page.`
       );
   }
   // a normal outline page that exists just to create the level, pointing at database pages that belong in this level
@@ -121,7 +126,7 @@ async function getPagesRecursively(
     // don't make a level for "Outline" page at the root
     if (!rootLevel && pageInTheOutline.nameOrTitle !== "Outline") {
       context = layoutStrategy.newLevel(
-        markdownOutputPath,
+        options.markdownOutputPath,
         incomingContext,
         pageInTheOutline.nameOrTitle
       );
@@ -143,22 +148,35 @@ async function getPagesRecursively(
 }
 
 async function outputPage(page: NotionPage) {
-  console.log(`Reading Page ${page.context}/${page.nameOrTitle}`);
-
-  const blocks = (await page.getBlockChildren()).results;
-
-  await outputImages(blocks);
-
-  currentSidebarPosition++;
-
-  if (page.type === PageType.DatabasePage && page.status !== "Publish") {
-    console.log(
-      notice(`Skipping page because status is not Publish: ${page.nameOrTitle}`)
+  if (
+    page.type === PageType.DatabasePage &&
+    options.statusTag != "*" &&
+    page.status !== options.statusTag
+  ) {
+    verbose(
+      `Skipping page because status is not '${options.statusTag}': ${page.nameOrTitle}`
     );
     return;
   }
-  const path = layoutStrategy.getPathForPage(page, ".md");
+
+  info(`Reading Page ${page.context}/${page.nameOrTitle}`);
   layoutStrategy.pageWasSeen(page);
+
+  const mdPath = layoutStrategy.getPathForPage(page, ".md");
+  const directoryContainingMarkdown = Path.dirname(mdPath);
+
+  const blocks = (await page.getBlockChildren()).results;
+
+  const relativePathToFolderContainingPage = Path.dirname(
+    layoutStrategy.getLinkPathForPage(page)
+  );
+  await outputImages(
+    blocks,
+    directoryContainingMarkdown,
+    relativePathToFolderContainingPage
+  );
+
+  currentSidebarPosition++;
 
   const mdBlocks = await notionToMarkdown.blocksToMarkdown(blocks);
 
@@ -180,18 +198,24 @@ async function outputPage(page: NotionPage) {
   const { body, imports } = tweakForDocusaurus(markdown);
   const output = `${frontmatter}\n${imports}\n${body}`;
 
-  fs.writeFileSync(path, output, {});
+  fs.writeFileSync(mdPath, output, {});
 }
 
 async function outputImages(
   blocks: (
     | ListBlockChildrenResponse
     | /* not avail in types: BlockObjectResponse so we use any*/ any
-  )[]
+  )[],
+  fullPathToDirectoryContainingMarkdown: string,
+  relativePathToThisPage: string
 ): Promise<void> {
   for (const b of blocks) {
     if ("image" in b) {
-      await processImageBlock(b);
+      await processImageBlock(
+        b,
+        fullPathToDirectoryContainingMarkdown,
+        relativePathToThisPage
+      );
     }
   }
 }
@@ -204,18 +228,14 @@ function convertInternalLinks(markdown: string): string {
       return p.matchesLinkId(url);
     });
     if (p) {
-      console.log(
-        notice(
-          `Convering Link ${url} --> ${layoutStrategy.getLinkPathForPage(p)}`
-        )
+      verbose(
+        `Convering Link ${url} --> ${layoutStrategy.getLinkPathForPage(p)}`
       );
       return layoutStrategy.getLinkPathForPage(p);
     }
 
-    console.log(
-      warning(
-        `Could not find the target of this link. Note that links to outline sections are not supported. ${url}`
-      )
+    warning(
+      `Could not find the target of this link. Note that links to outline sections are not supported. ${url}`
     );
 
     return url;

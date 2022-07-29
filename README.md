@@ -38,20 +38,30 @@ means that the id is "0456aa5842946PRETEND4f37c97a0e5".
 Determine where you want the markdown files and images to land. The following works well for Docusaurus instances:
 
 ```
-npx notion-pull-mdx -n secret_PRETEND123456789PRETEND123456789PRETEND6789 -r 0456aa5842946PRETEND4f37c97a0e5 -m "./docs" -i "./images"
+npx notion-pull-mdx -n secret_PRETEND123456789PRETEND123456789PRETEND6789 -r 0456aa5842946PRETEND4f37c97a0e5"
 ```
 
 Likely, you will want to store these codes in your environment variables and then use them like this:
 
 ```
 (windows)
-npx notion-pull-mdx -n %MY_NOTION_TOKEN% -r %MY_NOTION_DOCS_ROOT_PAGE_ID% -m "./docs" -i "./static/notion_images" -p "/notion_images/"
+npx notion-pull-mdx -n %MY_NOTION_TOKEN% -r %MY_NOTION_DOCS_ROOT_PAGE_ID%
 ```
 
 ```
 (linux / mac)
-npx notion-pull-mdx -n $MY_NOTION_TOKEN -r $MY_NOTION_DOCS_ROOT_PAGE_ID -m "./docs" -i "./static/notion_images" -p "/notion_images/"
+npx notion-pull-mdx -n $MY_NOTION_TOKEN -r $MY_NOTION_DOCS_ROOT_PAGE_ID
 ```
+
+NOTE: In the above, we are using `npx` to use the latest `notion-pull-mdx`. A more conservative approach would be to `npm i cross-var notion-pull-mdx` and then create a script in your package.json like this:
+
+```
+ "scripts": {
+     "pull": "cross-var notion-pull-mdx -n %NOTION_PULL_INTEGRATION_TOKEN% -r %NOTION_PULL_ROOT_PAGE%"
+  }
+```
+
+and then run that with `npm run pull`.
 
 ## 7. Commit
 
@@ -77,11 +87,19 @@ Links from one document to another in Notion are not yet converted to local link
 
 notion-pull-mdx makes some attempt to keep the right order of things, but there are definitely cases where it isn't smart enough yet.
 
-# Localization
+# Text Localization
 
 Localize your files in Crowdin (or whatever) based on the markdown files, not in Notion. For how to do this with Docusaurus, see [Docusaurus i18n](https://docusaurus.io/docs/i18n/crowdin).
 
-You may also need to localize screenshots. Crowdin can also handle localizing assets, but this library currently supports a different approach. If you place for example `fr https:\\imgur.com\1234.png` in the caption of a screenshot in Notion, `notion-pull-mdx` will fetch that image and save it locally with the same name as the primary screenshot, but with "-fr" appended. So you'd get for example `static\img\9876.png` and `static\img\9876-fr.png`. To get the French version to show, you'd need to add that "-fr" to the markdown link when you localize the page's text in crowdin. If there is a way, maybe this modification of the markdown can be made automatic in the future so that you automatically get the right image version.
+# Screenshot Localization
+
+The only way we know of to provide localization of image in the current Docusaurus (2.0) is to place the images in the same directory as the markdown, and use relative paths for images. Most projects probably won't localize _every_ image, so we also need a way to "fall back" to the original screenshot when the localized one is missing. `notion-pull-mdx` facilitates this. If no localized version of an image is available, `notion-pull-mdx` places a copy of the original image into the correct location.
+
+So how do you provide these localized screenshot files? Crowdin can handle localizing assets, and in the future we may support that. For now, we currently support a different approach. If you place for example `fr https:\\imgur.com\1234.png` in the caption of a screenshot in Notion, `notion-pull-mdx` will fetch that image and save it in the right place to be found when in French mode. Getting URLs to screenshots is easy with screenshot utilities such as [Greenshot](https://getgreenshot.org/) that support uploading to imgur. Note that `notion-pull-mdx` stores a copy of all images in your source tree, so you wouldn't lose the images if imgur were to go away.
+
+NOTE: that as far as I can tell, when you run `docusaurus start` docusaurus 2.0 offers the language picker but it doesn't actually work. So to test out the localized version, do `docusaurus build` followed by `docusaurus serve`.
+
+NOTE: if you just localize an image, it will not get picked up. You also must localize the page that uses the image. Otherwise, Docusaurus will use the English document and when that asks for `./the-image-path`, it will find the image there in the English section, not your other language section.
 
 # Automated builds with Github Actions
 

@@ -1,4 +1,5 @@
 import * as fs from "fs-extra";
+import { verbose } from "./log";
 import { NotionPage } from "./NotionPage";
 
 // Here a fuller name would be File Tree Layout Strategy. That is,
@@ -16,7 +17,7 @@ export abstract class LayoutStrategy {
   public async cleanupOldFiles(): Promise<void> {
     // Remove any pre-existing files that aren't around anymore; this indicates that they were removed or renamed in Notion.
     for (const p of this.existingPagesNotSeenYetInPull) {
-      console.log(`Removing old doc: ${p}`);
+      verbose(`Removing old doc: ${p}`);
       await fs.rm(p);
     }
   }
