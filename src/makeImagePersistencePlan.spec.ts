@@ -31,3 +31,11 @@ test("primary file with defaults for image output path and prefix", () => {
   );
   expect(imageSet.filePathToUseInMarkdown).toBe("./463556435.png");
 });
+
+// In order to make image fallback work with other languages, we have to have
+// a file for each image, in each Docusaurus language directory. This is true
+// whether we have a localized version of the image or not.
+// The imageSet is initially populated with placeholders for each language.
+// This test ensures that these placeholders are replaced with actual urls
+// when localized versions of the image are listed.
+// TODO write this test

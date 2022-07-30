@@ -13,17 +13,22 @@ program
   .requiredOption("-n, --notion-token <string>", "notion api token")
   .requiredOption(
     "-r, --root-page <string>",
-    "the 31 character ID of the page which is the root of your notion docs"
+    "The 31 character ID of the page which is the root of your notion docs"
   )
   .requiredOption(
     "-m, --markdown-output-path  <string>",
-    "root of the hierarchy for md files. WARNING: node-pull-mdx will delete files from this directory. Note also that if it finds localized images, it will create an i18n/ directory as a sibling.",
+    "Root of the hierarchy for md files. WARNING: node-pull-mdx will delete files from this directory. Note also that if it finds localized images, it will create an i18n/ directory as a sibling.",
     "./docs"
   )
   .option(
     "-t, --status-tag  <string>",
     "Database pages without a Notion page property 'status' matching this will be ignored. Use '*' to ignore status altogether.",
     "Publish"
+  )
+  .option(
+    "--locales  <codes>",
+    "Comma-separated list of iso 639-2 codes, the same list as in docusaurus.config.js, minus the primary (i.e. 'en'). This is needed for image localization.",
+    parseLocales
   )
   .addOption(
     new Option("-l, --log-level <level>", "Log level").choices([
@@ -34,7 +39,7 @@ program
   )
   .option(
     "-i, --img-output-path  <string>",
-    "path to directory where images will be stored. If this is not included, images will be placed in the same directory as the document that uses them, which then allows for localization of screenshots."
+    "Path to directory where images will be stored. If this is not included, images will be placed in the same directory as the document that uses them, which then allows for localization of screenshots."
   )
   // .option(
   //   "-l, --internal-link-prefix <string>",
@@ -42,7 +47,7 @@ program
   // )
   .option(
     "-p, --img-prefix-in-markdown <string>",
-    "when referencing an image from markdown, prefix with this path instead of the full img-output-path. Should be used only in conjunction with --img-output-path."
+    "When referencing an image from markdown, prefix with this path instead of the full img-output-path. Should be used only in conjunction with --img-output-path."
   );
 
 program.showHelpAfterError();
@@ -53,3 +58,7 @@ setLogLevel(program.opts().logLevel);
 void notionPull(program.opts() as Options).then(() =>
   console.log("notion-pull-mdx Finished.")
 );
+
+function parseLocales(value: string): string[] {
+  return value.split(",").map(l => l.trim().toLowerCase());
+}

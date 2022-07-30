@@ -8,12 +8,19 @@ import { logDebug, verbose, info } from "./log";
 let existingImagesNotSeenYetInPull: string[] = [];
 let imageOutputPath = ""; // default to putting in the same directory as the document referring to it.
 let imagePrefix = ""; // default to "./"
+let locales: string[];
 
-// we parse a notion image and its caption into what we need, which includes any urls to localized versions of the image that may be embedded in the caption
+// we parse a notion image and its caption into what we need, which includes any urls to localized versions
+// of the image that may be embedded in the caption.
 export type ImageSet = {
   // We get these from parseImageBlock():
   primaryUrl: string;
+  // caption may contain a caption and/or URLs to localized versions
   caption?: string;
+  // We use entries in localizedUrls whether or not we have a url, because if we don't have
+  // a localized image, we then need to copy the primary image in, instead, to
+  // get image fallback. In that case, the placeholder at least tells us what languages
+  // are being supported.
   localizedUrls: Array<{ iso632Code: string; url: string }>;
 
   // then we fill this in from processImageBlock():
@@ -32,12 +39,14 @@ export type ImageSet = {
 
 export async function initImageHandling(
   prefix: string,
-  outputPath: string
+  outputPath: string,
+  incomingLocales: string[]
 ): Promise<void> {
   // If they gave us a trailing slash, remove it because we add it back later.
   // Note that it's up to the caller to have a *leading* slash or not.
   imagePrefix = prefix.replace(/\/$/, "");
   imageOutputPath = outputPath;
+  locales = incomingLocales;
 
   // Currently we don't delete the image directory, because if an image
   // changes, it gets a new id. This way can then prevent downloading
@@ -60,21 +69,25 @@ async function saveImage(imageSet: ImageSet): Promise<void> {
 
   let foundLocalizedImage = false;
 
-  // if there are localized images, save them too, using the same
-  // name as the primary but with their language code attached
   for (const localizedImage of imageSet.localizedUrls) {
-    verbose(`Retrieving ${localizedImage.iso632Code} version...`);
-    const response = await fetch(localizedImage.url);
-    const arrayBuffer = await response.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
+    let buffer = imageSet.primaryBuffer!;
+    // if we have a urls for the localized screenshot, download it
+    if (localizedImage?.url.length > 0) {
+      verbose(`Retrieving ${localizedImage.iso632Code} version...`);
+      const response = await fetch(localizedImage.url);
+      const arrayBuffer = await response.arrayBuffer();
+      buffer = Buffer.from(arrayBuffer);
+    } else {
+      verbose(
+        `No localized image specified for ${localizedImage.iso632Code}, will use primary image.`
+      );
+      // otherwise, we're going to fall back to outputting the primary image here
+    }
     const directory = `./i18n/${
       localizedImage.iso632Code
     }/docusaurus-plugin-content-docs/current/${imageSet.relativePathToParentDocument!}`;
     if (!foundLocalizedImage) {
       foundLocalizedImage = true;
-      info(
-        "*** found at least one localized image, so /i18n directory will be created and filled with localized image files."
-      );
     }
     writeImageIfNew(directory + "/" + imageSet.outputFileName!, buffer);
   }
@@ -82,20 +95,26 @@ async function saveImage(imageSet: ImageSet): Promise<void> {
 
 function writeImageIfNew(path: string, buffer: Buffer) {
   imageWasSeen(path);
-  if (!fs.pathExistsSync(path)) {
+
+  // Note: it's tempting to not spend time writing this out if we already have
+  // it from a previous run. But we don't really know it's the same. A) it
+  // could just have the same name, B) it could have been previously
+  // unlocalized and thus filled with a copy of the primary language image
+  // while and now is localized.
+  if (fs.pathExistsSync(path)) {
+    verbose("Replacing image " + path);
+  } else {
     verbose("Adding image " + path);
     fs.mkdirsSync(Path.dirname(path));
-    fs.createWriteStream(path).write(buffer); // async but we're not waiting
-  } else {
-    verbose(`image already filled: ${path}`);
   }
+  fs.createWriteStream(path).write(buffer); // async but we're not waiting
 }
 
 export function parseImageBlock(b: any): ImageSet {
   const imageSet: ImageSet = {
     primaryUrl: "",
     caption: "",
-    localizedUrls: [],
+    localizedUrls: locales.map(l => ({ iso632Code: l, url: "" })),
   };
 
   if ("file" in b.image) {

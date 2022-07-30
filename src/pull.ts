@@ -21,6 +21,7 @@ import { error, info, verbose, warning } from "./log";
 export type Options = {
   notionToken: string;
   rootPage: string;
+  locales: string[];
   markdownOutputPath: string;
   imgOutputPath: string;
   imgPrefixInMarkdown: string;
@@ -47,7 +48,8 @@ export async function notionPull(incomingOptions: Options): Promise<void> {
   verbose(JSON.stringify(optionsForLogging, null, 2));
   await initImageHandling(
     options.imgPrefixInMarkdown || options.imgOutputPath || "",
-    options.imgOutputPath || ""
+    options.imgOutputPath || "",
+    options.locales
   );
 
   const notionClient = initNotionClient(options.notionToken);

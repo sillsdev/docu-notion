@@ -15,7 +15,7 @@
     "notion-download": "node dist/index.js",
     "cmdhelp": "ts-node --compiler-options \"{\\\"module\\\": \\\"commonjs\\\"}\" src/index.ts",
     "// test out with my sample notion db": "",
-    "sample": "cross-var ts-node --compiler-options \"{\\\"module\\\": \\\"commonjs\\\"}\" src/index.ts -n %NOTION_PULL_INTEGRATION_TOKEN% -r %NOTION_PULL_ROOT_PAGE% -m ./sample --log-level verbose",
+    "sample": "cross-var ts-node --compiler-options \"{\\\"module\\\": \\\"commonjs\\\"}\" src/index.ts -n %NOTION_PULL_INTEGRATION_TOKEN% -r %NOTION_PULL_ROOT_PAGE% -m ./sample --locales en,es,fr,de --log-level verbose",
     "sample-with-paths": "cross-var ts-node --compiler-options \"{\\\"module\\\": \\\"commonjs\\\"}\" src/index.ts -n %NOTION_PULL_INTEGRATION_TOKEN% -r %NOTION_PULL_ROOT_PAGE% -m ./sample --img-output-path ./sample_img"
   },
   "repository": {
