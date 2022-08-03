@@ -28,7 +28,8 @@ program
   .option(
     "--locales  <codes>",
     "Comma-separated list of iso 639-2 codes, the same list as in docusaurus.config.js, minus the primary (i.e. 'en'). This is needed for image localization.",
-    parseLocales
+    parseLocales,
+    []
   )
   .addOption(
     new Option("-l, --log-level <level>", "Log level").choices([

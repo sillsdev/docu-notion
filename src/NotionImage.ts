@@ -47,6 +47,7 @@ export async function initImageHandling(
   imagePrefix = prefix.replace(/\/$/, "");
   imageOutputPath = outputPath;
   locales = incomingLocales;
+  console.log("locales:" + JSON.stringify(locales));
 
   // Currently we don't delete the image directory, because if an image
   // changes, it gets a new id. This way can then prevent downloading
