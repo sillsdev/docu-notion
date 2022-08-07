@@ -38,7 +38,7 @@ const pages = new Array<NotionPage>();
 export async function notionPull(incomingOptions: Options): Promise<void> {
   options = incomingOptions;
 
-  // It's helpful when troubleshooting CI secrets and environment variables to see what options actually made it to notion-pull-mdx.
+  // It's helpful when troubleshooting CI secrets and environment variables to see what options actually made it to docu-notion.
   // eslint-disable-next-line @typescript-eslint/no-unsafe-call
   const optionsForLogging = { ...incomingOptions };
   // Just show the first few letters of the notion token, which start with "secret" anyhow.
@@ -110,7 +110,7 @@ async function getPagesRecursively(
 
   if (!rootLevel && pageInfo.hasParagraphs && pageInfo.childPages.length) {
     error(
-      `Skipping "${pageInTheOutline.nameOrTitle}"  and its children. notion-pull-mdx does not support pages that are both levels and have content at the same time.`
+      `Skipping "${pageInTheOutline.nameOrTitle}"  and its children. docu-notion does not support pages that are both levels and have content at the same time.`
     );
 
     return;

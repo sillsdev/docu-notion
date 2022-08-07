@@ -16,7 +16,7 @@ const notionLimiter = new RateLimiter({
 let notionClient: Client;
 
 // Notion has 2 kinds of pages: a normal one which is just content, and what I'm calling a "database page", which has whatever properties you put on it.
-// notion-pull-mdx supports the later via links from outline pages. That is, you put the database pages in a database, then separately, in the outline, you
+// docu-notion supports the later via links from outline pages. That is, you put the database pages in a database, then separately, in the outline, you
 // create pages for each node of the outline and then add links from those to the database pages. In this way, we get the benefits of database
 // pages (metadata, workflow, etc) and also normal pages (order, position in the outline).
 export enum PageType {

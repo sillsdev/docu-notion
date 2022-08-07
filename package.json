@@ -1,6 +1,5 @@
 {
-  "name": "notion-pull-mdx",
-  "version": "0.0.0-development",
+  "name": "docu-notion",
   "description": "Download Notion pages as markdown and image files, preserving hierarchy and enabling workflow properties. Works with Docusaurus.",
   "main": "./dist/index.js",
   "bin": "dist/index.js",
@@ -15,12 +14,13 @@
     "notion-download": "node dist/index.js",
     "cmdhelp": "ts-node --compiler-options \"{\\\"module\\\": \\\"commonjs\\\"}\" src/index.ts",
     "// test out with my sample notion db": "",
+    "t": "cross-var ts-node --compiler-options \"{\\\"module\\\": \\\"commonjs\\\"}\" src/index.ts -n %NOTION_PULL_INTEGRATION_TOKEN% -r %NOTION_PULL_ROOT_PAGE%",
     "sample": "cross-var ts-node --compiler-options \"{\\\"module\\\": \\\"commonjs\\\"}\" src/index.ts -n %NOTION_PULL_INTEGRATION_TOKEN% -r %NOTION_PULL_ROOT_PAGE% -m ./sample --locales en,es,fr,de --log-level verbose",
     "sample-with-paths": "cross-var ts-node --compiler-options \"{\\\"module\\\": \\\"commonjs\\\"}\" src/index.ts -n %NOTION_PULL_INTEGRATION_TOKEN% -r %NOTION_PULL_ROOT_PAGE% -m ./sample --img-output-path ./sample_img"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sillsdev/notion-pull-mdx.git"
+    "url": "git+https://github.com/sillsdev/docu-notion.git"
   },
   "license": "MIT",
   "author": {
@@ -37,9 +37,9 @@
     "markdown"
   ],
   "bugs": {
-    "url": "https://github.com/sillsdev/notion-pull-mdx/issues"
+    "url": "https://github.com/sillsdev/docu-notion/issues"
   },
-  "homepage": "https://github.com/sillsdev/notion-pull-mdx#readme",
+  "homepage": "https://github.com/sillsdev/docu-notion#readme",
   "//file-type": "have to use this version before they switched to ESM, which gives a compile error related to require()",
   "//node-fetch@2.6.6file-type": "have to use this version before they switched to ESM, which gives a compile error related to require()",
   "//chalk@4": "also ESM related problem",

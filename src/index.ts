@@ -6,9 +6,9 @@ import { setLogLevel } from "./log";
 import { notionPull, Options } from "./pull";
 const pkg = require("../package.json");
 // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-console.log(`notion-pull-mdx version ${pkg.version}`);
+console.log(`docu-notion version ${pkg.version}`);
 
-program.name("notion-pull-mdx").description("");
+program.name("docu-notion").description("");
 program
   .requiredOption("-n, --notion-token <string>", "notion api token")
   .requiredOption(
@@ -57,7 +57,7 @@ setLogLevel(program.opts().logLevel);
 
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
 void notionPull(program.opts() as Options).then(() =>
-  console.log("notion-pull-mdx Finished.")
+  console.log("docu-notion Finished.")
 );
 
 function parseLocales(value: string): string[] {

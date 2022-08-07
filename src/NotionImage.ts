@@ -68,8 +68,6 @@ async function readPrimaryImage(imageSet: ImageSet) {
 async function saveImage(imageSet: ImageSet): Promise<void> {
   writeImageIfNew(imageSet.primaryFileOutputPath!, imageSet.primaryBuffer!);
 
-  let foundLocalizedImage = false;
-
   for (const localizedImage of imageSet.localizedUrls) {
     let buffer = imageSet.primaryBuffer!;
     // if we have a urls for the localized screenshot, download it
@@ -87,9 +85,7 @@ async function saveImage(imageSet: ImageSet): Promise<void> {
     const directory = `./i18n/${
       localizedImage.iso632Code
     }/docusaurus-plugin-content-docs/current/${imageSet.relativePathToParentDocument!}`;
-    if (!foundLocalizedImage) {
-      foundLocalizedImage = true;
-    }
+
     writeImageIfNew(directory + "/" + imageSet.outputFileName!, buffer);
   }
 }
