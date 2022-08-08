@@ -57,7 +57,7 @@ NOTE: In the above, we are using `npx` to use the latest `docu-notion`. A more c
 
 ```
  "scripts": {
-     "pull": "cross-var docu-notion -n %NOTION_PULL_INTEGRATION_TOKEN% -r %NOTION_PULL_ROOT_PAGE%"
+     "pull": "cross-var docu-notion -n %DOCU_NOTION_INTEGRATION_TOKEN% -r %DOCU_NOTION_ROOT_PAGE%"
   }
 ```
 

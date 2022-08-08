@@ -13,10 +13,11 @@
     "typecheck": "tsc --noEmit",
     "notion-download": "node dist/index.js",
     "cmdhelp": "ts-node --compiler-options \"{\\\"module\\\": \\\"commonjs\\\"}\" src/index.ts",
-    "// test out with my sample notion db": "",
-    "t": "cross-var ts-node --compiler-options \"{\\\"module\\\": \\\"commonjs\\\"}\" src/index.ts -n %NOTION_PULL_INTEGRATION_TOKEN% -r %NOTION_PULL_ROOT_PAGE%",
-    "sample": "cross-var ts-node --compiler-options \"{\\\"module\\\": \\\"commonjs\\\"}\" src/index.ts -n %NOTION_PULL_INTEGRATION_TOKEN% -r %NOTION_PULL_ROOT_PAGE% -m ./sample --locales en,es,fr,de --log-level verbose",
-    "sample-with-paths": "cross-var ts-node --compiler-options \"{\\\"module\\\": \\\"commonjs\\\"}\" src/index.ts -n %NOTION_PULL_INTEGRATION_TOKEN% -r %NOTION_PULL_ROOT_PAGE% -m ./sample --img-output-path ./sample_img"
+    "// test out with a private sample notion db": "",
+    "pull-test": "cross-var ts-node --compiler-options \"{\\\"module\\\": \\\"commonjs\\\"}\" src/index.ts -n %DOCU_NOTION_INTEGRATION_TOKEN% -r %DOCU_NOTION_TEST_ROOT_PAGE%",
+    "// test with a semi-stable/public site:": "",
+    "pull-sample": "cross-var ts-node --compiler-options \"{\\\"module\\\": \\\"commonjs\\\"}\" src/index.ts -n %DOCU_NOTION_INTEGRATION_TOKEN% -r %DOCU_NOTION_SAMPLE_ROOT_PAGE% -m ./sample --locales en,es,fr,de --log-level verbose",
+    "pull-sample-with-paths": "cross-var ts-node --compiler-options \"{\\\"module\\\": \\\"commonjs\\\"}\" src/index.ts -n %DOCU_NOTION_INTEGRATION_TOKEN% -r %DOCU_NOTION_SAMPLE_ROOT_PAGE% -m ./sample --img-output-path ./sample_img"
   },
   "repository": {
     "type": "git",
