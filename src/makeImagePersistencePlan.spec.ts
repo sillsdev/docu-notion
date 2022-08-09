@@ -1,5 +1,5 @@
 import { makeImagePersistencePlan } from "./MakeImagePersistencePlan";
-import { ImageSet } from "./NotionImage";
+import { ImageSet } from "./images";
 
 test("primary file with explicit file output path and prefix", () => {
   const imageSet: ImageSet = {

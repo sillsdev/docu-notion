@@ -4,6 +4,7 @@ import fetch from "node-fetch";
 import * as Path from "path";
 import { makeImagePersistencePlan } from "./MakeImagePersistencePlan";
 import { logDebug, verbose, info } from "./log";
+import { ListBlockChildrenResponse } from "@notionhq/client/build/src/api-endpoints";
 
 let existingImagesNotSeenYetInPull: string[] = [];
 let imageOutputPath = ""; // default to putting in the same directory as the document referring to it.
@@ -55,6 +56,25 @@ export async function initImageHandling(
   // have the smarts to remove unused images.
   if (imageOutputPath) {
     await fs.mkdir(imageOutputPath, { recursive: true });
+  }
+}
+
+export async function outputImages(
+  blocks: (
+    | ListBlockChildrenResponse
+    | /* not avail in types: BlockObjectResponse so we use any*/ any
+  )[],
+  fullPathToDirectoryContainingMarkdown: string,
+  relativePathToThisPage: string
+): Promise<void> {
+  for (const b of blocks) {
+    if ("image" in b) {
+      await processImageBlock(
+        b,
+        fullPathToDirectoryContainingMarkdown,
+        relativePathToThisPage
+      );
+    }
   }
 }
 
@@ -151,7 +171,7 @@ export function parseImageBlock(b: any): ImageSet {
 
 // Download the image if we don't have it, give it a good name, and
 // change the src to point to our copy of the image.
-export async function processImageBlock(
+async function processImageBlock(
   b: any,
   pathToParentDocument: string,
   relativePathToThisPage: string

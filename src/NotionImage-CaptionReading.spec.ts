@@ -1,4 +1,4 @@
-import { parseImageBlock } from "./NotionImage";
+import { parseImageBlock } from "./images";
 
 const kPrimaryImageUrl =
   "https://s3.us-west-2.amazonaws.com/primaryImage.png?Blah=foo";

@@ -35,7 +35,10 @@ export class HierarchicalNamedLayoutStrategy extends LayoutStrategy {
       sanitize(page.nameOrTitle) +
       extensionWithDot;
 
-    path = path.replace("//", "/");
+    path = path
+      .replaceAll("//", "/")
+      .replaceAll("%20", "-")
+      .replaceAll(" ", "-");
     // console.log(
     //   `getPathForPage(${context}, ${pageId}, ${title}) with  root ${this.rootDirectory} --> ${path}`
     // );

@@ -1,4 +1,4 @@
-import { ImageSet } from "./NotionImage";
+import { ImageSet } from "./images";
 import * as Path from "path";
 import { error } from "./log";
 

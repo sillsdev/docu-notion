@@ -34,7 +34,7 @@ export abstract class LayoutStrategy {
 
   public getLinkPathForPage(page: NotionPage): string {
     // the url we return starts with a "/", meaning it is relative to the root of the markdown root (e.g. /docs root in Docusaurus)
-    return this.getPathForPage(page, ".md").replace(this.rootDirectory, "");
+    return this.getPathForPage(page, "").replace(this.rootDirectory, "");
   }
 
   public pageWasSeen(page: NotionPage): void {

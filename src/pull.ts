@@ -1,22 +1,16 @@
 import * as fs from "fs-extra";
 
 import { NotionToMarkdown } from "notion-to-md";
-import { ListBlockChildrenResponse } from "@notionhq/client/build/src/api-endpoints";
 import { HierarchicalNamedLayoutStrategy } from "./HierarchicalNamedLayoutStrategy";
 import { LayoutStrategy } from "./LayoutStrategy";
 import { initNotionClient, NotionPage, PageType } from "./NotionPage";
-import {
-  initImageHandling,
-  processImageBlock,
-  cleanupOldImages,
-} from "./NotionImage";
+import { initImageHandling, cleanupOldImages, outputImages } from "./images";
 
 import { tweakForDocusaurus } from "./DocusaurusTweaks";
 import { setupCustomTransformers } from "./CustomTranformers";
 import * as Path from "path";
-import { error, info, verbose, warning } from "./log";
-
-//import { FlatGuidLayoutStrategy } from "./FlatGuidLayoutStrategy";
+import { error, info, logDebug, verbose, warning } from "./log";
+import { convertInternalLinks } from "./links";
 
 export type Options = {
   notionToken: string;
@@ -29,7 +23,6 @@ export type Options = {
 };
 
 let options: Options;
-
 let currentSidebarPosition = 0;
 let layoutStrategy: LayoutStrategy;
 let notionToMarkdown: NotionToMarkdown;
@@ -56,12 +49,11 @@ export async function notionPull(incomingOptions: Options): Promise<void> {
   notionToMarkdown = new NotionToMarkdown({ notionClient });
   setupCustomTransformers(notionToMarkdown, notionClient);
   layoutStrategy = new HierarchicalNamedLayoutStrategy();
-  //layoutStrategy = new FlatGuidLayoutStrategy();
 
   await fs.mkdir(options.markdownOutputPath, { recursive: true });
   layoutStrategy.setRootDirectoryForMarkdown(options.markdownOutputPath);
 
-  console.log("Connecting to Notion...");
+  info("Connecting to Notion...");
   // About the complication here of getting all the pages first and then output
   // them all. It would be simpler to just do it all in one pass, however the
   // two passes are required in order to change links between
@@ -71,8 +63,7 @@ export async function notionPull(incomingOptions: Options): Promise<void> {
   // do this link fixing until we've already seen all the pages and
   // figured out what their eventual relative url will be.
   await getPagesRecursively("", options.rootPage, true);
-  // console.log("***Pages***");
-  // console.log(JSON.stringify(pages, null, 2));
+  logDebug("getPagesRecursively", JSON.stringify(pages, null, 2));
   await outputPages(pages);
   await layoutStrategy.cleanupOldFiles();
   await cleanupOldImages();
@@ -81,20 +72,15 @@ export async function notionPull(incomingOptions: Options): Promise<void> {
 async function outputPages(pages: Array<NotionPage>) {
   for (const page of pages) {
     await outputPage(page);
-    // if (page.type === PageType.DatabasePage) await processDatabasePage(page);
-    // if (page.type === PageType.Simple) await processSimplePage(page);
   }
 }
 
 // This walks the "Outline" page and creates a list of all the nodes that will
 // be in the sidebar, including the directories, the pages that are linked to
 // that are parented in from the "Database", and any pages we find in the
-// outline that contain content (which we call "Simple" pages).
-// It does not generate any files. Later, we can
-// then step through this list creating the directories and files we need, and,
-// crucially, be able to figure out what the url will be for any links between
-// content pages.
-//  FIX comment above: actually, the HierarchicalNamedLayoutStrategy does create directories.
+// outline that contain content (which we call "Simple" pages). Later, we can
+// then step through this list creating the files we need, and, crucially, be
+// able to figure out what the url will be for any links between content pages.
 async function getPagesRecursively(
   incomingContext: string,
   pageId: string,
@@ -117,10 +103,16 @@ async function getPagesRecursively(
   }
   if (!rootLevel && pageInfo.hasParagraphs) {
     pages.push(pageInTheOutline);
-    if (pageInfo.linksPages)
+
+    // The best practice is to keep content pages in the "database" (kanban), but we do allow people to make pages in the outline directly.
+    // So how can we tell the difference between a page that is supposed to be content and one that is meant to form the sidebar? If it
+    // have just links, then it's a page for forming the sidebar. If it has contents and no links, then it's a content page. But what if
+    // it has both? Well then we assume it's a content page.
+    if (pageInfo.linksPages?.length) {
       warning(
-        `Ambiguity: The page "${pageInTheOutline.nameOrTitle}" is in the outline, has content, and also points at other pages. It will be treated as a simple content page.`
+        `Note: The page "${pageInTheOutline.nameOrTitle}" is in the outline, has content, and also points at other pages. It will be treated as a simple content page. This is no problem, unless you intended to have all your content pages in the database (kanban workflow) section.`
       );
+    }
   }
   // a normal outline page that exists just to create the level, pointing at database pages that belong in this level
   else if (pageInfo.childPages.length || pageInfo.linksPages.length) {
@@ -195,93 +187,10 @@ async function outputPage(page: NotionPage) {
   frontmatter += "---\n";
 
   let markdown = notionToMarkdown.toMarkdownString(mdBlocks);
-  markdown = convertInternalLinks(markdown);
+  markdown = convertInternalLinks(markdown, pages, layoutStrategy);
 
   const { body, imports } = tweakForDocusaurus(markdown);
   const output = `${frontmatter}\n${imports}\n${body}`;
 
   fs.writeFileSync(mdPath, output, {});
-}
-
-async function outputImages(
-  blocks: (
-    | ListBlockChildrenResponse
-    | /* not avail in types: BlockObjectResponse so we use any*/ any
-  )[],
-  fullPathToDirectoryContainingMarkdown: string,
-  relativePathToThisPage: string
-): Promise<void> {
-  for (const b of blocks) {
-    if ("image" in b) {
-      await processImageBlock(
-        b,
-        fullPathToDirectoryContainingMarkdown,
-        relativePathToThisPage
-      );
-    }
-  }
-}
-
-function convertInternalLinks(markdown: string): string {
-  //console.log(JSON.stringify(pages, null, 2));
-
-  return transformLinks(markdown, (url: string) => {
-    const p = pages.find(p => {
-      return p.matchesLinkId(url);
-    });
-    if (p) {
-      verbose(
-        `Convering Link ${url} --> ${layoutStrategy.getLinkPathForPage(p)}`
-      );
-      return layoutStrategy.getLinkPathForPage(p);
-    }
-
-    warning(
-      `Could not find the target of this link. Note that links to outline sections are not supported. ${url}`
-    );
-
-    return url;
-  });
-}
-// function convertInternalLinks(
-//   blocks: (
-//     | ListBlockChildrenResponse
-//     | /* not avail in types: BlockObjectResponse so we use any*/ any
-//   )[]
-// ): void {
-//   // Note. Waiting on https://github.com/souvikinator/notion-to-md/issues/31 before we can get at raw links to other pages.
-//   // But we can do the conversion now... they just won't actually make it out to the markdown until that gets fixed.
-//   // blocks
-//   //   .filter((b: any) => b.type === "link_to_page")
-//   //   .forEach((b: any) => {
-//   //     const targetId = b.link_to_page.page_id;
-//   //   });
-
-//     blocks
-//     .filter((b: any) => b.paragraph.rich_text. === "link_to_page")
-//     .forEach((b: any) => {
-//       const targetId = b.text.link.url;
-//     });
-// }
-
-function transformLinks(input: string, transform: (url: string) => string) {
-  const linkRegExp = /\[([^\]]+)?\]\(\/([^),^/]+)\)/g;
-  let output = input;
-  let match;
-
-  // The key to understanding this while is that linkRegExp actually has state, and
-  // it gives you a new one each time. https://stackoverflow.com/a/1520853/723299
-  while ((match = linkRegExp.exec(input)) !== null) {
-    const string = match[0];
-    const text = match[1] || "";
-    const url = match[2];
-
-    const replacement = transform(url);
-
-    if (replacement) {
-      output = output.replace(string, `[${text}](${replacement})`);
-    }
-  }
-
-  return output;
 }
