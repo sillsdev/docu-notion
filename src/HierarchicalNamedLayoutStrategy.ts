@@ -19,7 +19,7 @@ export class HierarchicalNamedLayoutStrategy extends LayoutStrategy {
     context: string,
     levelLabel: string
   ): string {
-    const path = context + "/" + sanitize(levelLabel);
+    const path = context + "/" + sanitize(levelLabel).replaceAll(" ", "-");
 
     //console.log("Creating level " + path);
     fs.mkdirSync(dirRoot + "/" + path, { recursive: true });

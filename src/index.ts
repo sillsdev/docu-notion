@@ -42,10 +42,6 @@ program
     "-i, --img-output-path  <string>",
     "Path to directory where images will be stored. If this is not included, images will be placed in the same directory as the document that uses them, which then allows for localization of screenshots."
   )
-  // .option(
-  //   "-l, --internal-link-prefix <string>",
-  //   "when converting a link from one page to another, prefix the with this path instead of the default, which is rooted at the markdown-output-path."
-  // )
   .option(
     "-p, --img-prefix-in-markdown <string>",
     "When referencing an image from markdown, prefix with this path instead of the full img-output-path. Should be used only in conjunction with --img-output-path."

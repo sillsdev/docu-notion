@@ -58,10 +58,15 @@ export class NotionPage {
   }
 
   public matchesLinkId(id: string): boolean {
-    return (
+    const match =
       id === this.pageId || // from a link_to_page.pageId, which still has the dashes
-      id === this.pageId.replace(/-/g, "")
-    ); // from inline links, which are lacking the dashes
+      id === this.pageId.replaceAll("-", ""); // from inline links, which are lacking the dashes
+
+    logDebug(
+      `matchedLinkId`,
+      `comparing pageId:${this.pageId} to id ${id} --> ${match.toString()}`
+    );
+    return match;
   }
 
   public get type(): PageType {
@@ -98,9 +103,7 @@ export class NotionPage {
   public get slug(): string {
     const explicitSlug = this.getPlainTextProperty("Slug", "");
     if (explicitSlug) return explicitSlug;
-    return encodeURIComponent(
-      this.nameOrTitle.toLowerCase().replaceAll(" ", "-")
-    )
+    return encodeURIComponent(this.nameOrTitle.replaceAll(" ", "-"))
       .replaceAll("%3A", "-")
       .replaceAll("--", "-");
   }
