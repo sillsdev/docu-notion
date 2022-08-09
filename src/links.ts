@@ -18,8 +18,9 @@ export function convertInternalLinks(
       return layoutStrategy.getLinkPathForPage(p);
     }
 
+    // About this situation. See https://github.com/sillsdev/docu-notion/issues/9
     warning(
-      `Could not find the target of this link. Note that links to outline sections are not supported. ${url}`
+      `Could not find the target of this link. Note that links to outline sections are not supported. ${url}. https://github.com/sillsdev/docu-notion/issues/9`
     );
 
     return url;

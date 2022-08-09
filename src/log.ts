@@ -6,7 +6,7 @@ export function setLogLevel(l: levels): void {
   logLevel = l;
 }
 export function error(s: string): void {
-  console.error(chalk.bold.red(s));
+  console.error(chalk.red(s));
 }
 export function warning(s: string): void {
   console.log(chalk.hex("#FFA500")(s));
