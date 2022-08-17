@@ -4,13 +4,18 @@ import { NotionToMarkdown } from "notion-to-md";
 import { HierarchicalNamedLayoutStrategy } from "./HierarchicalNamedLayoutStrategy";
 import { LayoutStrategy } from "./LayoutStrategy";
 import { initNotionClient, NotionPage, PageType } from "./NotionPage";
-import { initImageHandling, cleanupOldImages, outputImages } from "./images";
+import {
+  initImageHandling,
+  cleanupOldImages,
+  markdownToMDImageTransformer,
+} from "./images";
 
 import { tweakForDocusaurus } from "./DocusaurusTweaks";
 import { setupCustomTransformers } from "./CustomTranformers";
 import * as Path from "path";
 import { error, info, logDebug, verbose, warning } from "./log";
 import { convertInternalLinks } from "./links";
+import { ListBlockChildrenResponseResult } from "notion-to-md/build/types";
 
 export type Options = {
   notionToken: string;
@@ -164,14 +169,21 @@ async function outputPage(page: NotionPage) {
   const relativePathToFolderContainingPage = Path.dirname(
     layoutStrategy.getLinkPathForPage(page)
   );
-  await outputImages(
-    blocks,
-    directoryContainingMarkdown,
-    relativePathToFolderContainingPage
-  );
+  logDebug("pull", JSON.stringify(blocks));
 
   currentSidebarPosition++;
 
+  // we have to set this one up for each page because we need to
+  // give it two extra parameters that are context for each page
+  notionToMarkdown.setCustomTransformer(
+    "image",
+    (block: ListBlockChildrenResponseResult) =>
+      markdownToMDImageTransformer(
+        block,
+        directoryContainingMarkdown,
+        relativePathToFolderContainingPage
+      )
+  );
   const mdBlocks = await notionToMarkdown.blocksToMarkdown(blocks);
 
   // if (page.nameOrTitle.startsWith("Embed")) {
@@ -187,8 +199,11 @@ async function outputPage(page: NotionPage) {
   frontmatter += "---\n";
 
   let markdown = notionToMarkdown.toMarkdownString(mdBlocks);
+
+  // Improve: maybe this could be another markdown-to-md "custom transformer"
   markdown = convertInternalLinks(markdown, pages, layoutStrategy);
 
+  // Improve: maybe this could be another markdown-to-md "custom transformer"
   const { body, imports } = tweakForDocusaurus(markdown);
   const output = `${frontmatter}\n${imports}\n${body}`;
 

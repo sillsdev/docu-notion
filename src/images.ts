@@ -3,8 +3,14 @@ import FileType, { FileTypeResult } from "file-type";
 import fetch from "node-fetch";
 import * as Path from "path";
 import { makeImagePersistencePlan } from "./MakeImagePersistencePlan";
-import { logDebug, verbose, info } from "./log";
-import { ListBlockChildrenResponse } from "@notionhq/client/build/src/api-endpoints";
+import { warning, logDebug, verbose, info } from "./log";
+import { ListBlockChildrenResponseResult } from "notion-to-md/build/types";
+
+// We several things here:
+// 1) copy images locally instead of leaving them in Notion
+// 2) change the links to point here
+// 3) read the caption and if there are localized images, get those too
+// 4) prepare for localized documents, which need a copy of every image
 
 let existingImagesNotSeenYetInPull: string[] = [];
 let imageOutputPath = ""; // default to putting in the same directory as the document referring to it.
@@ -59,22 +65,65 @@ export async function initImageHandling(
   }
 }
 
-export async function outputImages(
-  blocks: (
-    | ListBlockChildrenResponse
-    | /* not avail in types: BlockObjectResponse so we use any*/ any
-  )[],
+// This is a "custom transformer" function passed to notion-to-markdown
+// eslint-disable-next-line @typescript-eslint/require-await
+export async function markdownToMDImageTransformer(
+  block: ListBlockChildrenResponseResult,
   fullPathToDirectoryContainingMarkdown: string,
   relativePathToThisPage: string
+): Promise<string> {
+  const image = (block as any).image;
+
+  await processImageBlock(
+    image,
+    fullPathToDirectoryContainingMarkdown,
+    relativePathToThisPage
+  );
+
+  // just concatenate the caption text parts together
+  const altText: string = image.caption
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    .map((item: any) => item.plain_text)
+    .join("");
+
+  const href: string =
+    image.type === "external" ? image.external.url : image.file.url;
+  return `![${altText}](${href})`;
+}
+
+async function processImageBlock(
+  imageBlock: any,
+  pathToParentDocument: string,
+  relativePathToThisPage: string
 ): Promise<void> {
-  for (const b of blocks) {
-    if ("image" in b) {
-      await processImageBlock(
-        b,
-        fullPathToDirectoryContainingMarkdown,
-        relativePathToThisPage
-      );
-    }
+  logDebug("processImageBlock", JSON.stringify(imageBlock));
+
+  // this is broken into all these steps to facilitate unit testing without IO
+  const imageSet = parseImageBlock(imageBlock);
+  imageSet.pathToParentDocument = pathToParentDocument;
+  imageSet.relativePathToParentDocument = relativePathToThisPage;
+
+  await readPrimaryImage(imageSet);
+  makeImagePersistencePlan(imageSet, imageOutputPath, imagePrefix);
+  await saveImage(imageSet);
+
+  // change the src to point to our copy of the image
+  if ("file" in imageBlock) {
+    imageBlock.file.url = imageSet.filePathToUseInMarkdown;
+  } else {
+    imageBlock.external.url = imageSet.filePathToUseInMarkdown;
+  }
+  // put back the simplified caption, stripped of the meta information
+  if (imageSet.caption) {
+    imageBlock.caption = [
+      {
+        type: "text",
+        text: { content: imageSet.caption, link: null },
+        plain_text: imageSet.caption,
+      },
+    ];
+  } else {
+    imageBlock.caption = [];
   }
 }
 
@@ -127,20 +176,20 @@ function writeImageIfNew(path: string, buffer: Buffer) {
   fs.createWriteStream(path).write(buffer); // async but we're not waiting
 }
 
-export function parseImageBlock(b: any): ImageSet {
+export function parseImageBlock(image: any): ImageSet {
   const imageSet: ImageSet = {
     primaryUrl: "",
     caption: "",
     localizedUrls: locales.map(l => ({ iso632Code: l, url: "" })),
   };
 
-  if ("file" in b.image) {
-    imageSet.primaryUrl = b.image.file.url; // image saved on notion (actually AWS)
+  if ("file" in image) {
+    imageSet.primaryUrl = image.file.url; // image saved on notion (actually AWS)
   } else {
-    imageSet.primaryUrl = b.image.external.url; // image still pointing somewhere else. I've see this happen when copying a Google Doc into Notion. Notion kep pointing at the google doc.
+    imageSet.primaryUrl = image.external.url; // image still pointing somewhere else. I've see this happen when copying a Google Doc into Notion. Notion kep pointing at the google doc.
   }
 
-  const mergedCaption: string = b.image.caption
+  const mergedCaption: string = image.caption
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     .map((c: any) => c.plain_text)
     .join("");
@@ -167,44 +216,6 @@ export function parseImageBlock(b: any): ImageSet {
   //console.log(JSON.stringify(imageSet, null, 2));
 
   return imageSet;
-}
-
-// Download the image if we don't have it, give it a good name, and
-// change the src to point to our copy of the image.
-async function processImageBlock(
-  b: any,
-  pathToParentDocument: string,
-  relativePathToThisPage: string
-): Promise<void> {
-  logDebug("processImageBlock", JSON.stringify(b));
-
-  // this is broken into all these steps to facilitate unit testing without IO
-  const imageSet = parseImageBlock(b);
-  imageSet.pathToParentDocument = pathToParentDocument;
-  imageSet.relativePathToParentDocument = relativePathToThisPage;
-
-  await readPrimaryImage(imageSet);
-  makeImagePersistencePlan(imageSet, imageOutputPath, imagePrefix);
-  await saveImage(imageSet);
-
-  // change the src to point to our copy of the image
-  if ("file" in b.image) {
-    b.image.file.url = imageSet.filePathToUseInMarkdown;
-  } else {
-    b.image.external.url = imageSet.filePathToUseInMarkdown;
-  }
-  // put back the simplified caption, stripped of the meta information
-  if (imageSet.caption) {
-    b.image.caption = [
-      {
-        type: "text",
-        text: { content: imageSet.caption, link: null },
-        plain_text: imageSet.caption,
-      },
-    ];
-  } else {
-    b.image.caption = [];
-  }
 }
 
 function imageWasSeen(path: string) {

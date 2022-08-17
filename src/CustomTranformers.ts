@@ -21,6 +21,9 @@ export function setupCustomTransformers(
     (block: ListBlockChildrenResponseResult) =>
       notionColumnToMarkdown(notionToMarkdown, notionClient, block)
   );
+
+  // Note: Pull.ts also adds an image transformer, but has to do that for each
+  // page so we don't do it here.
 }
 
 async function notionColumnListToMarkdown(
@@ -45,7 +48,6 @@ async function notionColumnListToMarkdown(
 
   return `<div class='notion-row'>\n${columns.join("\n\n")}\n</div>`;
 }
-
 async function notionColumnToMarkdown(
   notionToMarkdown: NotionToMarkdown,
   notionClient: Client,
