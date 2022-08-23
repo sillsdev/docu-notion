@@ -9,13 +9,17 @@ const pkg = require("../package.json");
 console.log(`docu-notion version ${pkg.version}`);
 
 program.name("docu-notion").description("");
+program.usage("-n <token> -r <root> [options]");
 program
-  .requiredOption("-n, --notion-token <string>", "notion api token")
   .requiredOption(
-    "-r, --root-page <string>",
-    "The 31 character ID of the page which is the root of your notion docs"
+    "-n, --notion-token <string>",
+    "notion api token, which looks like secret_3bc1b50XFYb15123RHF243x43450XFY33250XFYa343"
   )
   .requiredOption(
+    "-r, --root-page <string>",
+    "The 31 character ID of the page which is the root of your docs page in notion. The code will look like 9120ec9960244ead80fa2ef4bc1bba25. This page must have a child page named 'Outline'"
+  )
+  .option(
     "-m, --markdown-output-path  <string>",
     "Root of the hierarchy for md files. WARNING: node-pull-mdx will delete files from this directory. Note also that if it finds localized images, it will create an i18n/ directory as a sibling.",
     "./docs"
