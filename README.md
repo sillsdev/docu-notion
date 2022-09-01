@@ -83,9 +83,10 @@ One of the big attractions of Notion for large documentation projects is that yo
 
 docu-notion is not doing anything smart with regards to previously Published but now not Published documents. All it does is ignore every Notion document that doesn't have `status == Publish`. So if the old version of the document is still in your file tree when your static site generator (e.g. Docusaurus) runs, then it will appear on your website. If it isn't there, it won't. If you rename directories or move the document, docu-notion will not realize this and will delete the previously published markdown file.
 
-Links from one document to another in Notion are not yet converted to local links.
-
-docu-notion makes some attempt to keep the right order of things, but there are definitely cases where it isn't smart enough yet.
+- [x] Handle links to another Notion _pages_.
+- [ ] Handle links to Notion _blocks_.
+- [x] Keep pages in order as in Notion
+- [ ] Make the sidebar show outline elements in same order as in Notion
 
 # Text Localization
 
@@ -104,3 +105,21 @@ NOTE: if you just localize an image, it will not get picked up. You also must lo
 # Automated builds with Github Actions
 
 Here is a working Github Action script to copy and customize: https://github.com/BloomBooks/bloom-docs/blob/master/.github/workflows/release.yml
+
+# Command line
+
+Usage: docu-notion -n <token> -r <root> [options]
+
+Options:
+
+| flag                                  | required? | description                                                                                                                                                                                                        |
+| ------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| -n, --notion-token <string>           | required  | notion api token, which looks like `secret_3bc1b50XFYb15123RHF243x43450XFY33250XFYa343`                                                                                                                            |
+| -r, --root-page <string>              | required  | The 31 character ID of the page which is the root of your docs page in notion. The code will look like `9120ec9960244ead80fa2ef4bc1bba25`. This page must have a child page named 'Outline'                        |
+| -m, --markdown-output-path <string>   |           | Root of the hierarchy for md files. WARNING: node-pull-mdx will delete files from this directory. Note also that if it finds localized images, it will create an i18n/ directory as a sibling. (default: "./docs") |
+| -t, --status-tag <string>             |           | Database pages without a Notion page property 'status' matching this will be ignored. Use '\*' to ignore status altogether. (default: `Publish`)                                                                   |
+| --locales <codes>                     |           | Comma-separated list of iso 639-2 codes, the same list as in docusaurus.config.js, minus the primary (i.e. 'en'). This is needed for image localization. (default: [])                                             |
+| -l, --log-level <level>               |           | Log level (choices: `info`, `verbose`, `debug`)                                                                                                                                                                    |
+| -i, --img-output-path <string>        |           | Path to directory where images will be stored. If this is not included, images will be placed in the same directory as the document that uses them, which then allows for localization of screenshots.             |
+| -p, --img-prefix-in-markdown <string> |           | When referencing an image from markdown, prefix with this path instead of the full img-output-path. Should be used only in conjunction with --img-output-path.                                                     |
+| -h, --help                            |           | display help for command                                                                                                                                                                                           |
