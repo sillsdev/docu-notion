@@ -52,6 +52,7 @@
     "file-type": "16.5.1",
     "fs-extra": "^10.1.0",
     "limiter": "^2.1.0",
+    "markdown-table": "^2.0.0",
     "node-fetch": "2.6.6",
     "notion-to-md": "^2.5.2",
     "path": "^0.12.7",
@@ -59,6 +60,7 @@
     "sanitize-filename": "^1.6.3"
   },
   "devDependencies": {
+    "@types/markdown-table": "^2.0.0",
     "@types/fs-extra": "^9.0.13",
     "@types/jest": "^28.1.6",
     "@types/node": "^12.20.11",

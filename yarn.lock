@@ -1272,6 +1272,11 @@
   resolved "https://registry.npmjs.org/@types/json-schema/-/json-schema-7.0.11.tgz"
   integrity sha512-wOuvG1SN4Us4rez+tylwwwCV1psiNVOkJeM3AUWUNWg/jDQY2+HE/444y5gc+jBmRqASOm2Oeh5c1axHobwRKQ==
 
+"@types/markdown-table@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@types/markdown-table/-/markdown-table-2.0.0.tgz#d2a3458c61ee71c8ee2b40b76c199b85b8dbd70c"
+  integrity sha512-fVZN/DRjZvjuk+lo7ovlI/ZycS51gpYU5vw5EcFeqkcX6lucQ+UWgEOH2O4KJHkSck4DHAY7D7CkVLD0wzc5qw==
+
 "@types/minimist@^1.2.0":
   version "1.2.2"
   resolved "https://registry.npmjs.org/@types/minimist/-/minimist-1.2.2.tgz"
