@@ -4,8 +4,7 @@ export function tweakForDocusaurus(input: string): {
   body: string;
   imports: string;
 } {
-  const output = notionCalloutsToAdmonitions(input);
-  const { body, imports } = notionEmbedsToMDX(output);
+  const { body, imports } = notionEmbedsToMDX(input);
   return { body, imports };
 }
 // In Notion, you can embed videos & such. To show these
@@ -100,40 +99,4 @@ function notionEmbedsToMDX(input: string): {
   }
 
   return { body, imports: [...imports].join("\n") };
-}
-
-// In Notion, you can make a callout and change its emoji. We map 5 of these
-// to the 5 Docusaurus admonition styles.
-function notionCalloutsToAdmonitions(input: string): string {
-  const notionCalloutPattern = />\s(ℹ️|⚠️|💡|❗|🔥|.)\s(.*)\n/gmu;
-  const calloutsToAdmonitions = {
-    /* prettier-ignore */ "ℹ️": "note",
-    "💡": "tip",
-    "❗": "info",
-    "⚠️": "caution",
-    "🔥": "danger",
-  };
-  let output = input;
-  let match;
-  while ((match = notionCalloutPattern.exec(input)) !== null) {
-    const string = match[0];
-    const emoji = match[1] as keyof typeof calloutsToAdmonitions;
-    const content = match[2];
-
-    const docusaurusAdmonition = calloutsToAdmonitions[emoji];
-    if (docusaurusAdmonition) {
-      output = output.replace(
-        string,
-        `:::${docusaurusAdmonition}\n\n${content}\n\n:::\n\n`
-      );
-    }
-    // For Notion callouts with other emojis, pass them through using hte emoji as the name.
-    // For this to work on a Docusaurus site, it will need to define that time on the remark-admonitions options in the docusaurus.config.js.
-    // See https://github.com/elviswolcott/remark-admonitions and https://docusaurus.io/docs/using-plugins#using-presets.
-    else {
-      output = output.replace(string, `:::${emoji}\n\n${content}\n\n:::\n\n`);
-    }
-  }
-
-  return output;
 }
