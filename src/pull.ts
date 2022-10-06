@@ -191,7 +191,7 @@ async function outputPage(page: NotionPage) {
   //   console.log(JSON.stringify(mdBlocks, null, 2));
   // }
   let frontmatter = "---\n";
-  frontmatter += `title: ${page.nameOrTitle.replaceAll(":", "&#58;")}\n`; // markdown can't handle the ":" here
+  frontmatter += `title: ${page.nameOrTitle.replaceAll(":", "-")}\n`; // I have not found a way to escape colons
   frontmatter += `sidebar_position: ${currentSidebarPosition}\n`;
   frontmatter += `slug: ${page.slug ?? ""}\n`;
   if (page.keywords) frontmatter += `keywords: [${page.keywords}]\n`;
