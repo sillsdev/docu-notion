@@ -32,13 +32,20 @@ export class HierarchicalNamedLayoutStrategy extends LayoutStrategy {
       "/" +
       page.context +
       "/" +
-      sanitize(page.nameOrTitle) +
+      sanitize(page.nameForFile()) +
       extensionWithDot;
 
     path = path
       .replaceAll("//", "/")
       .replaceAll("%20", "-")
-      .replaceAll(" ", "-");
+      .replaceAll(" ", "-")
+      // crowdin complains about some characters in file names. I haven't found
+      // the actual list, so these are from memory.
+      .replaceAll('"', "")
+      .replaceAll("“", "")
+      .replaceAll("”", "")
+      .replaceAll("'", "")
+      .replaceAll("?", "-");
     // console.log(
     //   `getPathForPage(${context}, ${pageId}, ${title}) with  root ${this.rootDirectory} --> ${path}`
     // );
