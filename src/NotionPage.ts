@@ -100,13 +100,40 @@ export class NotionPage {
   private get name(): string {
     return this.getPlainTextProperty("Name", "name missing");
   }
-  public get slug(): string {
+
+  private explicitSlug(): string | undefined {
     const explicitSlug = this.getPlainTextProperty("Slug", "");
-    if (explicitSlug) return explicitSlug;
-    return encodeURIComponent(this.nameOrTitle.replaceAll(" ", "-"))
-      .replaceAll("%3A", "-")
-      .replaceAll("--", "-");
+    if (explicitSlug) {
+      if (explicitSlug === "/") return explicitSlug; // the root page
+      else
+        return (
+          "/" +
+          encodeURIComponent(
+            explicitSlug
+              .replace(/^\//, "")
+              // If for some reason someone types in a slug with special characters,
+              //we really don't want to see ugly entities in the URL, so first
+              // we replace a bunch of likely suspects with dashes. This will not
+              // adequately handle the case where there is one pag with slug:"foo-bar"
+              // and another with "foo?bar". Both will come out "foo-bar"
+              .replaceAll(" ", "-")
+              .replaceAll("?", "-")
+              .replaceAll("/", "-")
+              .replaceAll("#", "-")
+              .replaceAll("&", "-")
+              .replaceAll("%", "-")
+              // remove consecutive dashes
+              .replaceAll("--", "-")
+          )
+        );
+      return undefined; // this page has no slug property
+    }
   }
+
+  public get slug(): string {
+    return this.explicitSlug() ?? "/" + this.pageId;
+  }
+
   public get keywords(): string | undefined {
     return this.getPlainTextProperty("Keywords", "");
   }
