@@ -54,7 +54,7 @@
     "limiter": "^2.1.0",
     "markdown-table": "^2.0.0",
     "node-fetch": "2.6.6",
-    "notion-to-md": "^2.5.2",
+    "notion-to-md": "^2.5.5",
     "path": "^0.12.7",
     "postinstall-postinstall": "^2.1.0",
     "sanitize-filename": "^1.6.3"

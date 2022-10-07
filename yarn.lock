@@ -5432,10 +5432,10 @@ normalize-url@^6.0.0:
   resolved "https://registry.npmjs.org/normalize-url/-/normalize-url-6.1.0.tgz"
   integrity sha512-DlL+XwOy3NxAQ8xuC0okPgK46iuVNAK01YN7RueYBqqFeGsBjV9XmCAzAdgt+667bCl5kPh9EqKKDwnaPG1I7A==
 
-notion-to-md@^2.5.2:
-  version "2.5.2"
-  resolved "https://registry.npmjs.org/notion-to-md/-/notion-to-md-2.5.2.tgz"
-  integrity sha512-SqooTi0667D1d1EvNdtHdaV/A3kKdW0Fq/rswWHtmA8gSuTdE/qJQF8HDwy2Zs3p62Wxb46cYXQJlyEcdv8QjA==
+notion-to-md@^2.5.5:
+  version "2.5.5"
+  resolved "https://registry.yarnpkg.com/notion-to-md/-/notion-to-md-2.5.5.tgz#b022cd9d6f01125762b85e26e0a41ae15410bd12"
+  integrity sha512-EdzuNZpJyc+287ItRALOld90RkshWBDiSA0WThf75z98Y8cyynhu6Hg+h377eD5K4UOSQHy5K0SUV4vGdCxCiA==
   dependencies:
     markdown-table "^2.0.0"
 
