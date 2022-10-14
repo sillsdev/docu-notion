@@ -14,6 +14,9 @@ export function warning(s: string): void {
 export function info(s: string): void {
   console.log(s);
 }
+export function heading(s: string): void {
+  console.log(chalk.blue(s));
+}
 export function verbose(s: string): void {
   if (logLevel === "verbose" || logLevel === "debug")
     console.log(chalk.green(s));

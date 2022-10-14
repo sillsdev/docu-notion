@@ -34,15 +34,19 @@ export class NotionPage {
   private metadata: GetPageResponse;
   public readonly pageId: string;
   public context: string; // where we found it in the hierarchy of the outline
+  public foundDirectlyInOutline: boolean; // the page was found as a descendent of /outline instead of being linked to
 
   private constructor(
     context: string,
     pageId: string,
-    metadata: GetPageResponse
+    metadata: GetPageResponse,
+    foundDirectlyInOutline: boolean
   ) {
     this.context = context;
     this.pageId = pageId;
     this.metadata = metadata;
+    this.foundDirectlyInOutline = foundDirectlyInOutline;
+
     // review: this is expensive to learn as it takes another api call... I
     // think? We can tell if it's a database because it has a "Name" instead of a
     // "tile" and "parent": "type": "database_id". But do we need to differentiate
@@ -50,11 +54,12 @@ export class NotionPage {
   }
   public static async fromPageId(
     context: string,
-    pageId: string
+    pageId: string,
+    foundDirectlyInOutline: boolean
   ): Promise<NotionPage> {
     const metadata = await getPageMetadata(pageId);
     //logDebug(JSON.stringify(metadata));
-    return new NotionPage(context, pageId, metadata);
+    return new NotionPage(context, pageId, metadata, foundDirectlyInOutline);
   }
 
   public matchesLinkId(id: string): boolean {
@@ -142,7 +147,9 @@ export class NotionPage {
   public get slug(): string {
     return this.explicitSlug() ?? "/" + this.pageId;
   }
-
+  public get hasExplicitSlug(): boolean {
+    return this.explicitSlug() !== undefined;
+  }
   public get keywords(): string | undefined {
     return this.getPlainTextProperty("Keywords", "");
   }

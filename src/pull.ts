@@ -13,9 +13,10 @@ import {
 import { tweakForDocusaurus } from "./DocusaurusTweaks";
 import { setupCustomTransformers } from "./CustomTranformers";
 import * as Path from "path";
-import { error, info, logDebug, verbose, warning } from "./log";
+import { error, heading, info, logDebug, verbose, warning } from "./log";
 import { convertInternalLinks } from "./links";
 import { ListBlockChildrenResponseResult } from "notion-to-md/build/types";
+import chalk from "chalk";
 
 export type Options = {
   notionToken: string;
@@ -32,6 +33,12 @@ let currentSidebarPosition = 0;
 let layoutStrategy: LayoutStrategy;
 let notionToMarkdown: NotionToMarkdown;
 const pages = new Array<NotionPage>();
+const counts = {
+  output_normally: 0,
+  skipped_because_empty: 0,
+  skipped_because_status: 0,
+  skipped_because_level_cannot_have_content: 0,
+};
 
 export async function notionPull(incomingOptions: Options): Promise<void> {
   options = incomingOptions;
@@ -67,9 +74,21 @@ export async function notionPull(incomingOptions: Options): Promise<void> {
   // introduce any hierarchy in the resulting page urls, we can't
   // do this link fixing until we've already seen all the pages and
   // figured out what their eventual relative url will be.
+  heading(
+    "Stage 1: walk children of the page named 'Outline', looking for pages..."
+  );
   await getPagesRecursively("", options.rootPage, true);
   logDebug("getPagesRecursively", JSON.stringify(pages, null, 2));
+  info(`Found ${pages.length} pages`);
+  info(``);
+  heading(
+    `Stage 2: convert ${pages.length} Notion pages to markdown and save locally...`
+  );
   await outputPages(pages);
+  info(`Finished processing ${pages.length} pages`);
+  info(JSON.stringify(counts));
+  info(``);
+  heading("Stage 3: clean up old files & images...");
   await layoutStrategy.cleanupOldFiles();
   await cleanupOldImages();
 }
@@ -91,10 +110,14 @@ async function getPagesRecursively(
   pageId: string,
   rootLevel: boolean
 ) {
-  const pageInTheOutline = await NotionPage.fromPageId(incomingContext, pageId);
+  const pageInTheOutline = await NotionPage.fromPageId(
+    incomingContext,
+    pageId,
+    true
+  );
 
   info(
-    `Reading Outline Page ${incomingContext}/${pageInTheOutline.nameOrTitle}`
+    `Looking for children and links from ${incomingContext}/${pageInTheOutline.nameOrTitle}`
   );
 
   const pageInfo = await pageInTheOutline.getContentInfo();
@@ -103,7 +126,7 @@ async function getPagesRecursively(
     error(
       `Skipping "${pageInTheOutline.nameOrTitle}"  and its children. docu-notion does not support pages that are both levels and have content at the same time.`
     );
-
+    ++counts.skipped_because_level_cannot_have_content;
     return;
   }
   if (!rootLevel && pageInfo.hasParagraphs) {
@@ -135,7 +158,7 @@ async function getPagesRecursively(
     }
 
     for (const id of pageInfo.linksPages) {
-      pages.push(await NotionPage.fromPageId(context, id));
+      pages.push(await NotionPage.fromPageId(context, id, false));
     }
   } else {
     console.info(
@@ -143,6 +166,7 @@ async function getPagesRecursively(
         `Warning: The page "${pageInTheOutline.nameOrTitle}" is in the outline but appears to not have content, links to other pages, or child pages. It will be skipped.`
       )
     );
+    ++counts.skipped_because_empty;
   }
 }
 
@@ -155,10 +179,21 @@ async function outputPage(page: NotionPage) {
     verbose(
       `Skipping page because status is not '${options.statusTag}': ${page.nameOrTitle}`
     );
+    ++counts.skipped_because_status;
     return;
   }
 
-  info(`Reading Page ${page.context}/${page.nameOrTitle}`);
+  info(
+    `Reading & converting page ${page.context}/${
+      page.nameOrTitle
+    } (${chalk.blue(
+      page.hasExplicitSlug
+        ? page.slug
+        : page.foundDirectlyInOutline
+        ? "Descendant of Outline, not Database"
+        : "NO SLUG"
+    )})`
+  );
   layoutStrategy.pageWasSeen(page);
 
   const mdPath = layoutStrategy.getPathForPage(page, ".md");
@@ -208,4 +243,6 @@ async function outputPage(page: NotionPage) {
   const output = `${frontmatter}\n${imports}\n${body}`;
 
   fs.writeFileSync(mdPath, output, {});
+
+  ++counts.output_normally;
 }

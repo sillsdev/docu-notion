@@ -81,7 +81,7 @@ One of the big attractions of Notion for large documentation projects is that yo
 
 ## Slugs
 
-By default, pages will be given a slug based on the Notion id. For a human-readable URL, add a notion property named `Slug` and enter values in there.
+By default, pages will be given a slug based on the Notion id. For a human-readable URL, add a notion property named `Slug` to your database pages and enter a value in there that will work well in a URL. That is, no spaces, ?, #, /, etc.
 
 ## Known Limitations
 
