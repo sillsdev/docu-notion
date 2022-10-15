@@ -79,7 +79,7 @@ type Annotations = {
     | "pink_background"
     | "red_background";
 };
-type Text = {
+export type Text = {
   type: "text";
   text: {
     content: string;

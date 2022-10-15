@@ -7,6 +7,7 @@ import {
   ListBlockChildrenResponseResults,
 } from "notion-to-md/build/types";
 import { notionCalloutToAdmonition } from "./CalloutTransformer";
+import { numberedListTransformer } from "./NumberedListTransforer";
 
 export function setupCustomTransformers(
   notionToMarkdown: NotionToMarkdown,
@@ -88,6 +89,12 @@ export function setupCustomTransformers(
     "callout",
     (block: ListBlockChildrenResponseResult) =>
       notionCalloutToAdmonition(notionToMarkdown, notionClient, block)
+  );
+
+  notionToMarkdown.setCustomTransformer(
+    "numbered_list_item",
+    (block: ListBlockChildrenResponseResult) =>
+      numberedListTransformer(notionToMarkdown, notionClient, block)
   );
 
   // Note: Pull.ts also adds an image transformer, but has to do that for each
