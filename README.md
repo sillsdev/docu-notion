@@ -69,7 +69,7 @@ Most projects should probably commit the current markdown and image files each t
 
 Note that if you choose not to commit, the workflow feature (see below) won't work for you. Imagine the case where a document that previously had a `Status` property of `Publish` now has a different status. You probably want to keep publishing the old version until the new one is ready. But if you don't commit files, your CI system (e.g. Github Actions) won't have the old version around, so it will disappear from your site.
 
-# Advanced: using a Notion database for workflow
+# Using a Notion database for workflow
 
 One of the big attractions of Notion for large documentation projects is that you can treat your pages as database items. The advantage of this is that they can then have metadata properties that fit your workflow. For example, we use a simple kanban board view to see where each page is in our workflow:
 
@@ -78,6 +78,13 @@ One of the big attractions of Notion for large documentation projects is that yo
 `docu-notion` supports this by letting you link to database pages from your outline.
 
 ![image](https://user-images.githubusercontent.com/8448/168929668-f83d7c86-75d2-48e9-940c-84c5268a2854.png)
+
+# Page properties
+
+![image](https://user-images.githubusercontent.com/8448/197016100-ab016111-2fa1-420a-a884-05318783096e.png)
+
+> **Note**
+> For some reason Notion only allows properties on pages that are part of a database. So if you creat pages directly in the Outline, you won't be able to fill in any of these proprerties, other than the page title.
 
 ## Slugs
 
