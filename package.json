@@ -14,8 +14,8 @@
     "notion-download": "node dist/index.js",
     "cmdhelp": "ts-node --compiler-options \"{\\\"module\\\": \\\"commonjs\\\"}\" src/index.ts",
     "// test out with a private sample notion db": "",
-    "pull-test-tagged": "cross-var rm -rf ./docs/ && ts-node --compiler-options \"{\\\"module\\\": \\\"commonjs\\\"}\" src/index.ts -n %DOCU_NOTION_INTEGRATION_TOKEN% -r %DOCU_NOTION_TEST_ROOT_PAGE%  --log-level debug --status-tag test",
-    "pull-test-outline": "cross-var rm -rf ./docs/ && ts-node --compiler-options \"{\\\"module\\\": \\\"commonjs\\\"}\" src/index.ts -n %DOCU_NOTION_INTEGRATION_TOKEN% -r %DOCU_NOTION_TEST_ROOT_PAGE%  --log-level debug",
+    "pull-test-tagged": "cross-var rm -rf ./docs/ && ts-node src/index.ts -n %DOCU_NOTION_INTEGRATION_TOKEN% -r %DOCU_NOTION_TEST_ROOT_PAGE_ID%  --log-level debug --status-tag test",
+    "pull-test-outline": "cross-var rm -rf ./docs/ && ts-node --compiler-options \"{\\\"module\\\": \\\"commonjs\\\"}\" src/index.ts -n %DOCU_NOTION_INTEGRATION_TOKEN% -r %DOCU_NOTION_TEST_ROOT_PAGE_ID%  --log-level debug",
     "// test with a semi-stable/public site:": "",
     "pull-sample": "cross-var ts-node --compiler-options \"{\\\"module\\\": \\\"commonjs\\\"}\" src/index.ts -n %DOCU_NOTION_INTEGRATION_TOKEN% -r %DOCU_NOTION_SAMPLE_ROOT_PAGE% -m ./sample --locales en,es,fr,de --log-level verbose",
     "pull-sample-with-paths": "cross-var ts-node --compiler-options \"{\\\"module\\\": \\\"commonjs\\\"}\" src/index.ts -n %DOCU_NOTION_INTEGRATION_TOKEN% -r %DOCU_NOTION_SAMPLE_ROOT_PAGE% -m ./sample --img-output-path ./sample_img"
