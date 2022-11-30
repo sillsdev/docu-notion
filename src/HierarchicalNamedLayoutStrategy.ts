@@ -10,26 +10,24 @@ import { NotionPage } from "./NotionPage";
 export class HierarchicalNamedLayoutStrategy extends LayoutStrategy {
   public newLevel(
     dirRoot: string,
+    order: number,
     context: string,
     levelLabel: string
   ): string {
-    const path = context + "/" + sanitize(levelLabel).replaceAll(" ", "-");
+    // The docusaurus documentation doesn't specify how the prefix should look (such that it recognizes and strips it)
+    // A following dash works.
+    const prefix = "";
+    const path = context + "/" + prefix + sanitize(levelLabel); //.replaceAll(" ", "-");
 
     //console.log("Creating level " + path);
-    fs.mkdirSync(dirRoot + "/" + path, { recursive: true });
+    const newPath = dirRoot + "/" + path;
+    fs.mkdirSync(newPath, { recursive: true });
+    this.addCategoryMetadata(newPath, order);
     return path;
   }
 
   public getPathForPage(page: NotionPage, extensionWithDot: string): string {
-    let path =
-      this.rootDirectory +
-      "/" +
-      page.context +
-      "/" +
-      sanitize(page.nameForFile()) +
-      extensionWithDot;
-
-    path = path
+    const sanitizedName = sanitize(page.nameForFile())
       .replaceAll("//", "/")
       .replaceAll("%20", "-")
       .replaceAll(" ", "-")
@@ -40,9 +38,30 @@ export class HierarchicalNamedLayoutStrategy extends LayoutStrategy {
       .replaceAll("”", "")
       .replaceAll("'", "")
       .replaceAll("?", "-");
-    // console.log(
-    //   `getPathForPage(${context}, ${pageId}, ${title}) with  root ${this.rootDirectory} --> ${path}`
-    // );
+
+    const context = ("/" + page.context + "/").replaceAll("//", "/");
+    const path =
+      this.rootDirectory + context + sanitizedName + extensionWithDot;
+
     return path;
+  }
+
+  //{
+  //   "position": 2.5,
+  //   "label": "Tutorial",
+  //   "collapsible": true,
+  //   "collapsed": false,
+  //   "className": "red",
+  //   "link": {
+  //     "type": "generated-index",
+  //     "title": "Tutorial overview"
+  //   },
+  //   "customProps": {
+  //     "description": "This description can be used in the swizzled DocCard"
+  //   }
+  // }
+  private addCategoryMetadata(dir: string, order: number) {
+    const data = `{"position":${order}}`;
+    fs.writeFileSync(dir + "/_category_.json", data);
   }
 }

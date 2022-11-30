@@ -1,25 +1,35 @@
-import { parseImageBlock } from "./images";
+import { initImageHandling, parseImageBlock } from "./images";
 
 const kPrimaryImageUrl =
   "https://s3.us-west-2.amazonaws.com/primaryImage.png?Blah=foo";
 
+/* didn't work?
+beforeAll(async () => {
+  console.log("before");
+  await initImageHandling("", "", []);
+  console.log("azfter");
+});
+*/
 /* eslint-disable @typescript-eslint/require-await */
 test("finds primary image url", async () => {
-  const img = parseImageBlock(kImageBlockWithTwoLocalizedImages);
+  await initImageHandling("", "", []);
+  const img = parseImageBlock(kImageBlockWithTwoLocalizedImages.image);
   expect(img.primaryUrl).toBe(kPrimaryImageUrl);
 });
 
 test("primary caption content after image links are removed", async () => {
+  await initImageHandling("", "", []);
   const img = parseImageBlock(
-    kImageBlockWithTwoLocalizedImagesWrappedWithActualCaptionText
+    kImageBlockWithTwoLocalizedImagesWrappedWithActualCaptionText.image
   );
   // carriage returns seem to mess up the markdown, so should be removed
   expect(img.caption).toBe("Caption before images. Caption after images.");
 });
 
 test("gets localized image links", async () => {
+  await initImageHandling("", "", []);
   const img = parseImageBlock(
-    kImageBlockWithTwoLocalizedImagesWrappedWithActualCaptionText
+    kImageBlockWithTwoLocalizedImagesWrappedWithActualCaptionText.image
   );
   expect(img.localizedUrls.length).toBe(2);
   expect(img.localizedUrls[0].iso632Code).toBe("fr");

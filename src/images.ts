@@ -155,7 +155,10 @@ async function saveImage(imageSet: ImageSet): Promise<void> {
       localizedImage.iso632Code
     }/docusaurus-plugin-content-docs/current/${imageSet.relativePathToParentDocument!}`;
 
-    writeImageIfNew(directory + "/" + imageSet.outputFileName!, buffer);
+    writeImageIfNew(
+      (directory + "/" + imageSet.outputFileName!).replaceAll("//", "/"),
+      buffer
+    );
   }
 }
 
@@ -177,6 +180,7 @@ function writeImageIfNew(path: string, buffer: Buffer) {
 }
 
 export function parseImageBlock(image: any): ImageSet {
+  if (!locales) throw Error("Did you call initImageHandling()?");
   const imageSet: ImageSet = {
     primaryUrl: "",
     caption: "",

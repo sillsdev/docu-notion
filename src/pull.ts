@@ -29,7 +29,6 @@ export type Options = {
 };
 
 let options: Options;
-let currentSidebarPosition = 0;
 let layoutStrategy: LayoutStrategy;
 let notionToMarkdown: NotionToMarkdown;
 const pages = new Array<NotionPage>();
@@ -63,21 +62,16 @@ export async function notionPull(incomingOptions: Options): Promise<void> {
   layoutStrategy = new HierarchicalNamedLayoutStrategy();
 
   await fs.mkdir(options.markdownOutputPath, { recursive: true });
-  layoutStrategy.setRootDirectoryForMarkdown(options.markdownOutputPath);
+  layoutStrategy.setRootDirectoryForMarkdown(
+    options.markdownOutputPath.replace(/\/+$/, "") // trim any trailing slash
+  );
 
   info("Connecting to Notion...");
-  // About the complication here of getting all the pages first and then output
-  // them all. It would be simpler to just do it all in one pass, however the
-  // two passes are required in order to change links between
-  // pages in Notion to be changed to point to the equivalent page
-  // in the markdown. Unless the LayoutStrategy we're using does not
-  // introduce any hierarchy in the resulting page urls, we can't
-  // do this link fixing until we've already seen all the pages and
-  // figured out what their eventual relative url will be.
+
   heading(
     "Stage 1: walk children of the page named 'Outline', looking for pages..."
   );
-  await getPagesRecursively("", options.rootPage, true);
+  await getPagesRecursively("", options.rootPage, 0, true);
   logDebug("getPagesRecursively", JSON.stringify(pages, null, 2));
   info(`Found ${pages.length} pages`);
   info(``);
@@ -107,12 +101,14 @@ async function outputPages(pages: Array<NotionPage>) {
 // able to figure out what the url will be for any links between content pages.
 async function getPagesRecursively(
   incomingContext: string,
-  pageId: string,
+  pageIdOfThisParent: string,
+  orderOfThisParent: number,
   rootLevel: boolean
 ) {
   const pageInTheOutline = await NotionPage.fromPageId(
     incomingContext,
-    pageId,
+    pageIdOfThisParent,
+    orderOfThisParent,
     true
   );
 
@@ -122,7 +118,11 @@ async function getPagesRecursively(
 
   const pageInfo = await pageInTheOutline.getContentInfo();
 
-  if (!rootLevel && pageInfo.hasParagraphs && pageInfo.childPages.length) {
+  if (
+    !rootLevel &&
+    pageInfo.hasParagraphs &&
+    pageInfo.childPageIdsAndOrder.length
+  ) {
     error(
       `Skipping "${pageInTheOutline.nameOrTitle}"  and its children. docu-notion does not support pages that are both levels and have content at the same time.`
     );
@@ -136,29 +136,45 @@ async function getPagesRecursively(
     // So how can we tell the difference between a page that is supposed to be content and one that is meant to form the sidebar? If it
     // have just links, then it's a page for forming the sidebar. If it has contents and no links, then it's a content page. But what if
     // it has both? Well then we assume it's a content page.
-    if (pageInfo.linksPages?.length) {
+    if (pageInfo.linksPageIdsAndOrder?.length) {
       warning(
         `Note: The page "${pageInTheOutline.nameOrTitle}" is in the outline, has content, and also points at other pages. It will be treated as a simple content page. This is no problem, unless you intended to have all your content pages in the database (kanban workflow) section.`
       );
     }
   }
   // a normal outline page that exists just to create the level, pointing at database pages that belong in this level
-  else if (pageInfo.childPages.length || pageInfo.linksPages.length) {
+  else if (
+    pageInfo.childPageIdsAndOrder.length ||
+    pageInfo.linksPageIdsAndOrder.length
+  ) {
     let context = incomingContext;
     // don't make a level for "Outline" page at the root
     if (!rootLevel && pageInTheOutline.nameOrTitle !== "Outline") {
       context = layoutStrategy.newLevel(
         options.markdownOutputPath,
+        pageInTheOutline.order,
         incomingContext,
         pageInTheOutline.nameOrTitle
       );
     }
-    for (const id of pageInfo.childPages) {
-      await getPagesRecursively(context, id, false);
+    for (const childPageInfo of pageInfo.childPageIdsAndOrder) {
+      await getPagesRecursively(
+        context,
+        childPageInfo.id,
+        childPageInfo.order,
+        false
+      );
     }
 
-    for (const id of pageInfo.linksPages) {
-      pages.push(await NotionPage.fromPageId(context, id, false));
+    for (const linkPageInfo of pageInfo.linksPageIdsAndOrder) {
+      pages.push(
+        await NotionPage.fromPageId(
+          context,
+          linkPageInfo.id,
+          linkPageInfo.order,
+          false
+        )
+      );
     }
   } else {
     console.info(
@@ -206,8 +222,6 @@ async function outputPage(page: NotionPage) {
   );
   logDebug("pull", JSON.stringify(blocks));
 
-  currentSidebarPosition++;
-
   // we have to set this one up for each page because we need to
   // give it two extra parameters that are context for each page
   notionToMarkdown.setCustomTransformer(
@@ -227,7 +241,7 @@ async function outputPage(page: NotionPage) {
   // }
   let frontmatter = "---\n";
   frontmatter += `title: ${page.nameOrTitle.replaceAll(":", "-")}\n`; // I have not found a way to escape colons
-  frontmatter += `sidebar_position: ${currentSidebarPosition}\n`;
+  frontmatter += `sidebar_position: ${page.order}\n`;
   frontmatter += `slug: ${page.slug ?? ""}\n`;
   if (page.keywords) frontmatter += `keywords: [${page.keywords}]\n`;
 
@@ -241,7 +255,7 @@ async function outputPage(page: NotionPage) {
   // Improve: maybe this could be another markdown-to-md "custom transformer"
   const { body, imports } = tweakForDocusaurus(markdown);
   const output = `${frontmatter}\n${imports}\n${body}`;
-
+  verbose(`writing ${mdPath}`);
   fs.writeFileSync(mdPath, output, {});
 
   ++counts.output_normally;

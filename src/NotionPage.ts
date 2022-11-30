@@ -7,6 +7,7 @@ import {
 import { RateLimiter } from "limiter";
 import { Client } from "@notionhq/client";
 import { logDebug } from "./log";
+import { info } from "console";
 
 const notionLimiter = new RateLimiter({
   tokensPerInterval: 3,
@@ -33,17 +34,20 @@ export function initNotionClient(notionToken: string): Client {
 export class NotionPage {
   private metadata: GetPageResponse;
   public readonly pageId: string;
+  public readonly order: number;
   public context: string; // where we found it in the hierarchy of the outline
   public foundDirectlyInOutline: boolean; // the page was found as a descendent of /outline instead of being linked to
 
   private constructor(
     context: string,
     pageId: string,
+    order: number,
     metadata: GetPageResponse,
     foundDirectlyInOutline: boolean
   ) {
     this.context = context;
     this.pageId = pageId;
+    this.order = order;
     this.metadata = metadata;
     this.foundDirectlyInOutline = foundDirectlyInOutline;
 
@@ -55,11 +59,19 @@ export class NotionPage {
   public static async fromPageId(
     context: string,
     pageId: string,
+    order: number,
     foundDirectlyInOutline: boolean
   ): Promise<NotionPage> {
     const metadata = await getPageMetadata(pageId);
-    //logDebug(JSON.stringify(metadata));
-    return new NotionPage(context, pageId, metadata, foundDirectlyInOutline);
+
+    //logDebug("notion metadata", JSON.stringify(metadata));
+    return new NotionPage(
+      context,
+      pageId,
+      order,
+      metadata,
+      foundDirectlyInOutline
+    );
   }
 
   public matchesLinkId(id: string): boolean {
@@ -162,7 +174,6 @@ export class NotionPage {
       block_id: this.pageId,
       page_size: 100, // max hundred links in a page
     });
-
     return children;
   }
 
@@ -257,19 +268,21 @@ export class NotionPage {
   }
 
   public async getContentInfo(): Promise<{
-    childPages: any[];
-    linksPages: any[];
+    childPageIdsAndOrder: { id: string; order: number }[];
+    linksPageIdsAndOrder: { id: string; order: number }[];
     hasParagraphs: boolean;
   }> {
     const children = await this.getChildren();
-
+    for (let i = 0; i < children.results.length; i++) {
+      (children.results[i] as any).order = i;
+    }
     return {
-      childPages: children.results
+      childPageIdsAndOrder: children.results
         .filter((b: any) => b.type === "child_page")
-        .map((b: any) => b.id),
-      linksPages: children.results
+        .map((b: any) => ({ id: b.id, order: b.order })),
+      linksPageIdsAndOrder: children.results
         .filter((b: any) => b.type === "link_to_page")
-        .map((b: any) => b.link_to_page.page_id),
+        .map((b: any) => ({ id: b.link_to_page.page_id, order: b.order })),
       hasParagraphs: children.results.some(
         b =>
           (b as any).type === "paragraph" &&

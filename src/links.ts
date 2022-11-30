@@ -83,16 +83,17 @@ function transformLinks(
 
   // The key to understanding this while is that linkRegExp actually has state, and
   // it gives you a new one each time. https://stackoverflow.com/a/1520853/723299
-  verbose(`transformLinks ${pageMarkdown}`);
+
   while ((match = linkRegExp.exec(pageMarkdown)) !== null) {
-    const string = match[0];
+    const originalLink = match[0];
 
     const hrefFromNotion = match[2];
     const text = convertLinkText(match[1] || "", hrefFromNotion);
     const hrefForDocusaurus = convertHref(hrefFromNotion);
 
     if (hrefForDocusaurus) {
-      output = output.replace(string, `[${text}](${hrefForDocusaurus})`);
+      output = output.replace(originalLink, `[${text}](${hrefForDocusaurus})`);
+      verbose(`transformed link: ${originalLink}-->${hrefForDocusaurus}`);
     } else {
       verbose(`Maybe problem with link ${JSON.stringify(match)}`);
     }
