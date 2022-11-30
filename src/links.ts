@@ -8,14 +8,18 @@ export function convertInternalLinks(
   layoutStrategy: LayoutStrategy
 ): string {
   const convertHref = (url: string) => {
-    const p = pages.find(p => {
+    const page = pages.find(p => {
       return p.matchesLinkId(url);
     });
-    if (p) {
-      verbose(
-        `Converting Link ${url} --> ${layoutStrategy.getLinkPathForPage(p)}`
-      );
-      return layoutStrategy.getLinkPathForPage(p);
+    if (page) {
+      let convertedLink = layoutStrategy.getLinkPathForPage(page);
+
+      // Include the fragment (# and after) if it exists
+      const { fragmentId } = parseLinkId(url);
+      convertedLink += fragmentId;
+
+      verbose(`Converting Link ${url} --> ${convertedLink}`);
+      return convertedLink;
     }
 
     // About this situation. See https://github.com/sillsdev/docu-notion/issues/9
@@ -100,4 +104,19 @@ function transformLinks(
   }
 
   return output;
+}
+
+// Parse the link ID to get the base (before the #) and the fragment (# and after).
+export function parseLinkId(fullLinkId: string): {
+  baseLinkId: string; // before the #
+  fragmentId: string; // # and after
+} {
+  const iHash: number = fullLinkId.indexOf("#");
+  if (iHash >= 0) {
+    return {
+      baseLinkId: fullLinkId.substring(0, iHash),
+      fragmentId: fullLinkId.substring(iHash),
+    };
+  }
+  return { baseLinkId: fullLinkId, fragmentId: "" };
 }
