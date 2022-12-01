@@ -7,6 +7,7 @@ import {
 import { RateLimiter } from "limiter";
 import { Client } from "@notionhq/client";
 import { logDebug } from "./log";
+import { parseLinkId } from "./links";
 import { info } from "console";
 
 const notionLimiter = new RateLimiter({
@@ -75,9 +76,11 @@ export class NotionPage {
   }
 
   public matchesLinkId(id: string): boolean {
+    const { baseLinkId } = parseLinkId(id);
+
     const match =
-      id === this.pageId || // from a link_to_page.pageId, which still has the dashes
-      id === this.pageId.replaceAll("-", ""); // from inline links, which are lacking the dashes
+      baseLinkId === this.pageId || // from a link_to_page.pageId, which still has the dashes
+      baseLinkId === this.pageId.replaceAll("-", ""); // from inline links, which are lacking the dashes
 
     logDebug(
       `matchedLinkId`,
@@ -95,7 +98,7 @@ export class NotionPage {
             or
             "type": "database_id",
             ...
-        }, 
+        },
     */
     return (this.metadata as any).parent.type === "database_id"
       ? PageType.DatabasePage

@@ -134,7 +134,7 @@ async function getPagesRecursively(
 
     // The best practice is to keep content pages in the "database" (e.g. kanban board), but we do allow people to make pages in the outline directly.
     // So how can we tell the difference between a page that is supposed to be content and one that is meant to form the sidebar? If it
-    // have just links, then it's a page for forming the sidebar. If it has contents and no links, then it's a content page. But what if
+    // has only links, then it's a page for forming the sidebar. If it has contents and no links, then it's a content page. But what if
     // it has both? Well then we assume it's a content page.
     if (pageInfo.linksPageIdsAndOrder?.length) {
       warning(
@@ -233,6 +233,15 @@ async function outputPage(page: NotionPage) {
         relativePathToFolderContainingPage
       )
   );
+
+  // One half of a horrible hack to make heading links work.
+  // See the other half and explanation in CustomTransformers.ts => headingCustomTransformer.
+  for (const block_t of blocks) {
+    const block = block_t as any;
+    if (block.type.startsWith("heading"))
+      block.type = block.type.replace("heading", "my_heading");
+  }
+
   const mdBlocks = await notionToMarkdown.blocksToMarkdown(blocks);
 
   // if (page.nameOrTitle.startsWith("Embed")) {

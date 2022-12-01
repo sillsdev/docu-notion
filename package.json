@@ -9,6 +9,7 @@
   "scripts": {
     "test": "jest",
     "build": "yarn test && tsc && cp ./src/css/*.css dist/",
+    "build-only": "tsc && cp ./src/css/*.css dist/",
     "clean": "rm -rf ./dist/",
     "semantic-release": "semantic-release",
     "typecheck": "tsc --noEmit",
