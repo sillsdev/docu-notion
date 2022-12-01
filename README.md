@@ -94,11 +94,6 @@ By default, pages will be given a slug based on the Notion id. For a human-reada
 
 docu-notion is not doing anything smart with regards to previously Published but now not Published documents. All it does is ignore every Notion document that doesn't have `status == Publish`. So if the old version of the document is still in your file tree when your static site generator (e.g. Docusaurus) runs, then it will appear on your website. If it isn't there, it won't. If you rename directories or move the document, docu-notion will not realize this and will delete the previously published markdown file.
 
-- [x] Handle links to another Notion _pages_.
-- [ ] Handle links to Notion _blocks_.
-- [x] Keep pages in order as in Notion
-- [ ] Make the sidebar show outline elements in same order as in Notion
-
 # Text Localization
 
 Localize your files in Crowdin (or whatever) based on the markdown files, not in Notion. For how to do this with Docusaurus, see [Docusaurus i18n](https://docusaurus.io/docs/i18n/crowdin).
