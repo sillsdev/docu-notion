@@ -14,15 +14,12 @@ export class HierarchicalNamedLayoutStrategy extends LayoutStrategy {
     context: string,
     levelLabel: string
   ): string {
-    // The docusaurus documentation doesn't specify how the prefix should look (such that it recognizes and strips it)
-    // A following dash works.
-    const prefix = "";
-    const path = context + "/" + prefix + sanitize(levelLabel); //.replaceAll(" ", "-");
+    const path = context + "/" + sanitize(levelLabel).replaceAll(" ", "-");
 
     //console.log("Creating level " + path);
     const newPath = dirRoot + "/" + path;
     fs.mkdirSync(newPath, { recursive: true });
-    this.addCategoryMetadata(newPath, order);
+    this.addCategoryMetadata(newPath, order, levelLabel);
     return path;
   }
 
@@ -60,8 +57,8 @@ export class HierarchicalNamedLayoutStrategy extends LayoutStrategy {
   //     "description": "This description can be used in the swizzled DocCard"
   //   }
   // }
-  private addCategoryMetadata(dir: string, order: number) {
-    const data = `{"position":${order}}`;
+  private addCategoryMetadata(dir: string, order: number, label: string) {
+    const data = `{"position":${order}, "label":"${label}"}`;
     fs.writeFileSync(dir + "/_category_.json", data);
   }
 }
