@@ -1,7 +1,7 @@
 import { NotionToMarkdown } from "notion-to-md";
 import { ListBlockChildrenResponseResult } from "notion-to-md/build/types";
 import { Client } from "@notionhq/client";
-import { getBlockChildren } from "./CustomTranformers";
+import { getBlockChildren } from "./CustomTransformers";
 
 export async function notionCalloutToAdmonition(
   notionToMarkdown: NotionToMarkdown,

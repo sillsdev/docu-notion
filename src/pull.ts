@@ -11,7 +11,7 @@ import {
 } from "./images";
 
 import { tweakForDocusaurus } from "./DocusaurusTweaks";
-import { setupCustomTransformers } from "./CustomTranformers";
+import { setupCustomTransformers } from "./CustomTransformers";
 import * as Path from "path";
 import { error, heading, info, logDebug, verbose, warning } from "./log";
 import { convertInternalLinks } from "./links";
