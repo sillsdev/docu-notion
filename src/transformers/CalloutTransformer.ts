@@ -3,6 +3,13 @@ import { ListBlockChildrenResponseResult } from "notion-to-md/build/types";
 import { Client } from "@notionhq/client";
 import { getBlockChildren } from "./CustomTransformers";
 
+// In Notion, you can make a callout and change its emoji. We map 5 of these
+// to the 5 Docusaurus admonition styles.
+// This is mostly a copy of the callout code from notion-to-md. The change is to output docusaurus
+// admonitions instead of emulating a callout with markdown > syntax.
+// Note: I haven't yet tested this with any emoji except "💡"/"tip", nor the case where the
+// callout has-children. Not even sure what that would mean, since the document I was testing
+// with has quite complex markup inside the callout, but still takes the no-children branch.
 export async function notionCalloutToAdmonition(
   notionToMarkdown: NotionToMarkdown,
   notionClient: Client,

@@ -235,7 +235,7 @@ async function outputPage(page: NotionPage) {
   );
 
   // One half of a horrible hack to make heading links work.
-  // See the other half and explanation in CustomTransformers.ts => headingCustomTransformer.
+  // See the other half and explanation in HeadingTransformer.ts.
   for (const block_t of blocks) {
     const block = block_t as any;
     if (block.type.startsWith("heading"))
