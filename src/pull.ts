@@ -234,10 +234,13 @@ async function outputPage(page: NotionPage) {
       )
   );
 
-  // One half of a horrible hack to make heading links work.
-  // See the other half and explanation in HeadingTransformer.ts.
   for (const block_t of blocks) {
     const block = block_t as any;
+
+    escapeHtml(block);
+
+    // One half of a horrible hack to make heading links work.
+    // See the other half and explanation in CustomTransformers.ts => headingCustomTransformer.
     if (block.type.startsWith("heading"))
       block.type = block.type.replace("heading", "my_heading");
   }
@@ -268,4 +271,26 @@ async function outputPage(page: NotionPage) {
   fs.writeFileSync(mdPath, output, {});
 
   ++counts.output_normally;
+}
+
+function escapeHtml(block: any): void {
+  const blockContent = block[block.type];
+
+  if (blockContent.rich_text?.length) {
+    for (let i = 0; i < blockContent.rich_text.length; i++) {
+      const rt = blockContent.rich_text[i];
+
+      // See https://github.com/sillsdev/docu-notion/issues/21.
+      if (
+        rt?.plain_text &&
+        block.type !== "code" &&
+        rt.type !== "code" &&
+        !rt.annotations?.code
+      ) {
+        rt.plain_text = rt.plain_text
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;");
+      }
+    }
+  }
 }
