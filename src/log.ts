@@ -5,7 +5,7 @@ let logLevel: levels;
 export function setLogLevel(l: levels): void {
   logLevel = l;
 }
-export function error(s: string): void {
+export function error(s: string | Error): void {
   console.error(chalk.red(s));
 }
 export function warning(s: string): void {

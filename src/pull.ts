@@ -265,7 +265,7 @@ async function outputPage(page: NotionPage) {
   markdown = convertInternalLinks(markdown, pages, layoutStrategy);
 
   // Improve: maybe this could be another markdown-to-md "custom transformer"
-  const { body, imports } = tweakForDocusaurus(markdown);
+  const { body, imports } = await tweakForDocusaurus(markdown);
   const output = `${frontmatter}\n${imports}\n${body}`;
   verbose(`writing ${mdPath}`);
   fs.writeFileSync(mdPath, output, {});

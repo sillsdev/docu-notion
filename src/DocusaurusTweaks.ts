@@ -1,10 +1,14 @@
+import {
+  bloomPUBembedProps,
+  getBloomPUBReplacement,
+} from "./bloom/BloomBookEmbedding";
 import { logDebug } from "./log";
 
-export function tweakForDocusaurus(input: string): {
+export async function tweakForDocusaurus(input: string): Promise<{
   body: string;
   imports: string;
-} {
-  const { body, imports } = notionEmbedsToMDX(input);
+}> {
+  const { body, imports } = await notionEmbedsToMDX(input);
   return { body, imports };
 }
 // In Notion, you can embed videos & such. To show these
@@ -12,10 +16,10 @@ export function tweakForDocusaurus(input: string): {
 // * switch to .MDX instead of just .MD
 // * import the required react libraries
 // * insert some JSX for each embed
-function notionEmbedsToMDX(input: string): {
+async function notionEmbedsToMDX(input: string): Promise<{
   body: string;
   imports: string;
-} {
+}> {
   /* Note: the notion api tells us that the embedded type is video, but this information is lost by the time
   we got through notion-to-md:
   {
@@ -69,15 +73,8 @@ function notionEmbedsToMDX(input: string): {
       ...gif,
     },
     // This is included in docu-notion just because we built docu-notion for our own doc site, and it needs this.
-    // bloomPUB: {
-    //   regex: /\[.*\]\((.*bloomlibrary\.org.*.*book.*)\)/gm,
-    //   // enhance: it would be nice if we could fill in the `host` parameter for analytics
-    //   //     output: `<iframe width="100%" height="500px" allow="fullscreen"    allowFullScreen={true}
-    //   //     src="https://embed.bloomlibrary.org/bloom-player/bloomplayer.htm?url=$1_url_encoded&initiallyShowAppBar=false&allowToggleAppBar=false"
-    //   // ></iframe>`,
-    //   output: `<iframe width="100%" height="450px" allow="fullscreen" allowFullScreen={true} src="https://bloomlibrary.org/player/$1"></iframe>`,
-    //   import: "", // it's just an iframe, nothing to import
-    // },
+    // We don't yet have a way for clients to provide custom processing.
+    bloomPUB: bloomPUBembedProps,
   };
 
   let body = input;
@@ -87,13 +84,27 @@ function notionEmbedsToMDX(input: string): {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   for (const [k, v] of Object.entries(embeds)) {
     while ((match = v.regex.exec(input)) !== null) {
-      const string = match[0];
-      const url = match[1];
+      const matchedString = match[0];
+      const group1 = match[1];
+
+      let replacementString;
+      if (k === "bloomPUB") {
+        replacementString = await getBloomPUBReplacement(
+          matchedString,
+          match[2],
+          group1
+        );
+      } else {
+        replacementString = v.output
+          //.replace("$1_uri_encoded", encodeURIComponent(group1))
+          .replace("$1", group1);
+      }
+
       logDebug(
         "DocusaurusTweaks",
-        `${string} --> ${v.output.replace("$1", url)}`
+        `${matchedString}\n-->\n${replacementString}`
       );
-      body = body.replace(string, v.output.replace("$1", url));
+      body = body.replace(matchedString, replacementString);
       imports.add(v.import);
     }
   }
