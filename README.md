@@ -27,7 +27,7 @@ In Notion, click "Share" on the root of your documentation and "invite" your int
 
 ## 5. Add your pages under your Outline page.
 
-Currently, docu-notion expects that each page has only one of the following: subpages, links to other pages, or normal content. Do not mix them. You can add content pages directly here, but then you won't be able to make use of the workflow features. If those matter to you, instead make new pages under the "Database" and then link to them in your outline pages.
+Currently, docu-notion expects that each page has only one of the following: sub-pages, links to other pages, or normal content. Do not mix them. You can add content pages directly here, but then you won't be able to make use of the workflow features. If those matter to you, instead make new pages under the "Database" and then link to them in your outline pages.
 
 ## 6. Pull your pages
 
@@ -84,7 +84,7 @@ One of the big attractions of Notion for large documentation projects is that yo
 ![image](https://user-images.githubusercontent.com/8448/197016100-ab016111-2fa1-420a-a884-05318783096e.png)
 
 > **Note**
-> For some reason Notion only allows properties on pages that are part of a database. So if you creat pages directly in the Outline, you won't be able to fill in any of these proprerties, other than the page title.
+> For some reason Notion only allows properties on pages that are part of a database. So if you create pages directly in the Outline, you won't be able to fill in any of these properties, other than the page title.
 
 ## Slugs
 
