@@ -20,8 +20,8 @@ program
     "The 31 character ID of the page which is the root of your docs page in notion. The code will look like 9120ec9960244ead80fa2ef4bc1bba25. This page must have a child page named 'Outline'"
   )
   .option(
-    "-s, --slug-prefix  <string>",
-    "Prefix to add to all slugs. This is useful if you want to host your docs on a subdomain, e.g. docs.example.com.",
+    "-s, --mermaid-slug-prefix  <string>",
+    "Prefix to add to document slugs for mermaid internal diagram links",
     ""
   )
   .option(

@@ -22,7 +22,7 @@ import { convertMermaidInternalLinks } from "./linksMermaid";
 export type Options = {
   notionToken: string;
   rootPage: string;
-  slugPrefix: string;
+  mermaidSlugPrefix: string;
   locales: string[];
   markdownOutputPath: string;
   imgOutputPath: string;
@@ -270,7 +270,7 @@ async function outputPage(page: NotionPage) {
     markdown,
     pages,
     layoutStrategy,
-    options.slugPrefix
+    options.mermaidSlugPrefix
   );
 
   // Improve: maybe this could be another markdown-to-md "custom transformer"
