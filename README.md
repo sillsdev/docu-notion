@@ -112,20 +112,47 @@ NOTE: if you just localize an image, it will not get picked up. You also must lo
 
 Here is a working Github Action script to copy and customize: https://github.com/BloomBooks/bloom-docs/blob/master/.github/workflows/release.yml
 
+# Links within mermaid code blocks
+
+Mermaid code blocks can contain clickable links to other notion documents. This works great in notion, but to convert you might need to add the flag:
+
+```
+  --slug-prefix <path>
+```
+
+where `<path>` might be e.g. `blog` if the root of the converted documents is are your blogs and they live in the directory "./blog".
+
+This converts the `An internal page` node below into a clickable link in your published site:
+
+```mermaid
+graph LR
+  A[An internal page] --> B(Somewhere else)
+  click A "https://www.notion.so/Introduction-to-docu-notion-779f83504bd94642a9b87b2afc810aaa"
+```
+
+```
+graph LR
+  A[An internal page] --> B(Somewhere else)
+  click A "https://www.notion.so/Introduction-to-docu-notion-779f83504bd94642a9b87b2afc810aaa"
+```
+
+
+
 # Command line
 
 Usage: docu-notion -n <token> -r <root> [options]
 
 Options:
 
-| flag                                  | required? | description                                                                                                                                                                                                        |
-| ------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| -n, --notion-token <string>           | required  | notion api token, which looks like `secret_3bc1b50XFYb15123RHF243x43450XFY33250XFYa343`                                                                                                                            |
-| -r, --root-page <string>              | required  | The 31 character ID of the page which is the root of your docs page in notion. The code will look like `9120ec9960244ead80fa2ef4bc1bba25`. This page must have a child page named 'Outline'                        |
-| -m, --markdown-output-path <string>   |           | Root of the hierarchy for md files. WARNING: node-pull-mdx will delete files from this directory. Note also that if it finds localized images, it will create an i18n/ directory as a sibling. (default: "./docs") |
-| -t, --status-tag <string>             |           | Database pages without a Notion page property 'status' matching this will be ignored. Use '\*' to ignore status altogether. (default: `Publish`)                                                                   |
-| --locales <codes>                     |           | Comma-separated list of iso 639-2 codes, the same list as in docusaurus.config.js, minus the primary (i.e. 'en'). This is needed for image localization. (default: [])                                             |
-| -l, --log-level <level>               |           | Log level (choices: `info`, `verbose`, `debug`)                                                                                                                                                                    |
-| -i, --img-output-path <string>        |           | Path to directory where images will be stored. If this is not included, images will be placed in the same directory as the document that uses them, which then allows for localization of screenshots.             |
-| -p, --img-prefix-in-markdown <string> |           | When referencing an image from markdown, prefix with this path instead of the full img-output-path. Should be used only in conjunction with --img-output-path.                                                     |
-| -h, --help                            |           | display help for command                                                                                                                                                                                           |
+| flag                         | required? | description                                                                                                                                                                                                        |
+| ---------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| -n, --notion-token           | required  | notion api token, which looks like `secret_3bc1b50XFYb15123RHF243x43450XFY33250XFYa343`                                                                                                                            |
+| -r, --root-page              | required  | The 31 character ID of the page which is the root of your docs page in notion. The code will look like `9120ec9960244ead80fa2ef4bc1bba25`. This page must have a child page named 'Outline'                        |
+| -m, --markdown-output-path   |           | Root of the hierarchy for md files. WARNING: node-pull-mdx will delete files from this directory. Note also that if it finds localized images, it will create an i18n/ directory as a sibling. (default: "./docs") |
+| -t, --status-tag             |           | Database pages without a Notion page property 'status' matching this will be ignored. Use '\*' to ignore status altogether. (default: `Publish`)                                                                   |
+| --locales                    |           | Comma-separated list of iso 639-2 codes, the same list as in docusaurus.config.js, minus the primary (i.e. 'en'). This is needed for image localization. (default: [])                                             |
+| -l, --log-level              |           | Log level (choices: `info`, `verbose`, `debug`)                                                                                                                                                                    |
+| -i, --img-output-path        |           | Path to directory where images will be stored. If this is not included, images will be placed in the same directory as the document that uses them, which then allows for localization of screenshots.             |
+| -p, --img-prefix-in-markdown |           | When referencing an image from markdown, prefix with this path instead of the full img-output-path. Should be used only in conjunction with --img-output-path.                                                     |
+| -s, --slug-prefix            |           | Code block mermaid diagrams can contain document links that are not processed by docusaurus. docu-notion prefixes the document slug with this value to correct this (default "").                                  |
+| -h, --help                   |           | display help for command                                                                                                                                                                                           |

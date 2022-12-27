@@ -20,6 +20,11 @@ program
     "The 31 character ID of the page which is the root of your docs page in notion. The code will look like 9120ec9960244ead80fa2ef4bc1bba25. This page must have a child page named 'Outline'"
   )
   .option(
+    "-s, --slug-prefix  <string>",
+    "Prefix to add to all slugs. This is useful if you want to host your docs on a subdomain, e.g. docs.example.com.",
+    ""
+  )
+  .option(
     "-m, --markdown-output-path  <string>",
     "Root of the hierarchy for md files. WARNING: node-pull-mdx will delete files from this directory. Note also that if it finds localized images, it will create an i18n/ directory as a sibling.",
     "./docs"

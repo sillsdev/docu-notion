@@ -17,10 +17,12 @@ import { error, heading, info, logDebug, verbose, warning } from "./log";
 import { convertInternalLinks } from "./links";
 import { ListBlockChildrenResponseResult } from "notion-to-md/build/types";
 import chalk from "chalk";
+import { convertMermaidInternalLinks } from "./linksMermaid";
 
 export type Options = {
   notionToken: string;
   rootPage: string;
+  slugPrefix: string;
   locales: string[];
   markdownOutputPath: string;
   imgOutputPath: string;
@@ -263,6 +265,13 @@ async function outputPage(page: NotionPage) {
 
   // Improve: maybe this could be another markdown-to-md "custom transformer"
   markdown = convertInternalLinks(markdown, pages, layoutStrategy);
+  // Improve: maybe this could be another markdown-to-md "custom transformer"
+  markdown = convertMermaidInternalLinks(
+    markdown,
+    pages,
+    layoutStrategy,
+    options.slugPrefix
+  );
 
   // Improve: maybe this could be another markdown-to-md "custom transformer"
   const { body, imports } = tweakForDocusaurus(markdown);
