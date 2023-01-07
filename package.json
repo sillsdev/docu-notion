@@ -20,7 +20,8 @@
     "pull-test-outline": "cross-var rm -rf ./docs/ && ts-node --compiler-options \"{\\\"module\\\": \\\"commonjs\\\"}\" src/index.ts -n %DOCU_NOTION_INTEGRATION_TOKEN% -r %DOCU_NOTION_TEST_ROOT_PAGE_ID%  --log-level debug",
     "// test with a semi-stable/public site:": "",
     "pull-sample": "cross-var ts-node --compiler-options \"{\\\"module\\\": \\\"commonjs\\\"}\" src/index.ts -n %DOCU_NOTION_INTEGRATION_TOKEN% -r %DOCU_NOTION_SAMPLE_ROOT_PAGE% -m ./sample --locales en,es,fr,de --log-level verbose",
-    "pull-sample-with-paths": "cross-var ts-node --compiler-options \"{\\\"module\\\": \\\"commonjs\\\"}\" src/index.ts -n %DOCU_NOTION_INTEGRATION_TOKEN% -r %DOCU_NOTION_SAMPLE_ROOT_PAGE% -m ./sample --img-output-path ./sample_img"
+    "pull-sample-with-paths": "cross-var ts-node --compiler-options \"{\\\"module\\\": \\\"commonjs\\\"}\" src/index.ts -n %DOCU_NOTION_INTEGRATION_TOKEN% -r %DOCU_NOTION_SAMPLE_ROOT_PAGE% -m ./sample --img-output-path ./sample_img",
+    "postinstall": "patch-package"
   },
   "repository": {
     "type": "git",
@@ -79,6 +80,7 @@
     "eslint-plugin-prettier": "^3.4.0",
     "jest": "^28.1.3",
     "lint-staged": "^10.5.4",
+    "patch-package": "^6.5.1",
     "prettier": "^2.2.1",
     "semantic-release": "^19.0.2",
     "ts-jest": "^28.0.7",
