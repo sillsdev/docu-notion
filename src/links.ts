@@ -1,3 +1,4 @@
+import { IPlugin } from "./config/configuration";
 import { LayoutStrategy } from "./LayoutStrategy";
 import { error, verbose, warning } from "./log";
 import { NotionPage } from "./NotionPage";
@@ -120,3 +121,15 @@ export function parseLinkId(fullLinkId: string): {
   }
   return { baseLinkId: fullLinkId, fragmentId: "" };
 }
+
+export const standardLinkConversion: IPlugin = {
+  name: "standard link conversion",
+  linkResolvers: [
+    {
+      label: "standard link conversion",
+      resolveFn: (link: string, pages: NotionPage[]) => {
+        return "todo... make use of the above";
+      },
+    },
+  ],
+};

@@ -5,6 +5,7 @@ import * as Path from "path";
 import { makeImagePersistencePlan } from "./MakeImagePersistencePlan";
 import { warning, logDebug, verbose, info } from "./log";
 import { ListBlockChildrenResponseResult } from "notion-to-md/build/types";
+import { IDocuNotionContext, IPlugin } from "./config/configuration";
 
 // We several things here:
 // 1) copy images locally instead of leaving them in Notion
@@ -64,6 +65,26 @@ export async function initImageHandling(
     await fs.mkdir(imageOutputPath, { recursive: true });
   }
 }
+
+export const standardImageTransformer: IPlugin = {
+  name: "DownloadImagesToRepo",
+  notionToMarkdownConversions: [
+    {
+      type: "image",
+      // we have to set this one up for each page because we need to
+      // give it two extra parameters that are context for each page
+      transformer: (
+        block: ListBlockChildrenResponseResult,
+        context: IDocuNotionContext
+      ) =>
+        markdownToMDImageTransformer(
+          block,
+          context.directoryContainingMarkdown,
+          context.relativePathToFolderContainingPage
+        ),
+    },
+  ],
+};
 
 // This is a "custom transformer" function passed to notion-to-markdown
 // eslint-disable-next-line @typescript-eslint/require-await

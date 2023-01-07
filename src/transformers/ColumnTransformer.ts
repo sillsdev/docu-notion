@@ -3,6 +3,22 @@ import { NotionAPI } from "notion-client";
 import { NotionToMarkdown } from "notion-to-md";
 import { ListBlockChildrenResponseResult } from "notion-to-md/build/types";
 import { getBlockChildren } from "./CustomTransformers";
+import { IPlugin } from "../config/configuration";
+
+export const standardColumnTransformer: IPlugin = {
+  name: "standardColumnTransformer",
+  notionToMarkdownConversions: [
+    {
+      type: "column",
+      transformer: (block, context) =>
+        notionColumnToMarkdown(
+          context.notionToMarkdown,
+          context.notionApiClient,
+          block
+        ),
+    },
+  ],
+};
 
 export async function notionColumnToMarkdown(
   notionToMarkdown: NotionToMarkdown,
