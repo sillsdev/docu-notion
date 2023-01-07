@@ -3,7 +3,7 @@
 import { Option, program } from "commander";
 import { setLogLevel } from "./log";
 
-import { notionPull, Options } from "./pull";
+import { notionPull, DocuNotionOptions } from "./pull";
 const pkg = require("../package.json");
 // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
 console.log(`docu-notion version ${pkg.version}`);
@@ -54,9 +54,8 @@ program
 program.showHelpAfterError();
 program.parse();
 setLogLevel(program.opts().logLevel);
-
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-void notionPull(program.opts() as Options).then(() =>
+console.log(JSON.stringify(program.opts));
+notionPull(program.opts() as DocuNotionOptions).then(() =>
   console.log("docu-notion Finished.")
 );
 

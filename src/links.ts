@@ -124,11 +124,11 @@ export function parseLinkId(fullLinkId: string): {
 
 export const standardLinkConversion: IPlugin = {
   name: "standard link conversion",
-  linkResolvers: [
+  linkModifications: [
     {
       label: "standard link conversion",
-      resolveFn: (link: string, pages: NotionPage[]) => {
-        return "todo... make use of the above";
+      modify: (link: string, pages: NotionPage[]) => {
+        return convertInternalLinks;
       },
     },
   ],

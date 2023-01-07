@@ -1,3 +1,4 @@
+import { IPlugin } from "./config/configuration";
 import { logDebug } from "./log";
 
 export function tweakForDocusaurus(input: string): {
@@ -100,3 +101,15 @@ function notionEmbedsToMDX(input: string): {
 
   return { body, imports: [...imports].join("\n") };
 }
+
+export const imgur: IPlugin = {
+  name: "imgur",
+  regexMarkdownModifications: [
+    {
+      label: "imgur",
+      regex: /\[embed\]\((.*imgur\.com\/.*)\)/gm, // imgur.com
+      // imgur links to gifs need a .gif at the end, but the url they give you doesn't have one.
+      output: `![]($1.gif)`,
+    },
+  ],
+};

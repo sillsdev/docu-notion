@@ -17,8 +17,9 @@ import { error, heading, info, logDebug, verbose, warning } from "./log";
 import { convertInternalLinks } from "./links";
 import { ListBlockChildrenResponseResult } from "notion-to-md/build/types";
 import chalk from "chalk";
+import { IDocuNotionConfig, NotionBlock } from "./config/configuration";
 
-export type Options = {
+export type DocuNotionOptions = {
   notionToken: string;
   rootPage: string;
   locales: string[];
@@ -28,7 +29,7 @@ export type Options = {
   statusTag: string;
 };
 
-let options: Options;
+let options: DocuNotionOptions;
 let layoutStrategy: LayoutStrategy;
 let notionToMarkdown: NotionToMarkdown;
 const pages = new Array<NotionPage>();
@@ -39,7 +40,9 @@ const counts = {
   skipped_because_level_cannot_have_content: 0,
 };
 
-export async function notionPull(incomingOptions: Options): Promise<void> {
+export async function notionPull(
+  incomingOptions: DocuNotionOptions
+): Promise<void> {
   options = incomingOptions;
 
   // It's helpful when troubleshooting CI secrets and environment variables to see what options actually made it to docu-notion.

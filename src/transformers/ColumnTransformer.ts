@@ -7,10 +7,10 @@ import { IPlugin } from "../config/configuration";
 
 export const standardColumnTransformer: IPlugin = {
   name: "standardColumnTransformer",
-  notionToMarkdownConversions: [
+  notionToMarkdownTransforms: [
     {
       type: "column",
-      transformer: (block, context) =>
+      getStringFromBlock: (block, context) =>
         notionColumnToMarkdown(
           context.notionToMarkdown,
           context.notionApiClient,

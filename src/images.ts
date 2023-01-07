@@ -68,12 +68,12 @@ export async function initImageHandling(
 
 export const standardImageTransformer: IPlugin = {
   name: "DownloadImagesToRepo",
-  notionToMarkdownConversions: [
+  notionToMarkdownTransforms: [
     {
       type: "image",
       // we have to set this one up for each page because we need to
       // give it two extra parameters that are context for each page
-      transformer: (
+      getStringFromBlock: (
         block: ListBlockChildrenResponseResult,
         context: IDocuNotionContext
       ) =>
