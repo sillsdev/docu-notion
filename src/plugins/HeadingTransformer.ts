@@ -1,21 +1,28 @@
 import { NotionToMarkdown } from "notion-to-md";
-import { ListBlockChildrenResponseResult } from "notion-to-md/build/types";
 import { IPlugin, NotionBlock } from "../config/configuration";
 
+// Makes links to headings work in docusaurus
+// https://github.com/sillsdev/docu-notion/issues/20
 export async function headingTransformer(
   notionToMarkdown: NotionToMarkdown,
-  block: ListBlockChildrenResponseResult
+  block: NotionBlock
 ): Promise<string> {
-  (block as any).type = (block as any).type.replace("my_", "");
+  // First, remove the prefix we added to the heading type
+  (block as any).type = block.type.replace("DN_", "");
 
-  const unmodifiedMarkdown = await notionToMarkdown.blockToMarkdown(block);
-  // For some reason, inline links come in without the dashes, so we have to strip
-  // dashes here to match them.
-  const blockIdSansDashes = block.id.replaceAll("-", "");
-  // To make heading links work in docusaurus, you make them look like:
+  const markdown = await notionToMarkdown.blockToMarkdown(block);
+
+  // To make heading links work in docusaurus, we append an id. E.g.
   //  ### Hello World {#my-explicit-id}
   // See https://docusaurus.io/docs/markdown-features/toc#heading-ids.
-  return `${unmodifiedMarkdown} {#${blockIdSansDashes}}`;
+
+  // For some reason, inline links come in without the dashes, so we have to strip
+  // dashes here to match them.
+  //console.log("block.id", block.id)
+  const blockIdWithoutDashes = block.id.replaceAll("-", "");
+
+  // Finally, append the block id so that it can be the target of a link.
+  return `${markdown} {#${blockIdWithoutDashes}}`;
 }
 
 export const standardHeadingTransformer: IPlugin = {
@@ -29,29 +36,26 @@ export const standardHeadingTransformer: IPlugin = {
   notionBlockModifications: [
     {
       label: "headingTransformer",
-      modify: (blocks: NotionBlock[]) => {
-        blocks.forEach(
-          block =>
-            // "as any" needed because we're putting a value in that is not allowed by the real type
-            ((block as any).type = block.type.replace("heading", "my_heading"))
-        );
+      modify: (block: NotionBlock) => {
+        // "as any" needed because we're putting a value in that is not allowed by the real type
+        (block as any).type = block.type.replace("heading", "DN_heading");
       },
     },
   ],
-  // then convert those later
+  // then when it comes time to do markdown conversions, we'll get called for each of these
   notionToMarkdownTransforms: [
     {
-      type: "my_heading_1",
+      type: "DN_heading_1",
       getStringFromBlock: (context, block) =>
         headingTransformer(context.notionToMarkdown, block),
     },
     {
-      type: "my_heading_2",
+      type: "DN_heading_2",
       getStringFromBlock: (context, block) =>
         headingTransformer(context.notionToMarkdown, block),
     },
     {
-      type: "my_heading_3",
+      type: "DN_heading_3",
       getStringFromBlock: (context, block) =>
         headingTransformer(context.notionToMarkdown, block),
     },

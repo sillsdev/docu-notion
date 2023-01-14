@@ -1,12 +1,10 @@
-import { Client } from "@notionhq/client";
 import { NotionToMarkdown } from "notion-to-md";
-import { ListBlockChildrenResponseResult } from "notion-to-md/build/types";
-import { getBlockChildren } from "./CustomTransformers";
+import { IPlugin, NotionBlock } from "../config/configuration";
 
 export async function notionColumnListToMarkdown(
   notionToMarkdown: NotionToMarkdown,
-  notionClient: Client,
-  block: ListBlockChildrenResponseResult
+  getBlockChildren: (id: string) => Promise<NotionBlock[]>,
+  block: NotionBlock
 ): Promise<string> {
   // Enhance: The @notionhq/client, which uses the official API, cannot yet get at column formatting information (column_ratio)
   // However https://github1s.com/NotionX/react-notion-x/blob/master/packages/react-notion-x/src/block.tsx#L528 can get it.
@@ -14,7 +12,7 @@ export async function notionColumnListToMarkdown(
 
   if (!has_children) return "";
 
-  const column_list_children = await getBlockChildren(notionClient, id, 100);
+  const column_list_children = await getBlockChildren(id);
 
   const column_list_promise = column_list_children.map(
     async column => await notionToMarkdown.blockToMarkdown(column)
@@ -24,3 +22,18 @@ export async function notionColumnListToMarkdown(
 
   return `<div class='notion-row'>\n${columns.join("\n\n")}\n</div>`;
 }
+
+export const standardColumnListTransformer: IPlugin = {
+  name: "standardColumnListTransformer",
+  notionToMarkdownTransforms: [
+    {
+      type: "column_list",
+      getStringFromBlock: (context, block) =>
+        notionColumnListToMarkdown(
+          context.notionToMarkdown,
+          context.getBlockChildren,
+          block
+        ),
+    },
+  ],
+};

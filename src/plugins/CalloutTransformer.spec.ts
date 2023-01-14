@@ -1,5 +1,5 @@
 import { NotionBlock } from "../config/configuration";
-import { convertBlocks } from "../TestRun";
+import { blocksToMarkdown } from "../TestRun";
 import { standardCalloutTransformer } from "./CalloutTransformer";
 import { standardColumnTransformer } from "./ColumnTransformer";
 
@@ -35,9 +35,11 @@ beforeEach(() => {
 test("smoketest callout", async () => {
   const config = { plugins: [standardCalloutTransformer] };
   block.callout.icon.emoji = "ℹ️";
-  let results = await convertBlocks(config, [block as unknown as NotionBlock]);
+  let results = await blocksToMarkdown(config, [
+    block as unknown as NotionBlock,
+  ]);
   expect(results).toContain("\n:::note\n\nThis is the callout\n\n:::\n");
   block.callout.icon.emoji = "❗";
-  results = await convertBlocks(config, [block as unknown as NotionBlock]);
+  results = await blocksToMarkdown(config, [block as unknown as NotionBlock]);
   expect(results).toContain(":::info");
 });

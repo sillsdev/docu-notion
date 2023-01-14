@@ -5,7 +5,7 @@ import {
 } from "notion-to-md/build/types";
 // import { Client } from "@notionhq/client";
 // import { getBlockChildren } from "./CustomTransformers";
-import { IPlugin } from "../config/configuration";
+import { IPlugin, NotionBlock } from "../config/configuration";
 
 // In Notion, you can make a callout and change its emoji. We map 5 of these
 // to the 5 Docusaurus admonition styles.
@@ -16,8 +16,8 @@ import { IPlugin } from "../config/configuration";
 // with has quite complex markup inside the callout, but still takes the no-children branch.
 export async function notionCalloutToAdmonition(
   notionToMarkdown: NotionToMarkdown,
-  getBlockChildren: (id: string) => Promise<ListBlockChildrenResponseResults>,
-  block: ListBlockChildrenResponseResult
+  getBlockChildren: (id: string) => Promise<NotionBlock[]>,
+  block: NotionBlock
 ): Promise<string> {
   // In this case typescript is not able to index the types properly, hence ignoring the error
   // @ts-ignore
@@ -137,7 +137,7 @@ function callout(text: string, icon?: CalloutIcon) {
 }
 
 export const standardCalloutTransformer: IPlugin = {
-  name: "standardColumnTransformer",
+  name: "standardCalloutTransformer",
   notionToMarkdownTransforms: [
     {
       type: "callout",

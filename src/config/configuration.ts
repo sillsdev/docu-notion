@@ -9,13 +9,18 @@ import * as Cosmic from "cosmiconfig";
 import { CosmiconfigResult } from "cosmiconfig/dist/types";
 import { NotionPage } from "../NotionPage";
 import { NotionToMarkdown } from "notion-to-md";
-import { Client } from "@notionhq/client";
 import { BlockObjectResponse } from "@notionhq/client/build/src/api-endpoints";
 import { DocuNotionOptions } from "../pull";
 import { LayoutStrategy } from "../LayoutStrategy";
+import defaultConfig from "./default.docunotion.config";
 
 // wrap this into something with a bit better name than the raw thing
 export type NotionBlock = BlockObjectResponse;
+
+type linkConversionFunction = (
+  context: IDocuNotionContext,
+  markdownLink: string
+) => string;
 
 export type IPlugin = {
   // this is just for display when debugging
@@ -23,7 +28,7 @@ export type IPlugin = {
   // operations on notion blocks before they are converted to markdown
   notionBlockModifications?: {
     label: string;
-    modify: (blocks: Array<NotionBlock>) => void;
+    modify: (block: NotionBlock) => void;
   }[];
   // overrides for the default notion-to-markdown conversions
   notionToMarkdownTransforms?: {
@@ -36,11 +41,9 @@ export type IPlugin = {
 
   // corrections to links after they are converted to markdown
   linkModifier?: {
-    convertHref(hrefFromNotion: string): unknown;
-    convertLinkText(arg0: string, hrefFromNotion: string): unknown;
     label: string;
-    match: RegExp;
-    modify: (link: string, pages: NotionPage[]) => string;
+    match: RegExp; // does this plugin apply to this link?
+    convert: linkConversionFunction;
   };
 
   // simple regex replacements on the markdown output
@@ -62,32 +65,41 @@ export type ICustomNotionToMarkdownConversion = (
   context: IDocuNotionContext
 ) => () => Promise<string>;
 
+export type ICounts = {
+  output_normally: number;
+  skipped_because_empty: number;
+  skipped_because_status: number;
+  skipped_because_level_cannot_have_content: number;
+};
+export type IGetBlockChildrenFn = (id: string) => Promise<NotionBlock[]>;
+
 export type IDocuNotionContext = {
   layoutStrategy: LayoutStrategy;
   options: DocuNotionOptions;
-  //instead of a notionApiClient: Client, we just give whatever methods they would use,
-  // so that at for unit-tests we can mock them
-  getBlockChildren: (id: string) => Promise<ListBlockChildrenResponseResults>;
+  getBlockChildren: IGetBlockChildrenFn;
   notionToMarkdown: NotionToMarkdown;
-  //toodo probably this goes elsewhere
   directoryContainingMarkdown: string;
-  relativePathToFolderContainingPage: string;
-
-  counts: {
-    output_normally: 0;
-    skipped_because_empty: 0;
-    skipped_because_status: 0;
-    skipped_because_level_cannot_have_content: 0;
-  };
+  relativeFilePathToFolderContainingPage: string;
+  pages: NotionPage[];
+  counts: ICounts;
+  // log: {
+  //   error(s: string): void;
+  //   warning(s: string): void;
+  //   info(s: string): void;
+  //   verbose(s: string): void;
+  //   debug(s: string): void;
+  // };
 };
 
-let config: IDocuNotionConfig | undefined;
+//let config: IDocuNotionConfig | undefined;
 
 // read the plugins from the config file
 // and add them to the map
-export function init(): void {
-  config = Cosmic.cosmiconfigSync("docunotion").search()
-    ?.config as IDocuNotionConfig;
+export function loadConfig(): IDocuNotionConfig {
+  // return Cosmic.cosmiconfigSync("docunotion").search()
+  //   ?.config as IDocuNotionConfig;
+
+  return defaultConfig;
 }
 
 // export function getMDConversions(): Array<{

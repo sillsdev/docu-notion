@@ -102,7 +102,7 @@ function notionEmbedsToMDX(input: string): {
   return { body, imports: [...imports].join("\n") };
 }
 
-export const imgur: IPlugin = {
+export const imgurGifTweak: IPlugin = {
   name: "imgur",
   regexMarkdownModifications: [
     {

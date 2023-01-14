@@ -74,13 +74,13 @@ export const standardImageTransformer: IPlugin = {
       // we have to set this one up for each page because we need to
       // give it two extra parameters that are context for each page
       getStringFromBlock: (
-        block: ListBlockChildrenResponseResult,
-        context: IDocuNotionContext
+        context: IDocuNotionContext,
+        block: ListBlockChildrenResponseResult
       ) =>
         markdownToMDImageTransformer(
           block,
           context.directoryContainingMarkdown,
-          context.relativePathToFolderContainingPage
+          context.relativeFilePathToFolderContainingPage
         ),
     },
   ],
@@ -119,11 +119,13 @@ async function processImageBlock(
 ): Promise<void> {
   logDebug("processImageBlock", JSON.stringify(imageBlock));
 
-  // this is broken into all these steps to facilitate unit testing without IO
   const imageSet = parseImageBlock(imageBlock);
   imageSet.pathToParentDocument = pathToParentDocument;
   imageSet.relativePathToParentDocument = relativePathToThisPage;
 
+  // enhance: it would much better if we could split the changes to markdown separately from actual reading/writing,
+  // so that this wasn't part of the markdown-creation loop. It's already almost there; we just need to
+  // save the imageSets somewhere and then do the actual reading/writing later.
   await readPrimaryImage(imageSet);
   makeImagePersistencePlan(imageSet, imageOutputPath, imagePrefix);
   await saveImage(imageSet);

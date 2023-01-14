@@ -36,7 +36,7 @@ export class HierarchicalNamedLayoutStrategy extends LayoutStrategy {
       .replaceAll("'", "")
       .replaceAll("?", "-");
 
-    const context = ("/" + page.context + "/").replaceAll("//", "/");
+    const context = ("/" + page.layoutContext + "/").replaceAll("//", "/");
     const path =
       this.rootDirectory + context + sanitizedName + extensionWithDot;
 

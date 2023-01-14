@@ -1,20 +1,23 @@
-import { Client } from "@notionhq/client";
 import { NotionToMarkdown } from "notion-to-md";
 import { ListBlockChildrenResponseResult } from "notion-to-md/build/types";
-import { getBlockChildren } from "./CustomTransformers";
 import markdownTable from "markdown-table";
+import {
+  IGetBlockChildrenFn,
+  IPlugin,
+  NotionBlock,
+} from "../config/configuration";
 
 // This is mostly a copy of the table handler from notion-to-md. The change is to handle newlines in the
 // notion cell content.
 export async function tableTransformer(
   notionToMarkdown: NotionToMarkdown,
-  notionClient: Client,
-  block: ListBlockChildrenResponseResult
+  getBlockChildren: IGetBlockChildrenFn,
+  block: NotionBlock
 ): Promise<string> {
   const { id, has_children } = block as any;
   const tableArr: string[][] = [];
   if (has_children) {
-    const tableRows = await getBlockChildren(notionClient, id, 100);
+    const tableRows = await getBlockChildren(id);
     // console.log(">>", tableRows);
     const rowsPromise = tableRows?.map(async row => {
       const { type } = row as any;
@@ -55,3 +58,18 @@ export async function tableTransformer(
   }
   return markdownTable(tableArr);
 }
+
+export const standardTableTransformer: IPlugin = {
+  name: "standardTableTransformer",
+  notionToMarkdownTransforms: [
+    {
+      type: "table",
+      getStringFromBlock: (context, block) =>
+        tableTransformer(
+          context.notionToMarkdown,
+          context.getBlockChildren,
+          block
+        ),
+    },
+  ],
+};

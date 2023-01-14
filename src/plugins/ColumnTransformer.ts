@@ -2,27 +2,27 @@ import { Client } from "@notionhq/client";
 import { NotionAPI } from "notion-client";
 import { NotionToMarkdown } from "notion-to-md";
 import { ListBlockChildrenResponseResult } from "notion-to-md/build/types";
-import { getBlockChildren } from "./CustomTransformers";
-import { IPlugin } from "../config/configuration";
+import { IGetBlockChildrenFn, IPlugin } from "../config/configuration";
 
 export const standardColumnTransformer: IPlugin = {
   name: "standardColumnTransformer",
   notionToMarkdownTransforms: [
     {
       type: "column",
-      getStringFromBlock: (block, context) =>
+      getStringFromBlock: (context, block) =>
         notionColumnToMarkdown(
           context.notionToMarkdown,
-          context.notionApiClient,
+          context.getBlockChildren,
           block
         ),
     },
   ],
 };
 
+// This runs when notion-to-md encounters a column block
 export async function notionColumnToMarkdown(
   notionToMarkdown: NotionToMarkdown,
-  notionClient: Client,
+  getBlockChildren: IGetBlockChildrenFn,
   block: ListBlockChildrenResponseResult
 ): Promise<string> {
   //console.log(JSON.stringify(block));
@@ -30,13 +30,13 @@ export async function notionColumnToMarkdown(
 
   if (!has_children) return "";
 
-  const children = await getBlockChildren(notionClient, id, 100);
+  const children = await getBlockChildren(id);
 
-  const childrenPromise = children.map(
+  const childrenPromises = children.map(
     async column => await notionToMarkdown.blockToMarkdown(column)
   );
 
-  const childrenStrings: string[] = await Promise.all(childrenPromise);
+  const childrenStrings: string[] = await Promise.all(childrenPromises);
 
   const columnWidth = await getColumnWidth(block);
 
@@ -60,10 +60,10 @@ export async function notionColumnToMarkdown(
 async function getColumnWidth(
   block: ListBlockChildrenResponseResult
 ): Promise<string> {
-  const notion = new NotionAPI();
+  const unofficialNotionClient = new NotionAPI();
   const blockId = block.id;
   // Yes, it is odd to call 'getPage' for a block, but that's how we access the format info.
-  const recordMap = await notion.getPage(blockId);
+  const recordMap = await unofficialNotionClient.getPage(blockId);
   const blockResult = recordMap.block[blockId];
 
   const columnFormat = blockResult?.value?.format as any;

@@ -6,16 +6,16 @@ export const escapeHtmlBlockModifier: IPlugin = {
   notionBlockModifications: [
     {
       label: "escapeHtmlBlockModifier",
-      modify: (blocks: NotionBlock[]) => {
-        blocks.forEach(block => escapeHtml(block));
+      modify: (block: NotionBlock) => {
+        escapeHtml(block);
       },
     },
   ],
 };
 
-function escapeHtml(block: any): void {
-  const blockContent = block[block.type];
-
+function escapeHtml(block: NotionBlock): void {
+  //console.log("escapeHtml called with\n", JSON.stringify(block, null, 2));
+  const blockContent = (block as any)[block.type]; // e.g. block["paragraph"] gives an array of the strings that make up the paragraph
   if (blockContent.rich_text?.length) {
     for (let i = 0; i < blockContent.rich_text.length; i++) {
       const rt = blockContent.rich_text[i];
