@@ -5,7 +5,7 @@ export const standardExternalLinkConversion: IPlugin = {
   name: "standard external link conversion",
   linkModifier: {
     label: "standard external link conversion",
-    match: /\[([^\]]+)?\]\(http.*\)/,
+    match: /\[.*\]\(http.*\)/,
     convert: (context: IDocuNotionContext, markdownLink: string) => {
       const linkRegExp = /\[([^\]]+)?\]\((http.*)\)/;
       const match = linkRegExp.exec(markdownLink);
@@ -17,7 +17,7 @@ export const standardExternalLinkConversion: IPlugin = {
       }
       const label = match[1];
       const url = match[2];
-      if (label === "Bookmark") {
+      if (label === "bookmark") {
         const replacement = `[${url}](${url})`;
         warning(
           `[standardExternalLinkConversion] Found Notion "Bookmark" link. In Notion this would show as an embed. The best docu-notion can do at the moment is replace "Bookmark" with the actual URL: ${replacement}`

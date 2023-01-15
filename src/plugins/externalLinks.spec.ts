@@ -10,9 +10,9 @@ test("links turned into bookmarks", async () => {
   setLogLevel("debug");
   const results = await getMarkdown({
     type: "bookmark",
-    bookmark: { caption: [], url: "https://github.com/" },
+    bookmark: { caption: [], url: "https://github.com" },
   });
-  expect(results).toBe("[github.com](https://github.com)");
+  expect(results.trim()).toBe("[https://github.com](https://github.com)");
 });
 
 test("links inside callouts", async () => {

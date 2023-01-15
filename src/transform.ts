@@ -131,8 +131,9 @@ function doLinkFixes(
   markdown: string,
   config: IDocuNotionConfig
 ): string {
-  const linkRegExp = /\[([^\]]+)?\]\(\/?([^),^/]+)\)/g;
+  const linkRegExp = /\[.*\]\(.*\)/g;
 
+  console.log("markdown before link fixes", markdown);
   // if (pages && pages.length) {
   //   console.log(pages[0].matchesLinkId);
   //   console.log(docunotionContext.pages[0].matchesLinkId);
@@ -143,7 +144,7 @@ function doLinkFixes(
   let match: RegExpExecArray | null;
 
   while ((match = linkRegExp.exec(markdown)) !== null) {
-    const originalLinkMarkdown = match[0];
+    const originalLinkMarkdown = match[0]; // ?
     const originalLinkText = match[1] || "";
     const originalUrl = match[2];
 
