@@ -56,7 +56,7 @@ export async function getMarkdownFromNotionBlocks(
   //console.log("markdown after link fixes", markdown);
 
   // simple regex-based tweaks. These are usually related to docusaurus
-  const { imports, body } = doRegexMarkdownTransforms(config, markdown);
+  const { imports, body } = doTransformsOnMarkdown(config, markdown);
 
   // console.log("markdown after regex fixes", markdown);
   // console.log("body after regex", body);
@@ -81,26 +81,24 @@ function doNotionBlockTransforms(
   }
 }
 
-// simple regex replacements on the markdown output
-function doRegexMarkdownTransforms(config: IDocuNotionConfig, input: string) {
+function doTransformsOnMarkdown(config: IDocuNotionConfig, input: string) {
   const regexMods: IRegexMarkdownModification[] = config.plugins
     .filter(plugin => !!plugin.regexMarkdownModifications)
     .map(plugin => plugin.regexMarkdownModifications!)
     .flat();
 
   let body = input;
+  //console.log("body before regex: " + body);
   let match;
   const imports = new Set<string>();
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   regexMods.forEach(mod => {
+    //verbose(`Trying [${mod.label}]`);
     while ((match = mod.regex.exec(input)) !== null) {
       const string = match[0];
       const url = match[1];
-      logDebug(
-        "DocusaurusTweaks",
-        `${string} --> ${mod.output.replace("$1", url)}`
-      );
+      verbose(`[${mod.label}] ${string} --> ${mod.output.replace("$1", url)}`);
       body = body.replace(string, mod.output.replace("$1", url));
       // add any library imports
       mod.imports?.forEach(imp => imports.add(imp));

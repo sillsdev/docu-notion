@@ -1,4 +1,9 @@
-import { imgurGifTweak } from "../DocusaurusTweaks";
+import {
+  gifEmbed,
+  imgurGifEmbed,
+  vimeoEmbed,
+  youtubeEmbed,
+} from "../DocusaurusEmbeds";
 import { standardImageTransformer } from "../images";
 import { standardLinkConversion } from "../plugins/internalLinks";
 import { standardCalloutTransformer } from "../plugins/CalloutTransformer";
@@ -16,7 +21,8 @@ const defaultConfig: IDocuNotionConfig = {
     escapeHtmlBlockModifier,
     standardHeadingTransformer, // does operations on both the Notion JSON and then later, on the notion to markdown transform
 
-    // Notion to Markdown transformers
+    // Notion to Markdown transformers. Most things get transformed correctly by the notion-to-markdown library,
+    // but some things need special handling.
     standardColumnTransformer,
     standardColumnListTransformer,
     standardImageTransformer,
@@ -24,12 +30,14 @@ const defaultConfig: IDocuNotionConfig = {
     standardTableTransformer,
     standardNumberedListTransformer,
 
-    // Link modifiers, which are special because they can read all the pages
+    // Link modifiers, which are special because they can read metadata from all the pages in order to figure out the correct url
     standardLinkConversion,
 
-    // Regexps that operate on the Markdown output
-    imgurGifTweak,
-    // TODO: add the rest of the existing ones
+    // Regexps plus javascript `import`s that operate on the Markdown output
+    imgurGifEmbed,
+    gifEmbed,
+    youtubeEmbed,
+    vimeoEmbed,
   ],
 };
 
