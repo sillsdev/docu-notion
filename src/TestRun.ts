@@ -99,6 +99,39 @@ export function makeSamplePageObject(options: {
   name?: string;
   id?: string;
 }): NotionPage {
+  let slugObject: any = {
+    Slug: {
+      id: "%7D%3D~K",
+      type: "rich_text",
+      rich_text: [],
+    },
+  };
+
+  if (options.slug)
+    slugObject = {
+      id: "%7D%3D~K",
+      type: "rich_text",
+      rich_text: [
+        {
+          type: "text",
+          text: {
+            content: options.slug,
+            link: null,
+          },
+          annotations: {
+            bold: false,
+            italic: false,
+            strikethrough: false,
+            underline: false,
+            code: false,
+            color: "default",
+          },
+          plain_text: options.slug,
+          href: null,
+        },
+      ],
+    };
+
   const id = options.id || "4a6de8c0-b90b-444b-8a7b-d534d6ec71a4";
   const m: GetPageResponse = {
     object: "page",
@@ -150,29 +183,7 @@ export function makeSamplePageObject(options: {
         type: "multi_select",
         multi_select: [],
       },
-      Slug: {
-        id: "%7D%3D~K",
-        type: "rich_text",
-        rich_text: [
-          {
-            type: "text",
-            text: {
-              content: options.slug || "/", // oddly, this has "/" when slug is missing
-              link: null,
-            },
-            annotations: {
-              bold: false,
-              italic: false,
-              strikethrough: false,
-              underline: false,
-              code: false,
-              color: "default",
-            },
-            plain_text: options.slug || "/", // oddly, this has "/" when slug is missing
-            href: null,
-          },
-        ],
-      },
+      Slug: slugObject,
       Name: {
         id: "title",
         type: "title",
@@ -198,7 +209,7 @@ export function makeSamplePageObject(options: {
       },
     },
     url: `https://www.notion.so/Hello-World-${id}`,
-  };
+  }; // ?
 
   const p = new NotionPage({
     layoutContext: "/Second-Level/Third-Level",
