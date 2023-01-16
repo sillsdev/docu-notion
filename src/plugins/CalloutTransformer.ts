@@ -31,8 +31,7 @@ export async function notionCalloutToAdmonition(
 
     plain_text = notionToMarkdown.annotatePlainText(plain_text, annotations);
 
-    // if (content["href"])
-    //   plain_text = md.link(plain_text, content["href"]);
+    if (content["href"]) plain_text = `[${plain_text}](${content["href"]})`;
 
     parsedData += plain_text;
   });
