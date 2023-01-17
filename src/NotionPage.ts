@@ -70,10 +70,10 @@ export class NotionPage {
       baseLinkId === this.pageId || // from a link_to_page.pageId, which still has the dashes
       baseLinkId === this.pageId.replaceAll("-", ""); // from inline links, which are lacking the dashes
 
-    logDebug(
-      `matchedLinkId`,
-      `comparing pageId:${this.pageId} to id ${id} --> ${match.toString()}`
-    );
+    // logDebug(
+    //   `matchedLinkId`,
+    //   `comparing pageId:${this.pageId} to id ${id} --> ${match.toString()}`
+    // );
     return match;
   }
 

@@ -3,9 +3,9 @@ import {
   imgurGifEmbed,
   vimeoEmbed,
   youtubeEmbed,
-} from "../DocusaurusEmbeds";
+} from "../plugins/StandardEmbeddings";
 import { standardImageTransformer } from "../images";
-import { standardLinkConversion } from "../plugins/internalLinks";
+import { standardInternalLinkConversion } from "../plugins/internalLinks";
 import { standardCalloutTransformer } from "../plugins/CalloutTransformer";
 import { standardColumnListTransformer } from "../plugins/ColumnListTransformer";
 import { standardColumnTransformer } from "../plugins/ColumnTransformer";
@@ -14,6 +14,7 @@ import { standardHeadingTransformer } from "../plugins/HeadingTransformer";
 import { standardNumberedListTransformer } from "../plugins/NumberedListTransformer";
 import { standardTableTransformer } from "../plugins/TableTransformer";
 import { IDocuNotionConfig } from "./configuration";
+import { standardExternalLinkConversion } from "../plugins/externalLinks";
 
 const defaultConfig: IDocuNotionConfig = {
   plugins: [
@@ -31,7 +32,8 @@ const defaultConfig: IDocuNotionConfig = {
     standardNumberedListTransformer,
 
     // Link modifiers, which are special because they can read metadata from all the pages in order to figure out the correct url
-    standardLinkConversion,
+    standardInternalLinkConversion,
+    standardExternalLinkConversion,
 
     // Regexps plus javascript `import`s that operate on the Markdown output
     imgurGifEmbed,

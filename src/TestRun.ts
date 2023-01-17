@@ -22,10 +22,10 @@ export async function blocksToMarkdown(
     notionClient,
   });
 
-  if (pages && pages.length) {
-    console.log(pages[0]);
-    console.log(pages[0].matchesLinkId);
-  }
+  // if (pages && pages.length) {
+  //   console.log(pages[0]);
+  //   console.log(pages[0].matchesLinkId);
+  // }
   const docunotionContext: IDocuNotionContext = {
     notionToMarkdown: notionToMD,
     // TODO when does this actually need to do get some children?
@@ -209,7 +209,7 @@ export function makeSamplePageObject(options: {
       },
     },
     url: `https://www.notion.so/Hello-World-${id}`,
-  }; // ?
+  };
 
   const p = new NotionPage({
     layoutContext: "/Second-Level/Third-Level",
@@ -255,9 +255,17 @@ export async function oneBlockToMarkdown(
     ...block,
   };
 
+  const dummyPage1 = makeSamplePageObject({
+    slug: "dummy1",
+    name: "Dummy1",
+  });
+  const dummyPage2 = makeSamplePageObject({
+    slug: "dummy2",
+    name: "Dummy2",
+  });
   return await blocksToMarkdown(
     config,
     [fullBlock as NotionBlock],
-    targetPage ? [targetPage] : undefined
+    targetPage ? [dummyPage1, targetPage, dummyPage2] : undefined
   );
 }

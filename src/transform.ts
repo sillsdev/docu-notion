@@ -129,22 +129,23 @@ function doLinkFixes(
   markdown: string,
   config: IDocuNotionConfig
 ): string {
-  const linkRegExp = /\[.*\]\(.*\)/g;
+  const linkRegExp = /\[.*\]\([^\)]*\)/g;
 
-  console.log("markdown before link fixes", markdown);
-  // if (pages && pages.length) {
-  //   console.log(pages[0].matchesLinkId);
-  //   console.log(docunotionContext.pages[0].matchesLinkId);
-  // }
-
-  // The key to understanding this while is that linkRegExp actually has state, and
-  // it gives you a new one each time. https://stackoverflow.com/a/1520853/723299
+  logDebug("markdown before link fixes", markdown);
   let match: RegExpExecArray | null;
 
-  while ((match = linkRegExp.exec(markdown)) !== null) {
+  // since we're going to make changes to the markdown,
+  // we need to keep track of where we are in the string as we search
+  const markdownToSearch = markdown;
+
+  // The key to understanding this `while` is that linkRegExp actually has state, and
+  // it gives you a new one each time. https://stackoverflow.com/a/1520853/723299
+  while ((match = linkRegExp.exec(markdownToSearch)) !== null) {
     const originalLinkMarkdown = match[0]; // ?
-    const originalLinkText = match[1] || "";
-    const originalUrl = match[2];
+
+    verbose(
+      `Checking to see if a plugin wants to modify "${originalLinkMarkdown}" `
+    );
 
     // We only use the first plugin that matches and makes a change to the link.
     // Enhance: we could take the time to see if multiple plugins match, and
@@ -154,8 +155,6 @@ function doLinkFixes(
       if (plugin.linkModifier.match.exec(originalLinkMarkdown) === null) {
         return false;
       }
-      verbose(`plugin "${plugin.name}" receiving ${originalUrl}`);
-
       const newMarkdown = plugin.linkModifier.convert(
         context,
         originalLinkMarkdown

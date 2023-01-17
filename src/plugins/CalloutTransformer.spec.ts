@@ -1,7 +1,9 @@
 import { NotionBlock } from "../config/configuration";
-import { blocksToMarkdown } from "../TestRun";
+import { NotionPage } from "../NotionPage";
+import { blocksToMarkdown, makeSamplePageObject } from "../TestRun";
 import { standardCalloutTransformer } from "./CalloutTransformer";
-import { standardColumnTransformer } from "./ColumnTransformer";
+import { standardExternalLinkConversion } from "./externalLinks";
+import { standardInternalLinkConversion } from "./internalLinks";
 
 let block: any;
 beforeEach(() => {
@@ -45,7 +47,13 @@ test("smoketest callout", async () => {
 });
 
 test("external link inside callout, bold preserved", async () => {
-  const config = { plugins: [standardCalloutTransformer] };
+  const config = {
+    plugins: [
+      standardCalloutTransformer,
+      standardInternalLinkConversion,
+      standardExternalLinkConversion,
+    ],
+  };
   const results = await blocksToMarkdown(config, [
     {
       type: "callout",
@@ -106,6 +114,88 @@ test("external link inside callout, bold preserved", async () => {
     `:::caution
 
 Callouts inline [**great page**](https://github.com).
+
+:::`
+  );
+});
+
+test("internal link inside callout, bold preserved", async () => {
+  const config = {
+    plugins: [
+      standardCalloutTransformer,
+      standardInternalLinkConversion,
+      standardExternalLinkConversion,
+    ],
+  };
+  const slugTargetPage: NotionPage = makeSamplePageObject({
+    slug: "hello-world",
+    name: "Hello World",
+    id: "123",
+  });
+  const results = await blocksToMarkdown(
+    config,
+    [
+      {
+        type: "callout",
+        callout: {
+          rich_text: [
+            {
+              type: "text",
+              text: { content: "Callouts inline ", link: null },
+              annotations: {
+                bold: false,
+                italic: false,
+                strikethrough: false,
+                underline: false,
+                code: false,
+                color: "default",
+              },
+              plain_text: "Callouts inline ",
+              href: null,
+            },
+            {
+              type: "text",
+              text: {
+                content: "great page",
+                link: { url: `/123#456` },
+              },
+              annotations: {
+                bold: true,
+                italic: false,
+                strikethrough: false,
+                underline: false,
+                code: false,
+                color: "default",
+              },
+              plain_text: "great page",
+              href: `/123#456`,
+            },
+            {
+              type: "text",
+              text: { content: ".", link: null },
+              annotations: {
+                bold: false,
+                italic: false,
+                strikethrough: false,
+                underline: false,
+                code: false,
+                color: "default",
+              },
+              plain_text: " the end.",
+              href: null,
+            },
+          ],
+          icon: { type: "emoji", emoji: "⚠️" },
+          color: "gray_background",
+        },
+      } as unknown as NotionBlock,
+    ],
+    [slugTargetPage]
+  );
+  expect(results.trim()).toBe(
+    `:::caution
+
+Callouts inline [**great page**](/hello-world#456) the end.
 
 :::`
   );

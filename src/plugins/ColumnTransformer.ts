@@ -1,4 +1,3 @@
-import { Client } from "@notionhq/client";
 import { NotionAPI } from "notion-client";
 import { NotionToMarkdown } from "notion-to-md";
 import { ListBlockChildrenResponseResult } from "notion-to-md/build/types";
@@ -65,6 +64,10 @@ async function getColumnWidth(
   // Yes, it is odd to call 'getPage' for a block, but that's how we access the format info.
   const recordMap = await unofficialNotionClient.getPage(blockId);
   const blockResult = recordMap.block[blockId];
+
+  // ENHANCE: could we use https://github.com/NotionX/react-notion-x/tree/master/packages/notion-types
+  // to get away from "any", which might be particularly helpful in the future
+  // since this is using the unofficial (reverse engineered?) API.
 
   const columnFormat = blockResult?.value?.format as any;
   const columnRatio = (columnFormat?.column_ratio as number) || 0.5;

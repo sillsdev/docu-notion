@@ -75,6 +75,49 @@ test("external link inside callout", async () => {
   );
 });
 
+test("inline links to external site", async () => {
+  const results = await getMarkdown({
+    type: "paragraph",
+    paragraph: {
+      rich_text: [
+        {
+          type: "text",
+          text: { content: "Inline ", link: null },
+          annotations: {
+            bold: false,
+            italic: false,
+            strikethrough: false,
+            underline: false,
+            code: false,
+            color: "default",
+          },
+          plain_text: "Inline ",
+          href: null,
+        },
+        {
+          type: "text",
+          text: {
+            content: "github",
+            link: { url: "https://github.com" },
+          },
+          annotations: {
+            bold: false,
+            italic: false,
+            strikethrough: false,
+            underline: false,
+            code: false,
+            color: "default",
+          },
+          plain_text: "github",
+          href: "https://github.com",
+        },
+      ],
+      color: "default",
+    },
+  });
+  expect(results.trim()).toBe("Inline [github](https://github.com)");
+});
+
 async function getMarkdown(block: object) {
   const config = {
     plugins: [standardExternalLinkConversion],
