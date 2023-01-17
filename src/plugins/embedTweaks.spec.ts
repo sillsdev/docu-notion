@@ -6,7 +6,7 @@ import {
   imgurGifEmbed,
   vimeoEmbed,
   youtubeEmbed,
-} from "./StandardEmbeddings";
+} from "./embedTweaks";
 
 test("youtube", async () => {
   const config = { plugins: [youtubeEmbed] };

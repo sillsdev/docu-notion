@@ -1,11 +1,11 @@
 import { IPlugin, NotionBlock } from "../config/configuration";
 
-export const escapeHtmlBlockModifier: IPlugin = {
-  name: "escapeHtmlBlockModifier",
+export const standardEscapeHtmlBlockModifier: IPlugin = {
+  name: "standardEscapeHtmlBlockModifier",
 
   notionBlockModifications: [
     {
-      label: "escapeHtmlBlockModifier",
+      label: "standardEscapeHtmlBlockModifier",
       modify: (block: NotionBlock) => {
         escapeHtml(block);
       },

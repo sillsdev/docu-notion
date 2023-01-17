@@ -1,6 +1,6 @@
 import { NotionBlock } from "../config/configuration";
 import { blocksToMarkdown } from "../TestRun";
-import { escapeHtmlBlockModifier } from "./EscapeHtmlBlockModifier";
+import { standardEscapeHtmlBlockModifier } from "./EscapeHtmlBlockModifier";
 
 let blocks: NotionBlock[];
 beforeEach(() => {
@@ -111,7 +111,7 @@ beforeEach(() => {
 });
 
 test("smoketest ", async () => {
-  const config = { plugins: [escapeHtmlBlockModifier] };
+  const config = { plugins: [standardEscapeHtmlBlockModifier] };
   let results = await blocksToMarkdown(config, blocks);
   // shouldn't escape inside a code block
   expect(results).toContain("This is code: if(1 < 3)");
