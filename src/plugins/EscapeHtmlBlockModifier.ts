@@ -5,7 +5,6 @@ export const standardEscapeHtmlBlockModifier: IPlugin = {
 
   notionBlockModifications: [
     {
-      label: "standardEscapeHtmlBlockModifier",
       modify: (block: NotionBlock) => {
         escapeHtml(block);
       },

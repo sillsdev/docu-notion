@@ -1,10 +1,7 @@
 // an extension manager that uses cosmicconfig to get a list of plugin functions
 // and then runs them in sequence
 
-import {
-  ListBlockChildrenResponseResult,
-  ListBlockChildrenResponseResults,
-} from "notion-to-md/build/types";
+import { ListBlockChildrenResponseResult } from "notion-to-md/build/types";
 import * as Cosmic from "cosmiconfig";
 import { CosmiconfigResult } from "cosmiconfig/dist/types";
 import { NotionPage } from "../NotionPage";
@@ -27,7 +24,6 @@ export type IPlugin = {
   name: string;
   // operations on notion blocks before they are converted to markdown
   notionBlockModifications?: {
-    label: string;
     modify: (block: NotionBlock) => void;
   }[];
   // overrides for the default notion-to-markdown conversions
@@ -41,7 +37,6 @@ export type IPlugin = {
 
   // corrections to links after they are converted to markdown
   linkModifier?: {
-    label: string;
     match: RegExp; // does this plugin apply to this link?
     convert: linkConversionFunction;
   };
@@ -51,7 +46,6 @@ export type IPlugin = {
 };
 
 export type IRegexMarkdownModification = {
-  label: string;
   regex: RegExp;
   output: string;
   imports?: string[];
@@ -82,22 +76,12 @@ export type IDocuNotionContext = {
   relativeFilePathToFolderContainingPage: string;
   pages: NotionPage[];
   counts: ICounts;
-  // log: {
-  //   error(s: string): void;
-  //   warning(s: string): void;
-  //   info(s: string): void;
-  //   verbose(s: string): void;
-  //   debug(s: string): void;
-  // };
 };
-
-//let config: IDocuNotionConfig | undefined;
 
 // read the plugins from the config file
 // and add them to the map
 export function loadConfig(): IDocuNotionConfig {
   // return Cosmic.cosmiconfigSync("docunotion").search()
-  //   ?.config as IDocuNotionConfig;
 
   return defaultConfig;
 }

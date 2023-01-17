@@ -4,7 +4,6 @@ import { error, warning } from "../log";
 export const standardExternalLinkConversion: IPlugin = {
   name: "standard external link conversion",
   linkModifier: {
-    label: "standard external link conversion",
     match: /\[.*\]\(http.*\)/,
     convert: (context: IDocuNotionContext, markdownLink: string) => {
       const linkRegExp = /\[([^\]]+)?\]\((http.*)\)/;

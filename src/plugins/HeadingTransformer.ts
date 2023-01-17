@@ -35,7 +35,6 @@ export const standardHeadingTransformer: IPlugin = {
   // result, to which we will append the block ID to enable heading links.
   notionBlockModifications: [
     {
-      label: "headingTransformer",
       modify: (block: NotionBlock) => {
         // "as any" needed because we're putting a value in that is not allowed by the real type
         (block as any).type = block.type.replace("heading", "DN_heading");

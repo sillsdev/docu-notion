@@ -84,7 +84,12 @@ function doNotionBlockTransforms(
 function doTransformsOnMarkdown(config: IDocuNotionConfig, input: string) {
   const regexMods: IRegexMarkdownModification[] = config.plugins
     .filter(plugin => !!plugin.regexMarkdownModifications)
-    .map(plugin => plugin.regexMarkdownModifications!)
+    .map(plugin => {
+      const mods = plugin.regexMarkdownModifications!;
+      // stick the name of the plugin into each mode for logging
+      const modsWithNames = mods.map(m => ({ name: plugin.name, ...m }));
+      return modsWithNames;
+    })
     .flat();
 
   let body = input;
@@ -94,11 +99,13 @@ function doTransformsOnMarkdown(config: IDocuNotionConfig, input: string) {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   regexMods.forEach(mod => {
-    //verbose(`Trying [${mod.label}]`);
+    //verbose(`Trying [${mod.name}]`);
     while ((match = mod.regex.exec(input)) !== null) {
       const string = match[0];
       const url = match[1];
-      verbose(`[${mod.label}] ${string} --> ${mod.output.replace("$1", url)}`);
+      verbose(
+        `[${(mod as any).name}] ${string} --> ${mod.output.replace("$1", url)}`
+      );
       body = body.replace(string, mod.output.replace("$1", url));
       // add any library imports
       mod.imports?.forEach(imp => imports.add(imp));

@@ -87,7 +87,6 @@ export function parseLinkId(fullLinkId: string): {
 export const standardInternalLinkConversion: IPlugin = {
   name: "standard internal link conversion",
   linkModifier: {
-    label: "standard internal link conversion",
     // from notion (or notion-md?) we get slightly different hrefs depending on whether the links is "inline"
     // (has some other text that's been turned into a link) or "raw".
     // Raw links come in without a leading slash, e.g. [link_to_page](4a6de8c0-b90b-444b-8a7b-d534d6ec71a4)
