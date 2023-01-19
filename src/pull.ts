@@ -9,8 +9,9 @@ import { initImageHandling, cleanupOldImages } from "./images";
 import * as Path from "path";
 import { error, heading, info, logDebug, verbose, warning } from "./log";
 import {
+  IDocuNotionConfig,
   IDocuNotionContext,
-  loadConfig,
+  loadConfigAsync,
   NotionBlock,
 } from "./config/configuration";
 import { getMarkdownForPage } from "./transform";
@@ -51,7 +52,9 @@ export async function notionPull(options: DocuNotionOptions): Promise<void> {
   optionsForLogging.notionToken =
     optionsForLogging.notionToken.substring(0, 3) + "...";
 
-  verbose(JSON.stringify(optionsForLogging, null, 2));
+  const config = await loadConfigAsync();
+
+  verbose(`Options:${JSON.stringify(optionsForLogging, null, 2)}`);
   await initImageHandling(
     options.imgPrefixInMarkdown || options.imgOutputPath || "",
     options.imgOutputPath || "",
@@ -80,7 +83,7 @@ export async function notionPull(options: DocuNotionOptions): Promise<void> {
   heading(
     `Stage 2: convert ${pages.length} Notion pages to markdown and save locally...`
   );
-  await outputPages(options, pages);
+  await outputPages(options, config, pages);
   info(``);
   heading("Stage 3: clean up old files & images...");
   await layoutStrategy.cleanupOldFiles();
@@ -89,9 +92,9 @@ export async function notionPull(options: DocuNotionOptions): Promise<void> {
 
 async function outputPages(
   options: DocuNotionOptions,
+  config: IDocuNotionConfig,
   pages: Array<NotionPage>
 ) {
-  const config = loadConfig();
   const context: IDocuNotionContext = {
     getBlockChildren: getBlockChildren,
     directoryContainingMarkdown: "", // this changes with each page

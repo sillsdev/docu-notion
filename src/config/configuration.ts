@@ -3,13 +3,14 @@
 
 import { ListBlockChildrenResponseResult } from "notion-to-md/build/types";
 import * as Cosmic from "cosmiconfig";
-import { CosmiconfigResult } from "cosmiconfig/dist/types";
 import { NotionPage } from "../NotionPage";
 import { NotionToMarkdown } from "notion-to-md";
 import { BlockObjectResponse } from "@notionhq/client/build/src/api-endpoints";
 import { DocuNotionOptions } from "../pull";
 import { LayoutStrategy } from "../LayoutStrategy";
 import defaultConfig from "./default.docunotion.config";
+import { error, info, verbose } from "../log";
+import { TypeScriptLoader } from "cosmiconfig-typescript-loader";
 
 // wrap this into something with a bit better name than the raw thing
 export type NotionBlock = BlockObjectResponse;
@@ -80,11 +81,38 @@ export type IDocuNotionContext = {
 
 // read the plugins from the config file
 // and add them to the map
-export function loadConfig(): IDocuNotionConfig {
-  // return Cosmic.cosmiconfigSync("docunotion").search()
+export async function loadConfigAsync(): Promise<IDocuNotionConfig> {
+  let config: IDocuNotionConfig = defaultConfig;
+  try {
+    const cosmic = Cosmic.cosmiconfig("docu-notion", {
+      loaders: {
+        ".ts": TypeScriptLoader(),
+      },
+      searchPlaces: [`docu-notion.config.ts`],
+    });
+    const found = await cosmic.search();
+    if (found) {
+      verbose(`Loading config from ${found.filepath}`);
+    } else {
+      verbose(`Did not find configuration file, using defaults.`);
+    }
 
-  return defaultConfig;
+    // for now, all we have is plugins
+    config = {
+      plugins: defaultConfig.plugins.concat(found?.config?.plugins || []),
+    };
+  } catch (e: any) {
+    error(e.message);
+  }
+  verbose(`Active plugins: [${config.plugins.map(p => p.name).join(", ")}]`);
+  return config;
 }
+
+export interface IPlug {
+  name: string;
+  sayHello: (block: IFoo) => string;
+}
+export interface IFoo {}
 
 // export function getMDConversions(): Array<{
 //   type: string;
