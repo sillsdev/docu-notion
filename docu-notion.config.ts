@@ -17,8 +17,32 @@ const dummyBlockModifier: IPlugin = {
   ],
 };
 
+const dummyBlockModifier2: IPlugin = {
+  name: "dummyBlockModifier2",
+
+  notionBlockModifications: [
+    {
+      modify: (block: NotionBlock) => {
+        verbose("dummyBlockModifier2 was called");
+      },
+    },
+  ],
+};
+
+const dummyBlockModifier2Plugin: IPlugin = {
+  name: "dummyBlockModifier2Plugin",
+
+  init: (p: IPlugin): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      verbose("****dummyBlockModifier2Plugin init was called");
+      p.notionBlockModifications = dummyBlockModifier2.notionBlockModifications;
+      resolve();
+    });
+  },
+};
+
 const config: IDocuNotionConfig = {
-  plugins: [dummyBlockModifier],
+  plugins: [dummyBlockModifier, dummyBlockModifier2Plugin],
 };
 
 export default config;

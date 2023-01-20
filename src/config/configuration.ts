@@ -9,7 +9,7 @@ import { BlockObjectResponse } from "@notionhq/client/build/src/api-endpoints";
 import { DocuNotionOptions } from "../pull";
 import { LayoutStrategy } from "../LayoutStrategy";
 import defaultConfig from "./default.docunotion.config";
-import { error, info, verbose } from "../log";
+import { error, info, logDebug, verbose } from "../log";
 import { TypeScriptLoader } from "cosmiconfig-typescript-loader";
 
 // wrap this into something with a bit better name than the raw thing
@@ -44,6 +44,9 @@ export type IPlugin = {
 
   // simple regex replacements on the markdown output
   regexMarkdownModifications?: IRegexMarkdownModification[];
+
+  // allow a plugin to perform an async operation before it can deliver its operations
+  init?(plugin: IPlugin): Promise<void>;
 };
 
 export type IRegexMarkdownModification = {
@@ -97,6 +100,21 @@ export async function loadConfigAsync(): Promise<IDocuNotionConfig> {
       verbose(`Did not find configuration file, using defaults.`);
     }
 
+    const pluginsWithInitializers = found?.config?.plugins?.filter(
+      (p: IPlugin) => p.init !== undefined
+    );
+    const initializers = pluginsWithInitializers?.map(
+      (p: IPlugin) => () => p!.init!(p)
+    );
+
+    await Promise.all(initializers || []);
+
+    found?.config?.plugins?.forEach(async (plugin: IPlugin) => {
+      if (plugin.init !== undefined) {
+        verbose(`Initializing plugin ${plugin.name}...`);
+        await plugin.init(plugin);
+      }
+    });
     // for now, all we have is plugins
     config = {
       plugins: defaultConfig.plugins.concat(found?.config?.plugins || []),
@@ -107,12 +125,6 @@ export async function loadConfigAsync(): Promise<IDocuNotionConfig> {
   verbose(`Active plugins: [${config.plugins.map(p => p.name).join(", ")}]`);
   return config;
 }
-
-export interface IPlug {
-  name: string;
-  sayHello: (block: IFoo) => string;
-}
-export interface IFoo {}
 
 // export function getMDConversions(): Array<{
 //   type: string;
