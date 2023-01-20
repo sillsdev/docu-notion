@@ -73,7 +73,7 @@ function doNotionBlockTransforms(
     config.plugins.forEach(plugin => {
       if (plugin.notionBlockModifications) {
         plugin.notionBlockModifications.forEach(transform => {
-          logDebug("transforming block with plugin: ", plugin.name);
+          logDebug("transforming block with plugin", plugin.name);
           transform.modify(block);
         });
       }
