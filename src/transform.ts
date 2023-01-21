@@ -56,7 +56,7 @@ export async function getMarkdownFromNotionBlocks(
   //console.log("markdown after link fixes", markdown);
 
   // simple regex-based tweaks. These are usually related to docusaurus
-  const { imports, body } = doTransformsOnMarkdown(config, markdown);
+  const { imports, body } = await doTransformsOnMarkdown(config, markdown);
 
   // console.log("markdown after regex fixes", markdown);
   // console.log("body after regex", body);
@@ -81,7 +81,10 @@ function doNotionBlockTransforms(
   }
 }
 
-function doTransformsOnMarkdown(config: IDocuNotionConfig, input: string) {
+async function doTransformsOnMarkdown(
+  config: IDocuNotionConfig,
+  input: string
+) {
   const regexMods: IRegexMarkdownModification[] = config.plugins
     .filter(plugin => !!plugin.regexMarkdownModifications)
     .map(plugin => {
@@ -92,26 +95,50 @@ function doTransformsOnMarkdown(config: IDocuNotionConfig, input: string) {
     })
     .flat();
 
+  // regex that matches markdown code blocks
+  const codeBlocks = /```.*\n[\s\S]*?\n```/;
+
   let body = input;
   //console.log("body before regex: " + body);
   let match;
   const imports = new Set<string>();
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  regexMods.forEach(mod => {
-    //verbose(`Trying [${mod.name}]`);
-    while ((match = mod.regex.exec(input)) !== null) {
-      const string = match[0];
-      const url = match[1];
-      verbose(
-        `[${(mod as any).name}] ${string} --> ${mod.output.replace("$1", url)}`
-      );
-      body = body.replace(string, mod.output.replace("$1", url));
-      // add any library imports
-      mod.imports?.forEach(imp => imports.add(imp));
+  for (const mod of regexMods) {
+    let replacement = undefined;
+    // regex.exec is stateful, so we don't want to mess up the plugin's use of its own regex, so we clone it.
+    // we also add the "g" flag to make sure we get all matches
+    const regex = new RegExp(`${codeBlocks.source}|(${mod.regex.source})`, "g");
+    let count = 0;
+    while ((match = regex.exec(input)) !== null) {
+      if (match[0]) {
+        const original = match[0];
+        if (original.startsWith("```") && original.endsWith("```")) {
+          continue; // code block
+        }
+        if (mod.getReplacement) {
+          replacement = await mod.getReplacement(original);
+        } else if (mod.replacementPattern) {
+          console.log(`mod.replacementPattern.replace("$1", ${match[2]}`);
+          replacement = mod.replacementPattern.replace("$1", match[2]);
+        }
+        if (replacement !== undefined) {
+          verbose(`[${(mod as any).name}] ${original} --> ${replacement}`);
+
+          const precedingPart = body.substring(0, match.index); // ?
+          const partStartingFromThisMatch = body.substring(match.index); // ?
+          body =
+            precedingPart +
+            partStartingFromThisMatch.replace(original, replacement);
+          // add any library imports
+          mod.imports?.forEach(imp => imports.add(imp));
+        }
+      }
     }
-  });
-  return { body, imports: [...imports].join("\n") };
+  }
+  console.log("body after regex: " + body);
+  const uniqueImports = [...new Set(imports)];
+  return { body, imports: [...uniqueImports].join("\n") };
 }
 
 async function doNotionToMarkdown(
@@ -148,7 +175,7 @@ function doLinkFixes(
   // The key to understanding this `while` is that linkRegExp actually has state, and
   // it gives you a new one each time. https://stackoverflow.com/a/1520853/723299
   while ((match = linkRegExp.exec(markdownToSearch)) !== null) {
-    const originalLinkMarkdown = match[0]; // ?
+    const originalLinkMarkdown = match[0];
 
     verbose(
       `Checking to see if a plugin wants to modify "${originalLinkMarkdown}" `

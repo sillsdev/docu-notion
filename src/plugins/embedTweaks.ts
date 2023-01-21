@@ -6,8 +6,8 @@ export const gifEmbed: IPlugin = {
     {
       // I once saw a gif coming from Notion that wasn't a full
       // url, which wouldn't work, hence the "http" requirement
-      regex: /\[.*\]\((http.*(\.(gif|GIF)))\)/gm,
-      output: `![]($1)`,
+      regex: /\[.*\]\((http.*(\.(gif|GIF)))\)/,
+      replacementPattern: `![]($1)`,
     },
   ],
 };
@@ -16,9 +16,9 @@ export const imgurGifEmbed: IPlugin = {
   name: "imgur",
   regexMarkdownModifications: [
     {
-      regex: /\[.*\]\((.*imgur\.com\/.*)\)/gm, // imgur.com
+      regex: /\[.*\]\((.*imgur\.com\/.*)\)/, // imgur.com
       // imgur links to gifs need a .gif at the end, but the url they give you doesn't have one.
-      output: `![]($1.gif)`,
+      replacementPattern: `![]($1.gif)`,
     },
   ],
 };
@@ -26,9 +26,9 @@ export const youtubeEmbed: IPlugin = {
   name: "youtube",
   regexMarkdownModifications: [
     {
-      regex: /\[.*\]\((.*youtube\.com\/watch.*)\)/gm, //youtube.com/watch
+      regex: /\[.*\]\((.*youtube\.com\/watch.*)\)/, //youtube.com/watch
       imports: [`import ReactPlayer from "react-player";`],
-      output: `<ReactPlayer controls url="$1" />`,
+      replacementPattern: `<ReactPlayer controls url="$1" />`,
     },
   ],
 };
@@ -36,12 +36,12 @@ export const vimeoEmbed: IPlugin = {
   name: "vimeo",
   regexMarkdownModifications: [
     {
-      regex: /\[.*\]\((https:\/\/.*vimeo.*)\)/gm,
+      regex: /\[.*\]\((https:\/\/.*vimeo.*)\)/,
       // we use to have the following, but the above should handle both the player an not-player urls.
       //regex: /\[.*\]\((.*player\.vimeo.*)\)/gm, // player.vimeo
 
       imports: [`import ReactPlayer from "react-player";`],
-      output: `<ReactPlayer controls url="$1" />`,
+      replacementPattern: `<ReactPlayer controls url="$1" />`,
     },
   ],
 };

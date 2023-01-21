@@ -45,13 +45,20 @@ export type IPlugin = {
   // simple regex replacements on the markdown output
   regexMarkdownModifications?: IRegexMarkdownModification[];
 
-  // allow a plugin to perform an async operation before it can deliver its operations
+  // Allow a plugin to perform an async operation at the start of docu-notion.
+  // Notice that the plugin itself is given, so you can add things to it.
   init?(plugin: IPlugin): Promise<void>;
 };
 
 export type IRegexMarkdownModification = {
+  // Should match on markdown that you want to replace
   regex: RegExp;
-  output: string;
+  // Based on that regex, the outputPattern will be used to replace the matched text
+  replacementPattern?: string;
+  // Instead of a pattern, you can use this if you have to ask a server somewhere for help in getting the new markdown
+  getReplacement?(s: string): Promise<string>;
+
+  // If the output is creating things like react elements, you can import their definitions here
   imports?: string[];
 };
 
