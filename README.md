@@ -129,3 +129,7 @@ Options:
 | -i, --img-output-path <string>        |           | Path to directory where images will be stored. If this is not included, images will be placed in the same directory as the document that uses them, which then allows for localization of screenshots.             |
 | -p, --img-prefix-in-markdown <string> |           | When referencing an image from markdown, prefix with this path instead of the full img-output-path. Should be used only in conjunction with --img-output-path.                                                     |
 | -h, --help                            |           | display help for command                                                                                                                                                                                           |
+
+# Plugins
+
+If your project needs some processing that docu-notion doesn't already provide, you can provide a plugin that does it. See the [plugin readme](src/plugins/README.md).
