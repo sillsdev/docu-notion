@@ -1,11 +1,7 @@
 import { NotionToMarkdown } from "notion-to-md";
 import { ListBlockChildrenResponseResult } from "notion-to-md/build/types";
 import markdownTable from "markdown-table";
-import {
-  IGetBlockChildrenFn,
-  IPlugin,
-  NotionBlock,
-} from "../config/configuration";
+import { IGetBlockChildrenFn, IPlugin, NotionBlock } from "./pluginTypes";
 
 // This is mostly a copy of the table handler from notion-to-md. The change is to handle newlines in the
 // notion cell content.

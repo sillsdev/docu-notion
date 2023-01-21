@@ -4,7 +4,7 @@ import {
   IDocuNotionContext,
   IRegexMarkdownModification,
   NotionBlock,
-} from "./config/configuration";
+} from "./plugins/pluginTypes";
 import { info, logDebug, verbose } from "./log";
 import { NotionPage } from "./NotionPage";
 

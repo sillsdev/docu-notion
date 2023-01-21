@@ -2,7 +2,7 @@ import { NotionToMarkdown } from "notion-to-md";
 import { ListBlockChildrenResponseResult } from "notion-to-md/build/types";
 import { Client } from "@notionhq/client";
 import { Text } from "./CalloutTransformer";
-import { IPlugin } from "../config/configuration";
+import { IPlugin } from "./pluginTypes";
 
 // This is mostly what notion-to-markdown would normally do with a block of type
 // numbered_list_item. A patch is documented at the end.

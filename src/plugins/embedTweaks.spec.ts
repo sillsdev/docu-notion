@@ -1,4 +1,4 @@
-import { IPlugin, NotionBlock } from "../config/configuration";
+import { IPlugin, NotionBlock } from "./pluginTypes";
 import { setLogLevel } from "../log";
 import { blocksToMarkdown } from "../TestRun";
 import {

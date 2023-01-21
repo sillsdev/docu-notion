@@ -1,4 +1,4 @@
-import { NotionBlock } from "../config/configuration";
+import { NotionBlock } from "./pluginTypes";
 import { blocksToMarkdown } from "../TestRun";
 import { standardNumberedListTransformer } from "./NumberedListTransformer";
 

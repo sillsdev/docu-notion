@@ -1,4 +1,4 @@
-import { IDocuNotionContext, IPlugin } from "../config/configuration";
+import { IDocuNotionContext, IPlugin } from "./pluginTypes";
 import { error, verbose, warning } from "../log";
 import { NotionPage } from "../NotionPage";
 

@@ -7,4 +7,4 @@ run();
 // for plugins to import
 
 export * as Log from "./log";
-export * from "./config/configuration";
+export * from "./plugins/pluginTypes";

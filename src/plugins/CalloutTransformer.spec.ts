@@ -1,4 +1,4 @@
-import { NotionBlock } from "../config/configuration";
+import { NotionBlock } from "./pluginTypes";
 import { NotionPage } from "../NotionPage";
 import { blocksToMarkdown, makeSamplePageObject } from "../TestRun";
 import { standardCalloutTransformer } from "./CalloutTransformer";

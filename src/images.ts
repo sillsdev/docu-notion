@@ -5,7 +5,7 @@ import * as Path from "path";
 import { makeImagePersistencePlan } from "./MakeImagePersistencePlan";
 import { warning, logDebug, verbose, info } from "./log";
 import { ListBlockChildrenResponseResult } from "notion-to-md/build/types";
-import { IDocuNotionContext, IPlugin } from "./config/configuration";
+import { IDocuNotionContext, IPlugin } from "./plugins/pluginTypes";
 
 // We several things here:
 // 1) copy images locally instead of leaving them in Notion

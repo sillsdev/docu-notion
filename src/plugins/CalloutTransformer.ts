@@ -5,7 +5,7 @@ import {
 } from "notion-to-md/build/types";
 // import { Client } from "@notionhq/client";
 // import { getBlockChildren } from "./CustomTransformers";
-import { IPlugin, NotionBlock } from "../config/configuration";
+import { IPlugin, NotionBlock } from "./pluginTypes";
 
 // In Notion, you can make a callout and change its emoji. We map 5 of these
 // to the 5 Docusaurus admonition styles.

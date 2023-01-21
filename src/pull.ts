@@ -11,9 +11,8 @@ import { error, heading, info, logDebug, verbose, warning } from "./log";
 import {
   IDocuNotionConfig,
   IDocuNotionContext,
-  loadConfigAsync,
   NotionBlock,
-} from "./config/configuration";
+} from "./plugins/pluginTypes";
 import { getMarkdownForPage } from "./transform";
 import {
   BlockObjectResponse,
@@ -23,6 +22,7 @@ import {
 import { RateLimiter } from "limiter";
 import { Client, isFullBlock } from "@notionhq/client";
 import { exit } from "process";
+import { loadConfigAsync } from "./config/configuration";
 
 export type DocuNotionOptions = {
   notionToken: string;

@@ -1,4 +1,4 @@
-import { IDocuNotionContext, IPlugin } from "../config/configuration";
+import { IDocuNotionContext, IPlugin } from "./pluginTypes";
 import { error, warning } from "../log";
 
 export const standardExternalLinkConversion: IPlugin = {

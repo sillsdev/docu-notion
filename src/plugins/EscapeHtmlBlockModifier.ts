@@ -1,4 +1,4 @@
-import { IPlugin, NotionBlock } from "../config/configuration";
+import { IPlugin, NotionBlock } from "./pluginTypes";
 
 export const standardEscapeHtmlBlockModifier: IPlugin = {
   name: "standardEscapeHtmlBlockModifier",

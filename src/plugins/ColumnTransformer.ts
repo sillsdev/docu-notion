@@ -1,7 +1,7 @@
 import { NotionAPI } from "notion-client";
 import { NotionToMarkdown } from "notion-to-md";
 import { ListBlockChildrenResponseResult } from "notion-to-md/build/types";
-import { IGetBlockChildrenFn, IPlugin } from "../config/configuration";
+import { IGetBlockChildrenFn, IPlugin } from "./pluginTypes";
 
 export const standardColumnTransformer: IPlugin = {
   name: "standardColumnTransformer",

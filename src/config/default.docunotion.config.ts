@@ -13,7 +13,7 @@ import { standardEscapeHtmlBlockModifier } from "../plugins/EscapeHtmlBlockModif
 import { standardHeadingTransformer } from "../plugins/HeadingTransformer";
 import { standardNumberedListTransformer } from "../plugins/NumberedListTransformer";
 import { standardTableTransformer } from "../plugins/TableTransformer";
-import { IDocuNotionConfig } from "./configuration";
+import { IDocuNotionConfig } from "../plugins/pluginTypes";
 import { standardExternalLinkConversion } from "../plugins/externalLinks";
 
 const defaultConfig: IDocuNotionConfig = {

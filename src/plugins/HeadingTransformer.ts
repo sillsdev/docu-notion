@@ -1,5 +1,5 @@
 import { NotionToMarkdown } from "notion-to-md";
-import { IPlugin, NotionBlock } from "../config/configuration";
+import { IPlugin, NotionBlock } from "./pluginTypes";
 
 // Makes links to headings work in docusaurus
 // https://github.com/sillsdev/docu-notion/issues/20

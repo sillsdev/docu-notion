@@ -1,4 +1,4 @@
-import { IPlugin } from "../config/configuration";
+import { IPlugin } from "./pluginTypes";
 
 export const gifEmbed: IPlugin = {
   name: "gif",

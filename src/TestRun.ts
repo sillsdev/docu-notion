@@ -6,7 +6,7 @@ import {
   IDocuNotionConfig,
   IDocuNotionContext,
   NotionBlock,
-} from "./config/configuration";
+} from "./plugins/pluginTypes";
 import { HierarchicalNamedLayoutStrategy } from "./HierarchicalNamedLayoutStrategy";
 import { error, logDebug, verbose, warning } from "./log";
 import { NotionPage } from "./NotionPage";
