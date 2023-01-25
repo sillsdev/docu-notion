@@ -1,9 +1,11 @@
-import {
-  IDocuNotionConfig,
-  IPlugin,
-  NotionBlock,
-} from "./dist/config/configuration";
-import { verbose } from "./dist/log";
+/* This file is only used when testing docu-notion itself, not when it is used as a library.
+  E.g., if you run `yarn pull-test-tagged`, docu-notion will read this file and use it to configure itself,
+  using these example plugins.
+ */
+
+import { IDocuNotionConfig } from "./dist/config/configuration";
+import { IPlugin, Log } from "./dist";
+import { NotionBlock } from "./dist/types";
 
 const dummyBlockModifier: IPlugin = {
   name: "dummyBlockModifier",
@@ -11,7 +13,7 @@ const dummyBlockModifier: IPlugin = {
   notionBlockModifications: [
     {
       modify: (block: NotionBlock) => {
-        verbose("dummyBlockModifier was called");
+        Log.verbose("dummyBlockModifier was called");
       },
     },
   ],

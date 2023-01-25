@@ -8,11 +8,7 @@ import { initImageHandling, cleanupOldImages } from "./images";
 
 import * as Path from "path";
 import { error, heading, info, logDebug, verbose, warning } from "./log";
-import {
-  IDocuNotionConfig,
-  IDocuNotionContext,
-  NotionBlock,
-} from "./plugins/pluginTypes";
+import { IDocuNotionContext } from "./plugins/pluginTypes";
 import { getMarkdownForPage } from "./transform";
 import {
   BlockObjectResponse,
@@ -22,7 +18,8 @@ import {
 import { RateLimiter } from "limiter";
 import { Client, isFullBlock } from "@notionhq/client";
 import { exit } from "process";
-import { loadConfigAsync } from "./config/configuration";
+import { IDocuNotionConfig, loadConfigAsync } from "./config/configuration";
+import { NotionBlock } from "./types";
 
 export type DocuNotionOptions = {
   notionToken: string;
@@ -289,7 +286,7 @@ async function getBlockChildren(id: string): Promise<NotionBlock[]> {
 
   if (overallResult?.results?.some(b => !isFullBlock(b))) {
     error(
-      `The Notion API returned some blocks were not full blocks. docu-notion does not handle this yet. Please report it.`
+      `The Notion API returned some blocks that were not full blocks. docu-notion does not handle this yet. Please report it.`
     );
     exit(1);
   }

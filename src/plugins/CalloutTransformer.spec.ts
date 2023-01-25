@@ -1,6 +1,6 @@
-import { NotionBlock } from "./pluginTypes";
+import { NotionBlock } from "../types";
 import { NotionPage } from "../NotionPage";
-import { blocksToMarkdown, makeSamplePageObject } from "../TestRun";
+import { blocksToMarkdown, makeSamplePageObject } from "./pluginTestRun";
 import { standardCalloutTransformer } from "./CalloutTransformer";
 import { standardExternalLinkConversion } from "./externalLinks";
 import { standardInternalLinkConversion } from "./internalLinks";

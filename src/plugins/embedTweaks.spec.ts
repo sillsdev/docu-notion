@@ -1,6 +1,7 @@
-import { IPlugin, NotionBlock } from "./pluginTypes";
+import { NotionBlock } from "../types";
+import { IPlugin } from "./pluginTypes";
 import { setLogLevel } from "../log";
-import { blocksToMarkdown } from "../TestRun";
+import { blocksToMarkdown } from "./pluginTestRun";
 import {
   gifEmbed,
   imgurGifEmbed,

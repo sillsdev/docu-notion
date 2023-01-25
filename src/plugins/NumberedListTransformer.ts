@@ -1,12 +1,11 @@
 import { NotionToMarkdown } from "notion-to-md";
 import { ListBlockChildrenResponseResult } from "notion-to-md/build/types";
-import { Client } from "@notionhq/client";
 import { Text } from "./CalloutTransformer";
 import { IPlugin } from "./pluginTypes";
 
 // This is mostly what notion-to-markdown would normally do with a block of type
 // numbered_list_item. A patch is documented at the end.
-export function numberedListTransformer(
+function numberedListTransformer(
   notionToMarkdown: NotionToMarkdown,
   block: ListBlockChildrenResponseResult
 ): Promise<string> {
@@ -59,7 +58,10 @@ export const standardNumberedListTransformer: IPlugin = {
     {
       type: "numbered_list_item",
       getStringFromBlock: (context, block) =>
-        numberedListTransformer(context.notionToMarkdown, block),
+        numberedListTransformer(
+          context.notionToMarkdown,
+          block as ListBlockChildrenResponseResult
+        ),
     },
   ],
 };

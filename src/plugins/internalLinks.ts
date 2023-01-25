@@ -1,8 +1,8 @@
 import { IDocuNotionContext, IPlugin } from "./pluginTypes";
-import { error, verbose, warning } from "../log";
+import { error } from "../log";
 import { NotionPage } from "../NotionPage";
 
-export function convertInternalLink(
+function convertInternalLink(
   context: IDocuNotionContext,
   markdownLink: string
 ): string {

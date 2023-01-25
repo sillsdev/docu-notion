@@ -1,6 +1,6 @@
 import { setLogLevel } from "../log";
 import { NotionPage } from "../NotionPage";
-import { makeSamplePageObject, oneBlockToMarkdown } from "../TestRun";
+import { makeSamplePageObject, oneBlockToMarkdown } from "./pluginTestRun";
 import { standardCalloutTransformer } from "./CalloutTransformer";
 import { standardExternalLinkConversion } from "./externalLinks";
 

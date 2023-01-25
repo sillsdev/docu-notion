@@ -26,24 +26,6 @@ export class NotionPage {
   public layoutContext: string; // where we found it in the hierarchy of the outline
   public foundDirectlyInOutline: boolean; // the page was found as a descendent of /outline instead of being linked to
 
-  // public constructor(
-  //   layoutContext: string,
-  //   pageId: string,
-  //   order: number,
-  //   metadata: GetPageResponse,
-  //   foundDirectlyInOutline: boolean
-  // ) {
-  //   this.layoutContext = layoutContext;
-  //   this.pageId = pageId;
-  //   this.order = order;
-  //   this.metadata = metadata;
-  //   this.foundDirectlyInOutline = foundDirectlyInOutline;
-
-  //   // review: this is expensive to learn as it takes another api call... I
-  //   // think? We can tell if it's a database because it has a "Name" instead of a
-  //   // "tile" and "parent": "type": "database_id". But do we need to differentiate
-  //   //this.type = PageType.Unknown;
-  // }
   public constructor(args: {
     layoutContext: string;
     pageId: string;

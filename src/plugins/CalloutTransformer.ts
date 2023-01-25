@@ -1,11 +1,6 @@
 import { NotionToMarkdown } from "notion-to-md";
-import {
-  ListBlockChildrenResponseResult,
-  ListBlockChildrenResponseResults,
-} from "notion-to-md/build/types";
-// import { Client } from "@notionhq/client";
-// import { getBlockChildren } from "./CustomTransformers";
-import { IPlugin, NotionBlock } from "./pluginTypes";
+import { NotionBlock } from "../types";
+import { IPlugin } from "./pluginTypes";
 
 // In Notion, you can make a callout and change its emoji. We map 5 of these
 // to the 5 Docusaurus admonition styles.
@@ -14,7 +9,7 @@ import { IPlugin, NotionBlock } from "./pluginTypes";
 // Note: I haven't yet tested this with any emoji except "💡"/"tip", nor the case where the
 // callout has-children. Not even sure what that would mean, since the document I was testing
 // with has quite complex markup inside the callout, but still takes the no-children branch.
-export async function notionCalloutToAdmonition(
+async function notionCalloutToAdmonition(
   notionToMarkdown: NotionToMarkdown,
   getBlockChildren: (id: string) => Promise<NotionBlock[]>,
   block: NotionBlock

@@ -1,9 +1,10 @@
 import { NotionToMarkdown } from "notion-to-md";
-import { IPlugin, NotionBlock } from "./pluginTypes";
+import { NotionBlock } from "../types";
+import { IPlugin } from "./pluginTypes";
 
 // Makes links to headings work in docusaurus
 // https://github.com/sillsdev/docu-notion/issues/20
-export async function headingTransformer(
+async function headingTransformer(
   notionToMarkdown: NotionToMarkdown,
   block: NotionBlock
 ): Promise<string> {

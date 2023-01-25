@@ -1,12 +1,12 @@
 import chalk from "chalk";
 import {
-  IDocuNotionConfig,
   IDocuNotionContext,
   IRegexMarkdownModification,
-  NotionBlock,
 } from "./plugins/pluginTypes";
 import { info, logDebug, verbose } from "./log";
 import { NotionPage } from "./NotionPage";
+import { IDocuNotionConfig } from "./config/configuration";
+import { NotionBlock } from "./types";
 
 export async function getMarkdownForPage(
   config: IDocuNotionConfig,

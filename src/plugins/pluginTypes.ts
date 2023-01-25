@@ -1,11 +1,9 @@
 import { ListBlockChildrenResponseResult } from "notion-to-md/build/types";
 import { NotionPage } from "../NotionPage";
 import { NotionToMarkdown } from "notion-to-md";
-import { BlockObjectResponse } from "@notionhq/client/build/src/api-endpoints";
 import { DocuNotionOptions } from "../pull";
 import { LayoutStrategy } from "../LayoutStrategy";
-
-export type NotionBlock = BlockObjectResponse;
+import { ICounts, NotionBlock } from "../index";
 
 type linkConversionFunction = (
   context: IDocuNotionContext,
@@ -54,20 +52,11 @@ export type IRegexMarkdownModification = {
   imports?: string[];
 };
 
-export type IDocuNotionConfig = {
-  plugins: IPlugin[];
-};
 export type ICustomNotionToMarkdownConversion = (
   block: ListBlockChildrenResponseResult,
   context: IDocuNotionContext
 ) => () => Promise<string>;
 
-export type ICounts = {
-  output_normally: number;
-  skipped_because_empty: number;
-  skipped_because_status: number;
-  skipped_because_level_cannot_have_content: number;
-};
 export type IGetBlockChildrenFn = (id: string) => Promise<NotionBlock[]>;
 
 export type IDocuNotionContext = {

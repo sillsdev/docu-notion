@@ -1,7 +1,8 @@
 import { NotionToMarkdown } from "notion-to-md";
-import { IPlugin, NotionBlock } from "./pluginTypes";
+import { NotionBlock } from "../types";
+import { IPlugin } from "./pluginTypes";
 
-export async function notionColumnListToMarkdown(
+async function notionColumnListToMarkdown(
   notionToMarkdown: NotionToMarkdown,
   getBlockChildren: (id: string) => Promise<NotionBlock[]>,
   block: NotionBlock

@@ -2,7 +2,11 @@ import * as Cosmic from "cosmiconfig";
 import defaultConfig from "./default.docunotion.config";
 import { error, verbose } from "../log";
 import { TypeScriptLoader } from "cosmiconfig-typescript-loader";
-import { IDocuNotionConfig, IPlugin } from "../plugins/pluginTypes";
+import { IPlugin } from "../plugins/pluginTypes";
+
+export type IDocuNotionConfig = {
+  plugins: IPlugin[];
+};
 
 // read the plugins from the config file
 // and add them to the map

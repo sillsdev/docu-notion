@@ -2,15 +2,13 @@ import { Client } from "@notionhq/client";
 import { GetPageResponse } from "@notionhq/client/build/src/api-endpoints";
 import { info } from "console";
 import { NotionToMarkdown } from "notion-to-md";
-import {
-  IDocuNotionConfig,
-  IDocuNotionContext,
-  NotionBlock,
-} from "./plugins/pluginTypes";
-import { HierarchicalNamedLayoutStrategy } from "./HierarchicalNamedLayoutStrategy";
-import { error, logDebug, verbose, warning } from "./log";
-import { NotionPage } from "./NotionPage";
-import { getMarkdownFromNotionBlocks } from "./transform";
+import { IDocuNotionContext } from "./pluginTypes";
+import { HierarchicalNamedLayoutStrategy } from "../HierarchicalNamedLayoutStrategy";
+import { error, logDebug, verbose, warning } from "../log";
+import { NotionPage } from "../NotionPage";
+import { getMarkdownFromNotionBlocks } from "../transform";
+import { IDocuNotionConfig } from "../config/configuration";
+import { NotionBlock } from "../types";
 
 export async function blocksToMarkdown(
   config: IDocuNotionConfig,

@@ -1,5 +1,5 @@
-import { NotionBlock } from "./pluginTypes";
-import { blocksToMarkdown } from "../TestRun";
+import { NotionBlock } from "../types";
+import { blocksToMarkdown } from "./pluginTestRun";
 import { standardNumberedListTransformer } from "./NumberedListTransformer";
 
 let block: any;

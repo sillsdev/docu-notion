@@ -19,7 +19,7 @@ export const standardColumnTransformer: IPlugin = {
 };
 
 // This runs when notion-to-md encounters a column block
-export async function notionColumnToMarkdown(
+async function notionColumnToMarkdown(
   notionToMarkdown: NotionToMarkdown,
   getBlockChildren: IGetBlockChildrenFn,
   block: ListBlockChildrenResponseResult

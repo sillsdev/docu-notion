@@ -1,6 +1,6 @@
 import { setLogLevel, verbose } from "../log";
 import { NotionPage } from "../NotionPage";
-import { oneBlockToMarkdown } from "../TestRun";
+import { oneBlockToMarkdown } from "./pluginTestRun";
 import { standardExternalLinkConversion } from "./externalLinks";
 
 // If you paste a link in notion and then choose "Create bookmark", the markdown
