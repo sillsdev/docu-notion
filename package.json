@@ -22,8 +22,7 @@
     "pull-sample-site": "yarn ts -n $DOCU_NOTION_INTEGRATION_TOKEN -r $DOCU_NOTION_SAMPLE_ROOT_PAGE  --log-level debug",
     "// test with a semi-stable/public site:": "",
     "pull-sample": "yarn ts -n $DOCU_NOTION_INTEGRATION_TOKEN -r $DOCU_NOTION_SAMPLE_ROOT_PAGE -m ./sample --locales en,es,fr,de --log-level verbose",
-    "pull-sample-with-paths": "yarn ts -n $DOCU_NOTION_INTEGRATION_TOKEN -r $DOCU_NOTION_SAMPLE_ROOT_PAGE -m ./sample --img-output-path ./sample_img",
-    "postinstall": "patch-package"
+    "pull-sample-with-paths": "yarn ts -n $DOCU_NOTION_INTEGRATION_TOKEN -r $DOCU_NOTION_SAMPLE_ROOT_PAGE -m ./sample --img-output-path ./sample_img"
   },
   "repository": {
     "type": "git",
@@ -82,7 +81,6 @@
     "eslint-plugin-prettier": "^3.4.0",
     "jest": "^28.1.3",
     "lint-staged": "^10.5.4",
-    "patch-package": "^6.5.1",
     "prettier": "^2.2.1",
     "semantic-release": "^19.0.2",
     "ts-jest": "^28.0.7",
