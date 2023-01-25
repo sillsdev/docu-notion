@@ -5,12 +5,9 @@ If your project needs some processing that docu-notion doesn't already provide, 
 1. Add a `docu-notion.config.ts` to the root level of your project directory.
 1. Add something like this:
 
-```
+```ts
 import { IDocuNotionConfig } from "docu-notion";
 
-const config: IDocuNotionConfig = {
-  plugins: [bloomBookEmbedding],
-};
 const dummyMarkdownModifier: IPlugin = {
   name: "dummyMarkdownModifier",
 
@@ -21,6 +18,7 @@ const dummyMarkdownModifier: IPlugin = {
     },
   ],
 };
+
 const config: IDocuNotionConfig = {
   plugins: [dummyMarkdownModifier],
 };
