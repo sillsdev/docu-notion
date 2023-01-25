@@ -3,9 +3,7 @@
   using these example plugins.
  */
 
-import { IDocuNotionConfig } from "./dist/config/configuration";
-import { IPlugin, Log } from "./dist";
-import { NotionBlock } from "./dist/types";
+import { IPlugin, IDocuNotionConfig, Log, NotionBlock } from "./dist";
 
 const dummyBlockModifier: IPlugin = {
   name: "dummyBlockModifier",
