@@ -5,3 +5,4 @@ i18n/
 node_modules/
 version.json
 docs/
+yarn-error.log

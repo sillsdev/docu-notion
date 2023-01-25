@@ -5,6 +5,7 @@ import * as Path from "path";
 import { makeImagePersistencePlan } from "./MakeImagePersistencePlan";
 import { warning, logDebug, verbose, info } from "./log";
 import { ListBlockChildrenResponseResult } from "notion-to-md/build/types";
+import { IDocuNotionContext, IPlugin } from "./plugins/pluginTypes";
 
 // We several things here:
 // 1) copy images locally instead of leaving them in Notion
@@ -54,7 +55,6 @@ export async function initImageHandling(
   imagePrefix = prefix.replace(/\/$/, "");
   imageOutputPath = outputPath;
   locales = incomingLocales;
-  console.log("locales:" + JSON.stringify(locales));
 
   // Currently we don't delete the image directory, because if an image
   // changes, it gets a new id. This way can then prevent downloading
@@ -64,6 +64,26 @@ export async function initImageHandling(
     await fs.mkdir(imageOutputPath, { recursive: true });
   }
 }
+
+export const standardImageTransformer: IPlugin = {
+  name: "DownloadImagesToRepo",
+  notionToMarkdownTransforms: [
+    {
+      type: "image",
+      // we have to set this one up for each page because we need to
+      // give it two extra parameters that are context for each page
+      getStringFromBlock: (
+        context: IDocuNotionContext,
+        block: ListBlockChildrenResponseResult
+      ) =>
+        markdownToMDImageTransformer(
+          block,
+          context.directoryContainingMarkdown,
+          context.relativeFilePathToFolderContainingPage
+        ),
+    },
+  ],
+};
 
 // This is a "custom transformer" function passed to notion-to-markdown
 // eslint-disable-next-line @typescript-eslint/require-await
@@ -98,11 +118,13 @@ async function processImageBlock(
 ): Promise<void> {
   logDebug("processImageBlock", JSON.stringify(imageBlock));
 
-  // this is broken into all these steps to facilitate unit testing without IO
   const imageSet = parseImageBlock(imageBlock);
   imageSet.pathToParentDocument = pathToParentDocument;
   imageSet.relativePathToParentDocument = relativePathToThisPage;
 
+  // enhance: it would much better if we could split the changes to markdown separately from actual reading/writing,
+  // so that this wasn't part of the markdown-creation loop. It's already almost there; we just need to
+  // save the imageSets somewhere and then do the actual reading/writing later.
   await readPrimaryImage(imageSet);
   makeImagePersistencePlan(imageSet, imageOutputPath, imagePrefix);
   await saveImage(imageSet);

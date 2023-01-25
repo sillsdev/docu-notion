@@ -1,7 +1,6 @@
 import { NotionToMarkdown } from "notion-to-md";
-import { ListBlockChildrenResponseResult } from "notion-to-md/build/types";
-import { Client } from "@notionhq/client";
-import { getBlockChildren } from "./CustomTransformers";
+import { NotionBlock } from "../types";
+import { IPlugin } from "./pluginTypes";
 
 // In Notion, you can make a callout and change its emoji. We map 5 of these
 // to the 5 Docusaurus admonition styles.
@@ -10,10 +9,10 @@ import { getBlockChildren } from "./CustomTransformers";
 // Note: I haven't yet tested this with any emoji except "💡"/"tip", nor the case where the
 // callout has-children. Not even sure what that would mean, since the document I was testing
 // with has quite complex markup inside the callout, but still takes the no-children branch.
-export async function notionCalloutToAdmonition(
+async function notionCalloutToAdmonition(
   notionToMarkdown: NotionToMarkdown,
-  notionClient: Client,
-  block: ListBlockChildrenResponseResult
+  getBlockChildren: (id: string) => Promise<NotionBlock[]>,
+  block: NotionBlock
 ): Promise<string> {
   // In this case typescript is not able to index the types properly, hence ignoring the error
   // @ts-ignore
@@ -27,8 +26,7 @@ export async function notionCalloutToAdmonition(
 
     plain_text = notionToMarkdown.annotatePlainText(plain_text, annotations);
 
-    // if (content["href"])
-    //   plain_text = md.link(plain_text, content["href"]);
+    if (content["href"]) plain_text = `[${plain_text}](${content["href"]})`;
 
     parsedData += plain_text;
   });
@@ -40,7 +38,7 @@ export async function notionCalloutToAdmonition(
     return result1;
   }
 
-  const callout_children_object = await getBlockChildren(notionClient, id, 100);
+  const callout_children_object = await getBlockChildren(id);
 
   // // parse children blocks to md object
   const callout_children = await notionToMarkdown.blocksToMarkdown(
@@ -131,3 +129,18 @@ function callout(text: string, icon?: CalloutIcon) {
   }
   return `:::${docusaurusAdmonition}\n\n${text}\n\n:::\n\n`;
 }
+
+export const standardCalloutTransformer: IPlugin = {
+  name: "standardCalloutTransformer",
+  notionToMarkdownTransforms: [
+    {
+      type: "callout",
+      getStringFromBlock: (context, block) =>
+        notionCalloutToAdmonition(
+          context.notionToMarkdown,
+          context.getBlockChildren,
+          block
+        ),
+    },
+  ],
+};
