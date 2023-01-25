@@ -23,10 +23,11 @@ const config: IDocuNotionConfig = {
   plugins: [dummyMarkdownModifier],
 };
 export default config;
-
 ```
 
 For other available plugin points, see [pluginTypes.ts](pluginTypes.ts). All of the built-in processing is also done via built-in plugins, so those files and their unit tests should serve as good examples.
+
+If your plugin needs custom parameters, just supply the user with a function that will return the `IPlugin` in a closure containing the parameters. See [docu-notion-config.ts](docu-notion-config.ts) for an example of this.
 
 Once you have your plugin working, you have three options:
 

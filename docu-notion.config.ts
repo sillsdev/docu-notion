@@ -5,17 +5,23 @@
 
 import { IPlugin, IDocuNotionConfig, Log, NotionBlock } from "./dist";
 
-const dummyBlockModifier: IPlugin = {
-  name: "dummyBlockModifier",
+// This is an example of a plugin that needs customization by the end user.
+// It uses a closure to supply the plugin with the customization parameter.
+function dummyBlockModifier(customParameter: string): IPlugin {
+  return {
+    name: "dummyBlockModifier",
 
-  notionBlockModifications: [
-    {
-      modify: (block: NotionBlock) => {
-        Log.verbose("dummyBlockModifier was called");
+    notionBlockModifications: [
+      {
+        modify: (block: NotionBlock) => {
+          Log.verbose(
+            `dummyBlockModifier has customParameter:${customParameter}.`
+          );
+        },
       },
-    },
-  ],
-};
+    ],
+  };
+}
 
 const dummyMarkdownModifier: IPlugin = {
   name: "dummyMarkdownModifier",
@@ -29,7 +35,12 @@ const dummyMarkdownModifier: IPlugin = {
 };
 
 const config: IDocuNotionConfig = {
-  plugins: [dummyBlockModifier, dummyMarkdownModifier],
+  plugins: [
+    // here we're adding a plugin that needs a parameter for customization
+    dummyBlockModifier("foobar"),
+    // here's we're adding a plugin that doesn't take any customization
+    dummyMarkdownModifier,
+  ],
 };
 
 export default config;
