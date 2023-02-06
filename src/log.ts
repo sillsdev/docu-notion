@@ -14,13 +14,33 @@ export function warning(s: string): void {
 export function info(s: string): void {
   console.log(s);
 }
-export function heading(s: string): void {
-  console.log(chalk.blue(s));
+
+// make sure to call endGroup(), eventually, after calling this
+export function group(s: string): void {
+  console.log(chalk.blue(wrapForCI(s, "group")));
 }
+
+// github actions needs an ::endgroup:: to end a group
+export function endGroup(): void {
+  console.log(wrapForCI("", "endgroup"));
+}
+
 export function verbose(s: string): void {
   if (logLevel === "verbose" || logLevel === "debug")
     console.log(chalk.green(s));
 }
+
+// use this one if the debug info would take time to construct,
+// so you want to skip doing it if not in debug mode
+export function logDebugFn(
+  label: string,
+  runIfLoggingDebug: () => string
+): void {
+  if (logLevel === "debug") {
+    logDebug(label, runIfLoggingDebug());
+  }
+}
+
 export function logDebug(label: string, info: string): void {
   if (logLevel === "debug") {
     console.log(chalk.dim(wrapForCI(`[${label}]`, "debug")));

@@ -3,7 +3,7 @@ import {
   IDocuNotionContext,
   IRegexMarkdownModification,
 } from "./plugins/pluginTypes";
-import { error, info, logDebug, verbose, warning } from "./log";
+import { error, info, logDebug, logDebugFn, verbose, warning } from "./log";
 import { NotionPage } from "./NotionPage";
 import { IDocuNotionConfig } from "./config/configuration";
 import { NotionBlock } from "./types";
@@ -27,7 +27,7 @@ export async function getMarkdownForPage(
 
   const blocks = await context.getBlockChildren(page.pageId);
 
-  logDebug("pull", JSON.stringify(blocks));
+  logDebugFn("markdown from page", () => JSON.stringify(blocks, null, 2));
 
   const body = await getMarkdownFromNotionBlocks(context, config, blocks);
   const frontmatter = getFrontMatter(page); // todo should be a plugin
@@ -217,6 +217,10 @@ function registerNotionToMarkdownCustomTransforms(
   config.plugins.forEach(plugin => {
     if (plugin.notionToMarkdownTransforms) {
       plugin.notionToMarkdownTransforms.forEach(transform => {
+        logDebug(
+          "registering custom transform",
+          `${plugin.name} for ${transform.type}`
+        );
         docunotionContext.notionToMarkdown.setCustomTransformer(
           transform.type,
           (block: any) => {

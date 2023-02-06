@@ -1,6 +1,7 @@
 import { NotionToMarkdown } from "notion-to-md";
 import { NotionBlock } from "../types";
 import { IPlugin } from "./pluginTypes";
+import { logDebug } from "../log";
 
 // Makes links to headings work in docusaurus
 // https://github.com/sillsdev/docu-notion/issues/20
@@ -12,6 +13,11 @@ async function headingTransformer(
   (block as any).type = block.type.replace("DN_", "");
 
   const markdown = await notionToMarkdown.blockToMarkdown(block);
+
+  logDebug(
+    "headingTransformer, markdown of a heading before adding id",
+    markdown
+  );
 
   // To make heading links work in docusaurus, we append an id. E.g.
   //  ### Hello World {#my-explicit-id}

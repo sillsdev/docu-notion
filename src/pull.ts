@@ -7,7 +7,15 @@ import { NotionPage, PageType } from "./NotionPage";
 import { initImageHandling, cleanupOldImages } from "./images";
 
 import * as Path from "path";
-import { error, heading, info, logDebug, verbose, warning } from "./log";
+import {
+  endGroup,
+  error,
+  group,
+  info,
+  logDebug,
+  verbose,
+  warning,
+} from "./log";
 import { IDocuNotionContext } from "./plugins/pluginTypes";
 import { getMarkdownForPage } from "./transform";
 import {
@@ -70,21 +78,22 @@ export async function notionPull(options: DocuNotionOptions): Promise<void> {
 
   info("Connecting to Notion...");
 
-  heading(
+  group(
     "Stage 1: walk children of the page named 'Outline', looking for pages..."
   );
   await getPagesRecursively(options, "", options.rootPage, 0, true);
   logDebug("getPagesRecursively", JSON.stringify(pages, null, 2));
   info(`Found ${pages.length} pages`);
-  info(``);
-  heading(
+  endGroup();
+  group(
     `Stage 2: convert ${pages.length} Notion pages to markdown and save locally...`
   );
   await outputPages(options, config, pages);
-  info(``);
-  heading("Stage 3: clean up old files & images...");
+  endGroup();
+  group("Stage 3: clean up old files & images...");
   await layoutStrategy.cleanupOldFiles();
   await cleanupOldImages();
+  endGroup();
 }
 
 async function outputPages(
