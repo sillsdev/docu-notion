@@ -1,6 +1,7 @@
 import { ImageSet } from "./images";
 import * as Path from "path";
 import { error } from "./log";
+import { exit } from "process";
 
 export function makeImagePersistencePlan(
   imageSet: ImageSet,
@@ -34,6 +35,7 @@ export function makeImagePersistencePlan(
       error(
         "imageOutputPath was declared, but one or more localizedUrls were found too. If you are going to localize screenshots, then you can't declare an imageOutputPath."
       );
+      exit(1);
     }
 
     imageSet.filePathToUseInMarkdown =
@@ -44,6 +46,7 @@ export function makeImagePersistencePlan(
     error(
       `Something wrong with the filetype extension on the blob we got from ${imageSet.primaryUrl}`
     );
+    exit(1);
   }
 }
 

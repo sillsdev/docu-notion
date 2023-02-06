@@ -1,5 +1,5 @@
 import { IDocuNotionContext, IPlugin } from "./pluginTypes";
-import { error } from "../log";
+import { error, warning } from "../log";
 import { NotionPage } from "../NotionPage";
 
 function convertInternalLink(
@@ -9,7 +9,7 @@ function convertInternalLink(
   const linkRegExp = /\[([^\]]+)?\]\(\/?([^),^/]+)\)/g;
   const match = linkRegExp.exec(markdownLink);
   if (match === null) {
-    error(
+    warning(
       `[standardInternalLinkConversion] Could not parse link ${markdownLink}`
     );
     return markdownLink;
@@ -30,7 +30,7 @@ function convertInternalLink(
 
   if (!targetPage) {
     // About this situation. See https://github.com/sillsdev/docu-notion/issues/9
-    error(
+    warning(
       `[standardInternalLinkConversion] Could not find the target of this link. Note that links to outline sections are not supported. ${markdownLink}. https://github.com/sillsdev/docu-notion/issues/9`
     );
     return "**[Problem Internal Link]**";

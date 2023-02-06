@@ -3,6 +3,7 @@ import defaultConfig from "./default.docunotion.config";
 import { error, verbose } from "../log";
 import { TypeScriptLoader } from "cosmiconfig-typescript-loader";
 import { IPlugin } from "../plugins/pluginTypes";
+import { exit } from "process";
 
 export type IDocuNotionConfig = {
   plugins: IPlugin[];
@@ -47,6 +48,7 @@ export async function loadConfigAsync(): Promise<IDocuNotionConfig> {
     };
   } catch (e: any) {
     error(e.message);
+    exit(1);
   }
   verbose(`Active plugins: [${config.plugins.map(p => p.name).join(", ")}]`);
   return config;

@@ -253,7 +253,7 @@ async function getPageMetadata(id: string): Promise<GetPageResponse> {
 
 async function rateLimit() {
   if (notionLimiter.getTokensRemaining() < 1) {
-    logDebug("", "*** delaying for rate limit");
+    logDebug("rateLimit", "*** delaying for rate limit");
   }
   await notionLimiter.removeTokens(1);
 }

@@ -3,7 +3,7 @@ import {
   IDocuNotionContext,
   IRegexMarkdownModification,
 } from "./plugins/pluginTypes";
-import { info, logDebug, verbose } from "./log";
+import { error, info, logDebug, verbose, warning } from "./log";
 import { NotionPage } from "./NotionPage";
 import { IDocuNotionConfig } from "./config/configuration";
 import { NotionBlock } from "./types";
@@ -136,7 +136,7 @@ async function doTransformsOnMarkdown(
       }
     }
   }
-  console.log("body after regex: " + body);
+  logDebug("doTransformsOnMarkdown", "body after regex: " + body);
   const uniqueImports = [...new Set(imports)];
   return { body, imports: [...uniqueImports].join("\n") };
 }

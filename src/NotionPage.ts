@@ -1,13 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
-import {
-  GetPageResponse,
-  ListBlockChildrenResponse,
-} from "@notionhq/client/build/src/api-endpoints";
-import { Client } from "@notionhq/client";
-import { logDebug } from "./log";
+import { GetPageResponse } from "@notionhq/client/build/src/api-endpoints";
 import { parseLinkId } from "./plugins/internalLinks";
-import { info } from "console";
 import { ListBlockChildrenResponseResults } from "notion-to-md/build/types";
 
 // Notion has 2 kinds of pages: a normal one which is just content, and what I'm calling a "database page", which has whatever properties you put on it.
