@@ -105,6 +105,7 @@ type CalloutIcon =
 
 const calloutsToAdmonitions = {
   /* prettier-ignore */ "ℹ️": "note",
+  "📝": "note",
   "💡": "tip",
   "❗": "info",
   "⚠️": "caution",
