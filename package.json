@@ -1,5 +1,5 @@
 {
-  "name": "docu-notion",
+  "name": "@sillsdev/docu-notion",
   "description": "Download Notion pages as markdown and image files, preserving hierarchy and enabling workflow properties. Works with Docusaurus.",
   "main": "./dist/index.js",
   "bin": "dist/index.js",
@@ -92,5 +92,8 @@
     "branches": [
       "main"
     ]
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
