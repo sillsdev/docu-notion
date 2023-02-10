@@ -1,11 +1,4 @@
 {
-  "name": "@sillsdev/docu-notion",
-  "description": "Download Notion pages as markdown and image files, preserving hierarchy and enabling workflow properties. Works with Docusaurus.",
-  "main": "./dist/index.js",
-  "bin": "dist/index.js",
-  "files": [
-    "dist/**/*"
-  ],
   "scripts": {
     "test": "jest",
     "build": "yarn test && tsc && cp ./src/css/*.css dist/",
@@ -24,28 +17,6 @@
     "pull-sample": "yarn ts -n $DOCU_NOTION_INTEGRATION_TOKEN -r $DOCU_NOTION_SAMPLE_ROOT_PAGE -m ./sample --locales en,es,fr,de --log-level verbose",
     "pull-sample-with-paths": "yarn ts -n $DOCU_NOTION_INTEGRATION_TOKEN -r $DOCU_NOTION_SAMPLE_ROOT_PAGE -m ./sample --img-output-path ./sample_img"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/sillsdev/docu-notion.git"
-  },
-  "license": "MIT",
-  "author": {
-    "name": "SIL Language Software Development",
-    "email": "sillsdev@users.noreply.github.com",
-    "url": "https://github.com/sillsdev"
-  },
-  "engines": {
-    "node": ">=12.0"
-  },
-  "keywords": [
-    "docusaurus",
-    "notion",
-    "markdown"
-  ],
-  "bugs": {
-    "url": "https://github.com/sillsdev/docu-notion/issues"
-  },
-  "homepage": "https://github.com/sillsdev/docu-notion#readme",
   "//file-type": "have to use this version before they switched to ESM, which gives a compile error related to require()",
   "//node-fetch@2.6.6file-type": "have to use this version before they switched to ESM, which gives a compile error related to require()",
   "//chalk@4": "also ESM related problem",
@@ -88,9 +59,34 @@
     "ts-node": "^10.2.1",
     "typescript": "^4.6.4"
   },
+  "name": "@sillsdev/docu-notion",
+  "description": "Download Notion pages as markdown and image files, preserving hierarchy and enabling workflow properties. Works with Docusaurus.",
+  "license": "MIT",
+  "author": {
+    "name": "SIL Language Software Development",
+    "email": "sillsdev@users.noreply.github.com",
+    "url": "https://github.com/sillsdev"
+  },
+  "keywords": [
+    "docusaurus",
+    "notion",
+    "markdown",
+    "documentation"
+  ],
+  "bugs": {
+    "url": "https://github.com/sillsdev/docu-notion/issues"
+  },
+  "homepage": "https://github.com/sillsdev/docu-notion#readme",
+  "packageManager": "yarn@3.4.1",
+  "main": "./dist/index.js",
+  "bin": "dist/index.js",
+  "files": [
+    "dist/**/*"
+  ],
   "release": {
     "branches": [
-      "main"
+      "main",
+      "release"
     ]
   },
   "publishConfig": {
