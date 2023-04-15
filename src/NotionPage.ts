@@ -97,7 +97,8 @@ export class NotionPage {
   private explicitSlug(): string | undefined {
     const explicitSlug = this.getPlainTextProperty("Slug", "");
     if (explicitSlug) {
-      if (explicitSlug === "/") return explicitSlug; // the root page
+      if (explicitSlug === "/") return explicitSlug;
+      // the root page
       else
         return (
           "/" +
@@ -174,7 +175,6 @@ export class NotionPage {
           .map((item: { plain_text: any }) => item.plain_text)
           .join(" ") as string)
       : defaultIfEmpty;
-    }
   }
 
   public getSelectProperty(property: string): string | undefined {
