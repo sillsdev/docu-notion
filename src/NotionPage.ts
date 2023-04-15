@@ -97,7 +97,8 @@ export class NotionPage {
   private explicitSlug(): string | undefined {
     const explicitSlug = this.getPlainTextProperty("Slug", "");
     if (explicitSlug) {
-      if (explicitSlug === "/") return explicitSlug; // the root page
+      if (explicitSlug === "/") return explicitSlug;
+      // the root page
       else
         return (
           "/" +
@@ -158,6 +159,10 @@ export class NotionPage {
           {
             ...
             "plain_text": "Intro",
+          },
+          {
+            ...
+            "plain_text": " to Notion",
           }
         ]
       */
@@ -170,7 +175,9 @@ export class NotionPage {
     const textArray = p[p.type];
     //console.log("textarray:" + JSON.stringify(textArray, null, 2));
     return textArray && textArray.length
-      ? (textArray[0].plain_text as string)
+      ? (textArray
+          .map((item: { plain_text: any }) => item.plain_text)
+          .join("") as string)
       : defaultIfEmpty;
   }
 
