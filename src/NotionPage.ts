@@ -159,6 +159,10 @@ export class NotionPage {
           {
             ...
             "plain_text": "Intro",
+          },
+          {
+            ...
+            "plain_text": " to Notion",
           }
         ]
       */
@@ -173,7 +177,7 @@ export class NotionPage {
     return textArray && textArray.length
       ? (textArray
           .map((item: { plain_text: any }) => item.plain_text)
-          .join(" ") as string)
+          .join("") as string)
       : defaultIfEmpty;
   }
 
