@@ -2,6 +2,40 @@ import { IDocuNotionContext, IPlugin } from "./pluginTypes";
 import { error, warning } from "../log";
 import { NotionPage } from "../NotionPage";
 
+// converts a url to a local link, if it is a link to a page in the Notion site
+// only here for plugins, notion won't normally be giving us raw urls (at least not that I've noticed)
+// If it finds a URL but can't find the page it points to, it will return undefined.
+// If it doesn't find a match at all, it returns undefined.
+export function convertInternalUrl(
+  context: IDocuNotionContext,
+  url: string
+): string | undefined {
+  const kGetIDFromNotionURL = /https:\/\/www\.notion\.so\S+-([a-z,0-9]+)+.*/;
+  const match = kGetIDFromNotionURL.exec(url);
+  if (match === null) {
+    warning(
+      `[standardInternalLinkConversion] Could not parse link ${url} as a Notion URL`
+    );
+    return undefined;
+  }
+  const id = match[1];
+  const pages = context.pages;
+  // find the page where pageId matches hrefFromNotion
+  const targetPage = pages.find(p => {
+    return p.matchesLinkId(id);
+  });
+
+  if (!targetPage) {
+    // About this situation. See https://github.com/sillsdev/docu-notion/issues/9
+    warning(
+      `[standardInternalLinkConversion] Could not find the target of this link. Note that links to outline sections are not supported. ${url}. https://github.com/sillsdev/docu-notion/issues/9`
+    );
+    return undefined;
+  }
+  return convertLinkHref(context, targetPage, url);
+}
+
+// handles the whole markdown link, including the label
 function convertInternalLink(
   context: IDocuNotionContext,
   markdownLink: string
