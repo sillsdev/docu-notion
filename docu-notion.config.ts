@@ -1,5 +1,5 @@
 /* This file is only used when testing docu-notion itself, not when it is used as a library.
-  E.g., if you run `yarn pull-test-tagged`, docu-notion will read this file and use it to configure itself,
+  E.g., if you run `npm run pull-test-tagged`, docu-notion will read this file and use it to configure itself,
   using these example plugins.
  */
 
