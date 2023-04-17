@@ -69,6 +69,15 @@ describe("NotionPage", () => {
           },
         ],
       },
+      date_property: {
+        id: "a%3Cql",
+        type: "date",
+        date: {
+          start: "2021-10-24",
+          end: "2021-10-28",
+          time_zone: null,
+        },
+      },
     },
     url: "https://www.notion.so/Site-docu-notion-PAGEID",
   };
@@ -86,6 +95,50 @@ describe("NotionPage", () => {
       const result = page.getPlainTextProperty("title", "");
 
       expect(result).toBe("FooBar");
+    });
+
+    it("should return the default value if the property is not found", () => {
+      const page = new NotionPage({
+        layoutContext: "Test Context",
+        pageId: "123",
+        order: 1,
+        metadata: mockMetadata,
+        foundDirectlyInOutline: true,
+      });
+
+      const result = page.getPlainTextProperty("nonexistent", "Default Value");
+
+      expect(result).toBe("Default Value");
+    });
+  });
+
+  describe("getDateProperty", () => {
+    it("should return the start date property by default", () => {
+      const page = new NotionPage({
+        layoutContext: "Test Context",
+        pageId: "123",
+        order: 1,
+        metadata: mockMetadata,
+        foundDirectlyInOutline: true,
+      });
+
+      const result = page.getDateProperty("date_property", "");
+
+      expect(result).toBe("2021-10-24");
+    });
+
+    it("should return the end date if start is false", () => {
+      const page = new NotionPage({
+        layoutContext: "Test Context",
+        pageId: "123",
+        order: 1,
+        metadata: mockMetadata,
+        foundDirectlyInOutline: true,
+      });
+
+      const result = page.getDateProperty("date_property", "", false);
+
+      expect(result).toBe("2021-10-28");
     });
 
     it("should return the default value if the property is not found", () => {

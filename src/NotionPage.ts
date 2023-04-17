@@ -207,6 +207,38 @@ export class NotionPage {
     return p.select?.name || undefined;
   }
 
+  public getDateProperty(
+    property: string,
+    defaultIfEmpty: string,
+    start = true
+  ): string {
+    /* Notion dates look like this
+   "properties": {
+      "published_date":
+      {
+        "id":"a%3Cql",
+        "type":"date",
+        "date":{
+          "start":"2021-10-24",
+          "end":null,
+          "time_zone":null
+        }
+      }
+    }
+    */
+
+    // console.log("metadata:\n" + JSON.stringify(this.metadata, null, 2));
+    const p = (this.metadata as any).properties?.[property];
+
+    // console.log(`prop ${property} = ${JSON.stringify(p)}`);
+    if (!p) return defaultIfEmpty;
+    if (start) {
+      return p?.date?.start ? (p.date.start as string) : defaultIfEmpty;
+    } else {
+      return p?.date?.end ? (p.date.end as string) : defaultIfEmpty;
+    }
+  }
+
   public async getContentInfo(
     children: ListBlockChildrenResponseResults
   ): Promise<{
