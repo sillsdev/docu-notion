@@ -1,3 +1,3 @@
 module.exports = {
-  branches: ["release", { name: "main", channel: "beta", prerelease: "beta" }],
+  branches: [{name:"release"}, { name: "main", channel: "alpha", prerelease: true}],
 };
