@@ -71,7 +71,7 @@ export type IDocuNotionContext = {
   notionToMarkdown: NotionToMarkdown;
   directoryContainingMarkdown: string;
   relativeFilePathToFolderContainingPage: string;
-  convertNotionLinkToLocalDocusaurusLink: (url: string) => string;
+  convertNotionLinkToLocalDocusaurusLink: (url: string) => string | undefined;
   pages: NotionPage[];
   counts: ICounts;
 };

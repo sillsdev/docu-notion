@@ -1,4 +1,5 @@
 import { NotionPage } from "../NotionPage";
+import { error } from "../log";
 import { makeSamplePageObject, oneBlockToMarkdown } from "./pluginTestRun";
 import { IDocuNotionContext, IPlugin } from "./pluginTypes";
 
@@ -50,8 +51,13 @@ test("raw url inside a mermaid codeblock gets converted to path using slug of th
           const url = match[1];
           const docusaurusUrl =
             context.convertNotionLinkToLocalDocusaurusLink(url);
-          // eslint-disable-next-line @typescript-eslint/await-thenable
-          return await match[0].replace(url, docusaurusUrl);
+          if (docusaurusUrl) {
+            // eslint-disable-next-line @typescript-eslint/await-thenable
+            return await match[0].replace(url, docusaurusUrl);
+          } else {
+            error(`Could not convert link ${url} to a local docusaurus link`);
+            return match[0];
+          }
         },
       },
     ],
