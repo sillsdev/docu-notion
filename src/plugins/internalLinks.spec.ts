@@ -458,6 +458,50 @@ Callouts inline [great page](/hello-world).
   );
 });
 
+test("internal link inside codeblock ignored", async () => {
+  const targetPageId = "123";
+  const targetPage: NotionPage = makeSamplePageObject({
+    slug: "hello-world",
+    name: "Hello World",
+    id: targetPageId,
+  });
+
+  const results = await getMarkdown(
+    {
+      type: "code",
+      code: {
+        caption: [],
+        rich_text: [
+          {
+            type: "text",
+            text: {
+              content:
+                "this should not change [link](https://www.notion.so/native/metapages/mypage)",
+              link: null,
+            },
+            annotations: {
+              bold: false,
+              italic: false,
+              strikethrough: false,
+              underline: false,
+              code: false,
+              color: "default",
+            },
+            plain_text:
+              "this should not change [link](https://www.notion.so/native/metapages/mypage)",
+            href: null,
+          },
+        ],
+        language: "javascript", // notion assumed javascript in my test in which I didn't specify a language
+      },
+    },
+    targetPage
+  );
+  expect(results.trim()).toContain(
+    "this should not change [link](https://www.notion.so/native/metapages/mypage)"
+  );
+});
+
 async function getMarkdown(block: object, targetPage?: NotionPage) {
   const config = {
     plugins: [

@@ -56,7 +56,11 @@ export async function getMarkdownFromNotionBlocks(
   //console.log("markdown after link fixes", markdown);
 
   // simple regex-based tweaks. These are usually related to docusaurus
-  const { imports, body } = await doTransformsOnMarkdown(config, markdown);
+  const { imports, body } = await doTransformsOnMarkdown(
+    context,
+    config,
+    markdown
+  );
 
   // console.log("markdown after regex fixes", markdown);
   // console.log("body after regex", body);
@@ -82,6 +86,7 @@ function doNotionBlockTransforms(
 }
 
 async function doTransformsOnMarkdown(
+  context: IDocuNotionContext,
   config: IDocuNotionConfig,
   input: string
 ) {
@@ -109,15 +114,24 @@ async function doTransformsOnMarkdown(
     // regex.exec is stateful, so we don't want to mess up the plugin's use of its own regex, so we clone it.
     // we also add the "g" flag to make sure we get all matches
     const regex = new RegExp(`${codeBlocks.source}|(${mod.regex.source})`, "g");
-    let count = 0;
     while ((match = regex.exec(input)) !== null) {
       if (match[0]) {
         const original = match[0];
-        if (original.startsWith("```") && original.endsWith("```")) {
-          continue; // code block
+        if (
+          original.startsWith("```") &&
+          original.endsWith("```") &&
+          !mod.includeCodeBlocks
+        ) {
+          continue; // code block, and they didn't say to include them
         }
         if (mod.getReplacement) {
-          replacement = await mod.getReplacement(original);
+          // our match here has an extra group, which is an implementation detail
+          // that shouldn't be made visible to the plugin
+          const matchAsThePluginWouldExpectIt = mod.regex.exec(match[0])!;
+          replacement = await mod.getReplacement(
+            context,
+            matchAsThePluginWouldExpectIt
+          );
         } else if (mod.replacementPattern) {
           console.log(`mod.replacementPattern.replace("$1", ${match[2]}`);
           replacement = mod.replacementPattern.replace("$1", match[2]);
@@ -149,7 +163,8 @@ async function doNotionToMarkdown(
     blocks
   );
 
-  let markdown = docunotionContext.notionToMarkdown.toMarkdownString(mdBlocks);
+  const markdown =
+    docunotionContext.notionToMarkdown.toMarkdownString(mdBlocks);
   return markdown;
 }
 
@@ -187,6 +202,7 @@ function doLinkFixes(
     config.plugins.some(plugin => {
       if (!plugin.linkModifier) return false;
       if (plugin.linkModifier.match.exec(originalLinkMarkdown) === null) {
+        verbose(`plugin "${plugin.name}" did not match this url`);
         return false;
       }
       const newMarkdown = plugin.linkModifier.convert(
