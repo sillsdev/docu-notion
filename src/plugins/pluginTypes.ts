@@ -35,8 +35,8 @@ export type IPlugin = {
   // simple regex replacements on the markdown output
   regexMarkdownModifications?: IRegexMarkdownModification[];
 
-  // operations on pages to define the markdown's frontmatter
-  frontmatterTransform?: {
+  // operations on pages to define the markdown's frontMatter
+  frontMatterTransform?: {
     build: (page: NotionPage) => string;
   };
 

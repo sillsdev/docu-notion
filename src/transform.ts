@@ -30,8 +30,8 @@ export async function getMarkdownForPage(
   logDebugFn("markdown from page", () => JSON.stringify(blocks, null, 2));
 
   const body = await getMarkdownFromNotionBlocks(context, config, blocks);
-  const frontmatter = getMarkdownFrontMatter(config, page);
-  return `${frontmatter}\n${body}`;
+  const frontMatter = getMarkdownFrontMatter(config, page);
+  return `${frontMatter}\n${body}`;
 }
 
 // this is split off from getMarkdownForPage so that unit tests can provide the block contents
@@ -256,13 +256,13 @@ function getMarkdownFrontMatter(
   config: IDocuNotionConfig,
   page: NotionPage
 ): string {
-  let frontmatter = "---\n";
+  let frontMatter = "---\n";
   config.plugins.forEach(plugin => {
-    if (plugin.frontmatterTransform) {
+    if (plugin.frontMatterTransform) {
       logDebug("transforming page with plugin", plugin.name);
-      frontmatter += plugin.frontmatterTransform?.build(page);
+      frontMatter += plugin.frontMatterTransform?.build(page);
     }
   });
-  frontmatter += "---\n";
-  return frontmatter;
+  frontMatter += "---\n";
+  return frontMatter;
 }

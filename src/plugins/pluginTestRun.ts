@@ -92,7 +92,7 @@ export async function blocksToMarkdown(
   return r;
 }
 
-// This is used for things like testing links to other pages and frontmatter creation,
+// This is used for things like testing links to other pages and frontMatter creation,
 // when just testing what happens to individual blocks is not enough.
 // after getting this, you can make changes to it, then pass it to blocksToMarkdown
 export function makeSamplePageObject(options: {

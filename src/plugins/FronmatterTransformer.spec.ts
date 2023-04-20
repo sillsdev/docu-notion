@@ -2,7 +2,7 @@ import { GetPageResponse } from "@notionhq/client/build/src/api-endpoints";
 import { NotionPage } from "../NotionPage";
 import { standardFrontmatterTransformer } from "./FronmatterTransformer";
 
-let getFrontMatter = standardFrontmatterTransformer.frontmatterTransform
+let getFrontMatter = standardFrontmatterTransformer.frontMatterTransform
   ?.build as (page: NotionPage) => string;
 
 const sampleMetadata: GetPageResponse = {
@@ -121,7 +121,7 @@ describe("getFrontMatter", () => {
     });
   });
 
-  it("should generate frontmatter with all available properties", () => {
+  it("should generate frontMatter with all available properties", () => {
     const expectedFrontmatter = `title: FooBar\nsidebar_position: 1\nslug: /123\nkeywords: [Foo, Bar]\n`;
     (page.metadata as any).properties.Keywords.rich_text[0].plain_text =
       "Foo, Bar";
@@ -133,7 +133,7 @@ describe("getFrontMatter", () => {
 
   // "title: Foo-Barsidebar_position: 1slug: keywords: [Foo, Bar]"
   // "title: FooBar\nsidebar_position: 1\nslug: /123\n"
-  it("should generate frontmatter with no keywords", () => {
+  it("should generate frontMatter with no keywords", () => {
     const expectedFrontmatter = `title: FooBar\nsidebar_position: 1\nslug: /123\n`;
     (page.metadata as any).properties.Keywords = undefined;
 

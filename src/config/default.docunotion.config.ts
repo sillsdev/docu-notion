@@ -36,7 +36,7 @@ const defaultConfig: IDocuNotionConfig = {
     standardInternalLinkConversion,
     standardExternalLinkConversion,
 
-    // Frontmatter transformers, add information to the page frontmatter
+    // Frontmatter transformers, add information to the page frontMatter
     standardFrontmatterTransformer,
 
     // Regexps plus javascript `import`s that operate on the Markdown output
