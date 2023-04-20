@@ -1,6 +1,6 @@
 import { GetPageResponse } from "@notionhq/client/build/src/api-endpoints";
 import { NotionPage } from "../NotionPage";
-import { standardFrontmatterTransformer } from "./FronmatterTransformer";
+import { standardFrontmatterTransformer } from "./FrontMatterTransformer";
 
 let getFrontMatter = standardFrontmatterTransformer.frontMatterTransform
   ?.build as (page: NotionPage) => string;

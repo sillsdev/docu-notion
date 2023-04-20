@@ -15,7 +15,7 @@ import { standardNumberedListTransformer } from "../plugins/NumberedListTransfor
 import { standardTableTransformer } from "../plugins/TableTransformer";
 import { standardExternalLinkConversion } from "../plugins/externalLinks";
 import { IDocuNotionConfig } from "./configuration";
-import { standardFrontmatterTransformer } from "../plugins/FronmatterTransformer";
+import { standardFrontmatterTransformer } from "../plugins/FrontMatterTransformer";
 
 const defaultConfig: IDocuNotionConfig = {
   plugins: [
