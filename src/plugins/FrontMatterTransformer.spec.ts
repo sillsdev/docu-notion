@@ -2,8 +2,8 @@ import { GetPageResponse } from "@notionhq/client/build/src/api-endpoints";
 import { NotionPage } from "../NotionPage";
 import { standardFrontmatterTransformer } from "./FrontMatterTransformer";
 
-let getFrontMatter = standardFrontmatterTransformer.frontMatterTransform
-  ?.build as (page: NotionPage) => string;
+const getFrontMatter = standardFrontmatterTransformer.frontMatterGenerator
+  ?.getFrontMatter as (page: NotionPage) => string;
 
 const sampleMetadata: GetPageResponse = {
   object: "page",

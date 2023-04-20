@@ -258,9 +258,9 @@ function getMarkdownFrontMatter(
 ): string {
   let frontMatter = "---\n";
   config.plugins.forEach(plugin => {
-    if (plugin.frontMatterTransform) {
+    if (plugin.frontMatterGenerator) {
       logDebug("transforming page with plugin", plugin.name);
-      frontMatter += plugin.frontMatterTransform?.build(page);
+      frontMatter += plugin.frontMatterGenerator?.getFrontMatter(page);
     }
   });
   frontMatter += "---\n";

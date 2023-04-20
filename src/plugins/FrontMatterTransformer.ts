@@ -14,7 +14,7 @@ function getFrontmatter(page: NotionPage): string {
 export const standardFrontmatterTransformer: IPlugin = {
   name: "standardFrontmatterTransformer",
 
-  frontMatterTransform: {
-    build: getFrontmatter,
+  frontMatterGenerator: {
+    getFrontMatter: getFrontmatter,
   },
 };
