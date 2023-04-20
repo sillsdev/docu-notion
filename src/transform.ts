@@ -30,7 +30,7 @@ export async function getMarkdownForPage(
   logDebugFn("markdown from page", () => JSON.stringify(blocks, null, 2));
 
   const body = await getMarkdownFromNotionBlocks(context, config, blocks);
-  const frontMatter = getMarkdownFrontMatter(config, page);
+  const frontMatter = getMarkdownFrontMatter(context, config, page);
   return `${frontMatter}\n${body}`;
 }
 
@@ -253,6 +253,7 @@ function registerNotionToMarkdownCustomTransforms(
 }
 
 function getMarkdownFrontMatter(
+  context: IDocuNotionContext,
   config: IDocuNotionConfig,
   page: NotionPage
 ): string {
@@ -260,7 +261,7 @@ function getMarkdownFrontMatter(
   config.plugins.forEach(plugin => {
     if (plugin.frontMatterGenerator) {
       logDebug("transforming page with plugin", plugin.name);
-      frontMatter += plugin.frontMatterGenerator?.getFrontMatter(page);
+      frontMatter += plugin.frontMatterGenerator?.getFrontMatter(context, page);
     }
   });
   frontMatter += "---\n";

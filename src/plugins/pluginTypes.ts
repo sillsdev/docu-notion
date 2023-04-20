@@ -37,7 +37,7 @@ export type IPlugin = {
 
   // operations on pages to define the markdown's frontMatter
   frontMatterGenerator?: {
-    getFrontMatter: (page: NotionPage) => string;
+    getFrontMatter: (context: IDocuNotionContext, page: NotionPage) => string;
   };
 
   // Allow a plugin to perform an async operation at the start of docu-notion.

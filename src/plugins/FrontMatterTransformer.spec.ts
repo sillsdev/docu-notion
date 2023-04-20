@@ -1,9 +1,10 @@
 import { GetPageResponse } from "@notionhq/client/build/src/api-endpoints";
 import { NotionPage } from "../NotionPage";
 import { standardFrontmatterTransformer } from "./FrontMatterTransformer";
+import { IDocuNotionContext } from "..";
 
 const getFrontMatter = standardFrontmatterTransformer.frontMatterGenerator
-  ?.getFrontMatter as (page: NotionPage) => string;
+  ?.getFrontMatter as (context: IDocuNotionContext, page: NotionPage) => string;
 
 const sampleMetadata: GetPageResponse = {
   object: "page",
@@ -126,7 +127,7 @@ describe("getFrontMatter", () => {
     (page.metadata as any).properties.Keywords.rich_text[0].plain_text =
       "Foo, Bar";
 
-    const result = getFrontMatter(page);
+    const result = getFrontMatter({} as IDocuNotionContext, page);
 
     expect(result).toEqual(expectedFrontmatter);
   });
@@ -137,7 +138,7 @@ describe("getFrontMatter", () => {
     const expectedFrontmatter = `title: FooBar\nsidebar_position: 1\nslug: /123\n`;
     (page.metadata as any).properties.Keywords = undefined;
 
-    const result = getFrontMatter(page);
+    const result = getFrontMatter({} as IDocuNotionContext, page);
 
     expect(result).toEqual(expectedFrontmatter);
   });
@@ -146,7 +147,7 @@ describe("getFrontMatter", () => {
     const expectedFrontmatter = `title: FooBaz-\nsidebar_position: 1\nslug: /123\nkeywords: [Foo, Bar]\n`;
     (page.metadata as any).properties.title.title[1].plain_text = "Baz:";
 
-    const result = getFrontMatter(page);
+    const result = getFrontMatter({} as IDocuNotionContext, page);
 
     expect(result).toEqual(expectedFrontmatter);
   });
