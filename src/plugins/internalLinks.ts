@@ -125,9 +125,7 @@ export const standardInternalLinkConversion: IPlugin = {
     // (has some other text that's been turned into a link) or "raw".
     // Raw links come in without a leading slash, e.g. [link_to_page](4a6de8c0-b90b-444b-8a7b-d534d6ec71a4)
     // Inline links come in with a leading slash, e.g. [pointer to the introduction](/4a6de8c0b90b444b8a7bd534d6ec71a4)
-    // we only want the inline ones for this plugin
-    // review: currently we expect that internal links have an opening slash, but at one point it was optional.
-    match: /\[([^\]]+)?\]\(\/([^),^/]+)\)/,
+    match: /\[([^\]]+)?\]\((?!mailto:)(\/?[^),^/]+)\)/,
     convert: convertInternalLink,
   },
 };

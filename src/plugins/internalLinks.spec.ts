@@ -179,7 +179,8 @@ test("link to a heading block on a page", async () => {
   );
 });
 
-test("link to an existing page on this site uses slug", async () => {
+// Text that has been selected and turned into a link to one of our pages
+test("inline link to an existing page on this site uses slug", async () => {
   const targetPageId = "123";
   const targetPage: NotionPage = makeSamplePageObject({
     slug: "hello-world",
@@ -230,6 +231,38 @@ test("link to an existing page on this site uses slug", async () => {
     targetPage
   );
   expect(results.trim()).toBe("Inline [It’s good](/hello-world)");
+});
+
+// this is the kind of link you get if you just insert a "link to page" to Notion
+test("raw link to an existing page on this site that has a slug", async () => {
+  const targetPageId = "123";
+  const targetPage: NotionPage = makeSamplePageObject({
+    slug: "point-to-me",
+    name: "Point to Me",
+    id: targetPageId,
+  });
+
+  const results = await getMarkdown(
+    {
+      object: "block",
+      id: "2051d790-e527-4b4e-b145-ec0beee2addf",
+      parent: {
+        type: "page_id",
+        page_id: "333",
+      },
+      created_time: "2023-06-14T20:09:00.000Z",
+      last_edited_time: "2023-06-14T20:09:00.000Z",
+      has_children: false,
+      archived: false,
+      type: "link_to_page",
+      link_to_page: {
+        type: "page_id",
+        page_id: targetPageId,
+      },
+    },
+    targetPage
+  );
+  expect(results.trim()).toBe("[Point to Me](/point-to-me)");
 });
 
 test("link in a bulleted list", async () => {
