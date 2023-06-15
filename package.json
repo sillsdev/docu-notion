@@ -63,7 +63,7 @@
     "markdown-table": "^2.0.0",
     "node-fetch": "2.6.6",
     "notion-client": "^4",
-    "notion-to-md": "^2.5.5",
+    "notion-to-md": "2.5.5",
     "path": "^0.12.7",
     "ts-node": "^10.2.1",
     "sanitize-filename": "^1.6.3"
