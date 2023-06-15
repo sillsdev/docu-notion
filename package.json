@@ -1,26 +1,27 @@
 {
   "scripts": {
-    "test": "jest",
-    "build": "yarn test && tsc && cp ./src/css/*.css dist/",
+    "test": "vitest",
+    "build": "npm run test -- --run && tsc && cp ./src/css/*.css dist/",
     "build-only": "tsc && cp ./src/css/*.css dist/",
     "clean": "rimraf ./dist/",
     "semantic-release": "semantic-release",
-    "typecheck": "tsc --noEmit",
-    "notion-download": "node dist/index.js",
     "cmdhelp": "ts-node src/index.ts",
     "// note that we're not using ts-node at the moment because of ": "https://github.com/Codex-/cosmiconfig-typescript-loader/issues/70",
-    "ts": "yarn tsc && rimraf ./docs/ && cross-var node dist/index.js",
+    "ts": "tsc && rimraf ./docs/ && cross-var node dist/index.js",
+    "// typescript check": "",
+    "tsc": "tsc",
     "// test out with a private sample notion db": "",
-    "pull-test-tagged": "yarn ts -n $DOCU_NOTION_INTEGRATION_TOKEN -r $DOCU_NOTION_TEST_ROOT_PAGE_ID  --log-level debug --status-tag test",
-    "pull-sample-site": "yarn ts -n $DOCU_NOTION_INTEGRATION_TOKEN -r $DOCU_NOTION_SAMPLE_ROOT_PAGE  --log-level debug",
+    "pull-test-tagged": "npm run ts -- -n $DOCU_NOTION_INTEGRATION_TOKEN -r $DOCU_NOTION_TEST_ROOT_PAGE_ID  --log-level debug --status-tag test",
+    "pull-sample-site": "npm run ts -- -n $DOCU_NOTION_INTEGRATION_TOKEN -r $DOCU_NOTION_SAMPLE_ROOT_PAGE  --log-level debug",
     "// test with a semi-stable/public site:": "",
-    "pull-sample": "yarn ts -n $DOCU_NOTION_INTEGRATION_TOKEN -r $DOCU_NOTION_SAMPLE_ROOT_PAGE -m ./sample --locales en,es,fr,de --log-level verbose",
-    "pull-sample-with-paths": "yarn ts -n $DOCU_NOTION_INTEGRATION_TOKEN -r $DOCU_NOTION_SAMPLE_ROOT_PAGE -m ./sample --img-output-path ./sample_img"
+    "pull-sample": "npm run ts -- -n $DOCU_NOTION_INTEGRATION_TOKEN -r $DOCU_NOTION_SAMPLE_ROOT_PAGE -m ./sample --locales en,es,fr,de --log-level verbose",
+    "pull-sample-with-paths": "npm run ts -- -n $DOCU_NOTION_INTEGRATION_TOKEN -r $DOCU_NOTION_SAMPLE_ROOT_PAGE -m ./sample --img-output-path ./sample_img"
   },
   "//file-type": "have to use this version before they switched to ESM, which gives a compile error related to require()",
   "//node-fetch@2.6.6file-type": "have to use this version before they switched to ESM, which gives a compile error related to require()",
   "//chalk@4": "also ESM related problem",
   "//notion-client@4": "also ESM related problem",
+  "//note: ts-node": "really is a runtime dependency",
   "dependencies": {
     "@notionhq/client": "2.2.3",
     "chalk": "^4.1.2",
@@ -35,29 +36,29 @@
     "notion-client": "^4",
     "notion-to-md": "^2.5.5",
     "path": "^0.12.7",
+    "ts-node": "^10.2.1",
     "sanitize-filename": "^1.6.3"
   },
   "devDependencies": {
     "@types/fs-extra": "^9.0.13",
-    "@types/jest": "^28.1.6",
     "@types/markdown-table": "^2.0.0",
-    "@types/node": "^12.20.11",
+    "@types/node": "^18.15.11",
     "@typescript-eslint/eslint-plugin": "^4.22.0",
     "@typescript-eslint/parser": "^4.22.0",
+    "@vitest/ui": "^0.30.1",
     "cross-var": "^1.1.0",
     "cz-conventional-changelog": "^3.3.0",
     "eslint": "^7.25.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^3.4.0",
-    "jest": "^28.1.3",
     "lint-staged": "^10.5.4",
     "prettier": "^2.2.1",
     "rimraf": "^4.1.2",
     "semantic-release": "^19.0.2",
-    "ts-jest": "^28.0.7",
-    "ts-node": "^10.2.1",
-    "typescript": "^4.6.4"
+    "typescript": "^4.6.4",
+    "vite": "^4.2.1",
+    "vitest": "^0.30.1"
   },
   "name": "@sillsdev/docu-notion",
   "description": "Download Notion pages as markdown and image files, preserving hierarchy and enabling workflow properties. Works with Docusaurus.",
@@ -77,19 +78,15 @@
     "url": "https://github.com/sillsdev/docu-notion/issues"
   },
   "homepage": "https://github.com/sillsdev/docu-notion#readme",
-  "packageManager": "yarn@3.4.1",
   "main": "./dist/index.js",
   "bin": "dist/index.js",
   "files": [
     "dist/**/*"
   ],
-  "release": {
-    "branches": [
-      "main",
-      "release"
-    ]
-  },
   "publishConfig": {
     "access": "public"
+  },
+  "volta": {
+    "node": "18.16.0"
   }
 }

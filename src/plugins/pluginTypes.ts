@@ -46,7 +46,12 @@ export type IRegexMarkdownModification = {
   // Based on that regex, the outputPattern will be used to replace the matched text
   replacementPattern?: string;
   // Instead of a pattern, you can use this if you have to ask a server somewhere for help in getting the new markdown
-  getReplacement?(s: string): Promise<string>;
+  getReplacement?(
+    context: IDocuNotionContext,
+    match: RegExpExecArray
+  ): Promise<string>;
+  // normally, anything in code blocks is will be ignored. If you want to make changes inside of code blocks, set this to true.
+  includeCodeBlocks?: boolean;
 
   // If the output is creating things like react elements, you can import their definitions here
   imports?: string[];
@@ -66,6 +71,7 @@ export type IDocuNotionContext = {
   notionToMarkdown: NotionToMarkdown;
   directoryContainingMarkdown: string;
   relativeFilePathToFolderContainingPage: string;
+  convertNotionLinkToLocalDocusaurusLink: (url: string) => string | undefined;
   pages: NotionPage[];
   counts: ICounts;
 };

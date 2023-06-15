@@ -97,7 +97,8 @@ export class NotionPage {
   private explicitSlug(): string | undefined {
     const explicitSlug = this.getPlainTextProperty("Slug", "");
     if (explicitSlug) {
-      if (explicitSlug === "/") return explicitSlug; // the root page
+      if (explicitSlug === "/") return explicitSlug;
+      // the root page
       else
         return (
           "/" +
@@ -158,6 +159,10 @@ export class NotionPage {
           {
             ...
             "plain_text": "Intro",
+          },
+          {
+            ...
+            "plain_text": " to Notion",
           }
         ]
       */
@@ -170,7 +175,9 @@ export class NotionPage {
     const textArray = p[p.type];
     //console.log("textarray:" + JSON.stringify(textArray, null, 2));
     return textArray && textArray.length
-      ? (textArray[0].plain_text as string)
+      ? (textArray
+          .map((item: { plain_text: any }) => item.plain_text)
+          .join("") as string)
       : defaultIfEmpty;
   }
 
@@ -198,6 +205,38 @@ export class NotionPage {
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return p.select?.name || undefined;
+  }
+
+  public getDateProperty(
+    property: string,
+    defaultIfEmpty: string,
+    start = true
+  ): string {
+    /* Notion dates look like this
+   "properties": {
+      "published_date":
+      {
+        "id":"a%3Cql",
+        "type":"date",
+        "date":{
+          "start":"2021-10-24",
+          "end":null,
+          "time_zone":null
+        }
+      }
+    }
+    */
+
+    // console.log("metadata:\n" + JSON.stringify(this.metadata, null, 2));
+    const p = (this.metadata as any).properties?.[property];
+
+    // console.log(`prop ${property} = ${JSON.stringify(p)}`);
+    if (!p) return defaultIfEmpty;
+    if (start) {
+      return p?.date?.start ? (p.date.start as string) : defaultIfEmpty;
+    } else {
+      return p?.date?.end ? (p.date.end as string) : defaultIfEmpty;
+    }
   }
 
   public async getContentInfo(

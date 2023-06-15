@@ -28,6 +28,7 @@ import { Client, isFullBlock } from "@notionhq/client";
 import { exit } from "process";
 import { IDocuNotionConfig, loadConfigAsync } from "./config/configuration";
 import { NotionBlock } from "./types";
+import { convertInternalUrl } from "./plugins/internalLinks";
 
 export type DocuNotionOptions = {
   notionToken: string;
@@ -110,6 +111,8 @@ async function outputPages(
     options: options,
     pages: pages,
     counts: counts, // review will this get copied or pointed to?
+    convertNotionLinkToLocalDocusaurusLink: (url: string) =>
+      convertInternalUrl(context, url),
   };
   for (const page of pages) {
     layoutStrategy.pageWasSeen(page);
