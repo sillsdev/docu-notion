@@ -38,22 +38,22 @@ means that the id is "0456aa5842946PRETEND4f37c97a0e5".
 Determine where you want the markdown files and images to land. The following works well for Docusaurus instances:
 
 ```
-npx docu-notion -n secret_PRETEND123456789PRETEND123456789PRETEND6789 -r 0456aa5842946PRETEND4f37c97a0e5"
+npx @sillsdev/docu-notion -n secret_PRETEND123456789PRETEND123456789PRETEND6789 -r 0456aa5842946PRETEND4f37c97a0e5"
 ```
 
 Likely, you will want to store these codes in your environment variables and then use them like this:
 
 ```
 (windows)
-npx docu-notion -n %MY_NOTION_TOKEN% -r %MY_NOTION_DOCS_ROOT_PAGE_ID%
+npx @sillsdev/docu-notion -n %MY_NOTION_TOKEN% -r %MY_NOTION_DOCS_ROOT_PAGE_ID%
 ```
 
 ```
 (linux / mac)
-npx docu-notion -n $MY_NOTION_TOKEN -r $MY_NOTION_DOCS_ROOT_PAGE_ID
+npx @sillsdev/docu-notion -n $MY_NOTION_TOKEN -r $MY_NOTION_DOCS_ROOT_PAGE_ID
 ```
 
-NOTE: In the above, we are using `npx` to use the latest `docu-notion`. A more conservative approach would be to `npm i cross-var docu-notion` and then create a script in your package.json like this:
+NOTE: In the above, we are using `npx` to use the latest `docu-notion`. A more conservative approach would be to `npm i cross-var @sillsdev/docu-notion` and then create a script in your package.json like this:
 
 ```
  "scripts": {
