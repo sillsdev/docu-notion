@@ -62,13 +62,13 @@
     "vite": "^4.2.1",
     "vitest": "^0.30.1"
   },
-  "name": "@sillsdev/docu-notion",
+  "name": "@codeharbor/docu-notion",
   "description": "Download Notion pages as markdown and image files, preserving hierarchy and enabling workflow properties. Works with Docusaurus.",
   "license": "MIT",
   "author": {
     "name": "SIL Language Software Development",
-    "email": "sillsdev@users.noreply.github.com",
-    "url": "https://github.com/sillsdev"
+    "email": "charon.dian@gmail.com",
+    "url": "https://github.com/Charon-Fan"
   },
   "keywords": [
     "docusaurus",
@@ -77,9 +77,9 @@
     "documentation"
   ],
   "bugs": {
-    "url": "https://github.com/sillsdev/docu-notion/issues"
+    "url": "https://github.com/Charon-Fan/docu-notion/issues"
   },
-  "homepage": "https://github.com/sillsdev/docu-notion#readme",
+  "homepage": "https://github.com/Charon-Fan/docu-notion#readme",
   "main": "./dist/index.js",
   "bin": "dist/index.js",
   "files": [
