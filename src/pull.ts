@@ -158,7 +158,8 @@ async function outputPages(
     if (
       page.type === PageType.DatabasePage &&
       context.options.statusTag != "*" &&
-      page.status !== context.options.statusTag
+      // The following code is to display articles in the "Ready For Review" state in the staging environment.
+      !context.options.statusTag.split(",").includes(page.status ?? '')
     ) {
       verbose(
         `Skipping page because status is not '${context.options.statusTag}': ${page.nameOrTitle}`

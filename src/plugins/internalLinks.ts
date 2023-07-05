@@ -90,7 +90,8 @@ function convertLinkHref(
   targetPage: NotionPage,
   url: string
 ): string {
-  let convertedLink = context.layoutStrategy.getLinkPathForPage(targetPage);
+  // let convertedLink = context.layoutStrategy.getLinkPathForPage(targetPage);
+  let convertedLink = targetPage.slug;
 
   /*****************************
   NOTE: as of this writing, the official Notion API completely drops links

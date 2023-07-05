@@ -33,6 +33,8 @@ const defaultConfig: IDocuNotionConfig = {
     // Regexps plus javascript `import`s that operate on the Markdown output
     imgurGifEmbed,
     gifEmbed,
+    // youtubeEmbed,
+    vimeoEmbed,
   ],
 };
 

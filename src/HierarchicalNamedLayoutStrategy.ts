@@ -19,6 +19,10 @@ export class HierarchicalNamedLayoutStrategy extends LayoutStrategy {
     //console.log("Creating level " + path);
     const newPath = dirRoot + "/" + path;
     fs.mkdirSync(newPath, { recursive: true });
+    const indexFileContent = "import DocCardList from '@theme/DocCardList';\n\n<DocCardList />";
+    const indexFilePath = (newPath + "/index.md").replaceAll("//", "/");
+    fs.writeFileSync(indexFilePath, indexFileContent, {});
+
     this.addCategoryMetadata(newPath, order, levelLabel);
     return path;
   }
