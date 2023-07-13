@@ -256,11 +256,49 @@ const notionLimiter = new RateLimiter({
 let notionClient: Client;
 
 async function getPageMetadata(id: string): Promise<GetPageResponse> {
-  await rateLimit();
-
-  return await notionClient.pages.retrieve({
-    page_id: id,
+  return await executeWithRateLimitAndRetries(`pages.retrieve(${id})`, () => {
+    return notionClient.pages.retrieve({
+      page_id: id,
+    });
   });
+}
+
+// While everything works fine locally, on Github Actions we are getting a lot of timeouts, so
+// we're trying this extra retry-able wrapper.
+export async function executeWithRateLimitAndRetries<T>(
+  label: string,
+  asyncFunction: () => Promise<T>
+): Promise<T> {
+  await rateLimit();
+  const kRetries = 10;
+  let lastException = undefined;
+  for (let i = 0; i < kRetries; i++) {
+    try {
+      return await asyncFunction();
+    } catch (e: any) {
+      lastException = e;
+      if (
+        e?.code === "notionhq_client_request_timeout" ||
+        e.message.includes("timeout") ||
+        e.message.includes("Timeout") ||
+        e.message.includes("limit") ||
+        e.message.includes("Limit")
+      ) {
+        const secondsToWait = i + 1;
+        info(
+          `While doing "${label}", got error "${
+            e.message as string
+          }". Will retry after  ${secondsToWait}s...`
+        );
+        await new Promise(resolve => setTimeout(resolve, 1000 * secondsToWait));
+      } else {
+        throw e;
+      }
+    }
+  }
+
+  error(`Error: could not complete "${label}" after ${kRetries} retries.`);
+  throw lastException;
 }
 
 async function rateLimit() {
@@ -275,18 +313,19 @@ async function getBlockChildren(id: string): Promise<NotionBlock[]> {
   // the first response we get, then keep adding to its array of blocks
   // with each subsequent response
   let overallResult: ListBlockChildrenResponse | undefined = undefined;
-  let start_cursor = undefined;
+  let start_cursor: string | undefined | null = undefined;
 
   // Note: there is a now a collectPaginatedAPI() in the notion client, so
   // we could switch to using that (I don't know if it does rate limiting?)
   do {
-    await rateLimit();
-
     const response: ListBlockChildrenResponse =
-      await notionClient.blocks.children.list({
-        start_cursor: start_cursor,
-        block_id: id,
+      await executeWithRateLimitAndRetries(`getBlockChildren(${id})`, () => {
+        return notionClient.blocks.children.list({
+          start_cursor: start_cursor as string | undefined,
+          block_id: id,
+        });
       });
+
     if (!overallResult) {
       overallResult = response;
     } else {
