@@ -133,7 +133,6 @@ async function doTransformsOnMarkdown(
             matchAsThePluginWouldExpectIt
           );
         } else if (mod.replacementPattern) {
-          console.log(`mod.replacementPattern.replace("$1", ${match[2]}`);
           replacement = mod.replacementPattern.replace("$1", match[2]);
         }
         if (replacement !== undefined) {
