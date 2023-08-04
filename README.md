@@ -31,7 +31,7 @@ Currently, docu-notion expects that each page has only one of the following: sub
 
 ## 6. Pull your pages
 
-First, determine the id of your root page by clicking "Share" and looking at the the url it gives you. E.g.
+First, determine the id of your root page by clicking "Share" and looking at the url it gives you. E.g.
 https://www.notion.so/hattonjohn/My-Docs-0456aa5842946bdbea3a4f37c97a0e5
 means that the id is "0456aa5842946PRETEND4f37c97a0e5".
 
