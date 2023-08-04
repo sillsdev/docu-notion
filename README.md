@@ -133,3 +133,16 @@ Options:
 # Plugins
 
 If your project needs some processing that docu-notion doesn't already provide, you can provide a plugin that does it. See the [plugin readme](src/plugins/README.md).
+
+# Callouts ➜ Admonitions
+
+To map Notion callouts to Docusaurus admonitions, ensure the icon is for the type you want.
+
+- ℹ️ ➜ note
+- 📝➜ note
+- 💡➜ tip
+- ❗➜ info
+- ⚠️➜ caution
+- 🔥➜ danger
+
+The default admonition type, if no matching icon is found, is "note".
