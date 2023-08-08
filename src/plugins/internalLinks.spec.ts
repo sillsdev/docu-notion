@@ -374,6 +374,36 @@ test("does not interfere with mailto links", async () => {
   });
   expect(results.trim()).toBe(`[mailme](mailto:foo@example.com)`);
 });
+
+test("does not interfere with https links", async () => {
+  const results = await getMarkdown({
+    type: "paragraph",
+    paragraph: {
+      rich_text: [
+        {
+          type: "text",
+          text: {
+            content: "google",
+            link: { url: `https://www.google.com` },
+          },
+          annotations: {
+            bold: false,
+            italic: false,
+            strikethrough: false,
+            underline: false,
+            code: false,
+            color: "default",
+          },
+          plain_text: "google",
+          href: `https://www.google.com`,
+        },
+      ],
+      color: "default",
+    },
+  });
+  expect(results.trim()).toBe(`[google](https://www.google.com)`);
+});
+
 test("links to other notion pages that are not in this site give PROBLEM LINK", async () => {
   const results = await getMarkdown({
     type: "paragraph",
