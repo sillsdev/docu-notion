@@ -74,4 +74,7 @@ export type IDocuNotionContext = {
   convertNotionLinkToLocalDocusaurusLink: (url: string) => string | undefined;
   pages: NotionPage[];
   counts: ICounts;
+
+  // If the output is creating things like react elements, you can import their definitions here
+  imports?: string[];
 };
