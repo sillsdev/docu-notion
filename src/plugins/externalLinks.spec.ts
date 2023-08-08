@@ -1,5 +1,4 @@
-import { setLogLevel, verbose } from "../log";
-import { NotionPage } from "../NotionPage";
+import { setLogLevel } from "../log";
 import { oneBlockToMarkdown } from "./pluginTestRun";
 import { standardExternalLinkConversion } from "./externalLinks";
 
@@ -13,6 +12,22 @@ test("links turned into bookmarks", async () => {
     bookmark: { caption: [], url: "https://github.com" },
   });
   expect(results.trim()).toBe("[https://github.com](https://github.com)");
+});
+
+test("video links turned into bookmarks", async () => {
+  setLogLevel("debug");
+  const results = await getMarkdown({
+    object: "block",
+    type: "bookmark",
+    bookmark: {
+      caption: [],
+      url: "https://vimeo.com/4613611xx",
+    },
+  });
+  expect(results).toContain(
+    "[https://vimeo.com/4613611xx](https://vimeo.com/4613611xx)"
+  );
+  expect(results).not.toContain(`import`);
 });
 
 test("external link inside callout", async () => {
