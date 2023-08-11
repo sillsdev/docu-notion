@@ -56,15 +56,14 @@ export async function getMarkdownFromNotionBlocks(
   //console.log("markdown after link fixes", markdown);
 
   // simple regex-based tweaks. These are usually related to docusaurus
-  const { imports, body } = await doTransformsOnMarkdown(
-    context,
-    config,
-    markdown
-  );
+  const body = await doTransformsOnMarkdown(context, config, markdown);
 
   // console.log("markdown after regex fixes", markdown);
   // console.log("body after regex", body);
 
+  const uniqueImports = [...new Set(context.imports)];
+  const imports = uniqueImports.join("\n");
+  context.imports = []; // reset for next page
   return `${imports}\n${body}`;
 }
 
@@ -106,7 +105,6 @@ async function doTransformsOnMarkdown(
   let body = input;
   //console.log("body before regex: " + body);
   let match;
-  const imports = new Set<string>();
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   for (const mod of regexMods) {
@@ -143,15 +141,16 @@ async function doTransformsOnMarkdown(
           body =
             precedingPart +
             partStartingFromThisMatch.replace(original, replacement);
+
           // add any library imports
-          mod.imports?.forEach(imp => imports.add(imp));
+          if (!context.imports) context.imports = [];
+          context.imports.push(...(mod.imports || []));
         }
       }
     }
   }
   logDebug("doTransformsOnMarkdown", "body after regex: " + body);
-  const uniqueImports = [...new Set(imports)];
-  return { body, imports: [...uniqueImports].join("\n") };
+  return body;
 }
 
 async function doNotionToMarkdown(
