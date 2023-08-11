@@ -88,7 +88,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.0.2",
+  "version": "0.0.3",
   "volta": {
     "node": "18.16.0"
   }

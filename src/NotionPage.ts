@@ -74,13 +74,17 @@ export class NotionPage {
     return this.type === PageType.DatabasePage ? this.name : this.title;
   }
 
+  public get description(): string {
+    return this.getPlainTextProperty("Description", "");
+  }
+
   public nameForFile(): string {
     // In Notion, pages from the Database have names and simple pages have titles.
     return this.type === PageType.Simple
       ? this.title
       : // if it's a Database page, then we'll use the slug unless there is none, then we'd rather have the
-        // page name than an ugly id for the file name
-        this.explicitSlug()?.replace(/^\//, "") || this.name;
+      // page name than an ugly id for the file name
+      this.explicitSlug()?.replace(/^\//, "") || this.name;
   }
 
   // TODO: let's go farther in hiding this separate title vs name stuff. This seems like an implementation detail on the Notion side.
@@ -176,8 +180,8 @@ export class NotionPage {
     //console.log("textarray:" + JSON.stringify(textArray, null, 2));
     return textArray && textArray.length
       ? (textArray
-          .map((item: { plain_text: any }) => item.plain_text)
-          .join("") as string)
+        .map((item: { plain_text: any }) => item.plain_text)
+        .join("") as string)
       : defaultIfEmpty;
   }
 

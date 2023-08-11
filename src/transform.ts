@@ -15,14 +15,13 @@ export async function getMarkdownForPage(
   page: NotionPage
 ): Promise<string> {
   info(
-    `Reading & converting page ${page.layoutContext}/${
-      page.nameOrTitle
+    `Reading & converting page ${page.layoutContext}/${page.nameOrTitle
     } (${chalk.blue(
       page.hasExplicitSlug
         ? page.slug
         : page.foundDirectlyInOutline
-        ? "Descendant of Outline, not Database"
-        : "NO SLUG"
+          ? "Descendant of Outline, not Database"
+          : "NO SLUG"
     )})`
   );
 
@@ -269,6 +268,7 @@ function getFrontMatter(page: NotionPage): string {
   frontmatter += `title: ${page.nameOrTitle.replaceAll(":", "-")}\n`; // I have not found a way to escape colons
   frontmatter += `sidebar_position: ${page.order}\n`;
   frontmatter += `slug: ${page.slug ?? ""}\n`;
+  if (page.description) frontmatter += `description: ${page.description ?? ""}\n`;
   if (page.keywords) frontmatter += `keywords: [${page.keywords}]\n`;
 
   frontmatter += "---\n";
