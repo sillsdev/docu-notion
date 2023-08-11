@@ -62,7 +62,7 @@ export class HierarchicalNamedLayoutStrategy extends LayoutStrategy {
   //   }
   // }
   private addCategoryMetadata(dir: string, order: number, label: string) {
-    const data = `{"position":${order}, "label":"${label}"}`;
+    const data = `{"position":${order}, "label":"${label}", "link": {"type": "generated-index","title": "${label}"}}`;
     fs.writeFileSync(dir + "/_category_.json", data);
   }
 }
