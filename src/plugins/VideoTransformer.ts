@@ -13,16 +13,24 @@ export const standardVideoTransformer: IPlugin = {
         block: NotionBlock
       ): string => {
         const video = (block as VideoBlockObjectResponse).video;
-        if (video.type === "external") {
-          if (!context.imports) context.imports = [];
-          context.imports.push(`import ReactPlayer from "react-player";`);
-          return `<ReactPlayer controls url="${video.external.url}" />`;
-        } else {
-          warning(
-            `[standardVideoTransformer] Found Notion "video" block with type ${video.type}. The best docu-notion can do for now is ignore it.`
-          );
+        let url = "";
+        switch (video.type) {
+          case "external":
+            url = video.external.url;
+            break;
+          case "file":
+            url = video.file.url;
+            break;
+          default:
+            warning(
+              `[standardVideoTransformer] Found Notion "video" block with type ${video.type}. The best docu-notion can do for now is ignore it.`
+            );
+            return "";
+            break;
         }
-        return "";
+
+        context.imports.push(`import ReactPlayer from "react-player";`);
+        return `<ReactPlayer controls url="${url}" />`;
       },
     },
   ],
