@@ -36,6 +36,7 @@ export async function blocksToMarkdown(
     convertNotionLinkToLocalDocusaurusLink: (url: string) => {
       return convertInternalUrl(docunotionContext, url);
     },
+    imports: [],
 
     //TODO might be needed for some tests, e.g. the image transformer...
     directoryContainingMarkdown: "not yet",
