@@ -22,8 +22,13 @@ export const standardVideoTransformer: IPlugin = {
             url = video.file.url;
             break;
           default:
+            // video.type can only be "external" or "file" as of the writing of this code, so typescript
+            // isn't happy trying to turn video.type into a string. But this default in our switch is
+            // just attempting some future-proofing. Thus the strange typing/stringifying below.
             warning(
-              `[standardVideoTransformer] Found Notion "video" block with type ${video.type}. The best docu-notion can do for now is ignore it.`
+              `[standardVideoTransformer] Found Notion "video" block with type ${JSON.stringify(
+                (video as any).type
+              )}. The best docu-notion can do for now is ignore it.`
             );
             return "";
             break;
