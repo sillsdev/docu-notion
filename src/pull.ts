@@ -91,10 +91,10 @@ export async function notionPull(options: DocuNotionOptions): Promise<void> {
   );
   await outputPages(options, config, pages);
   endGroup();
-  group("Stage 3: clean up old files & images...");
-  await layoutStrategy.cleanupOldFiles();
-  await cleanupOldImages();
-  endGroup();
+  // group("Stage 3: clean up old files & images...");
+  // await layoutStrategy.cleanupOldFiles();
+  // await cleanupOldImages();
+  // endGroup();
 }
 
 async function outputPages(
