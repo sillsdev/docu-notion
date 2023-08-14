@@ -48,7 +48,7 @@ async function notionColumnToMarkdown(
     )}\n\n</div>` +
     // Spacer between columns. CSS takes care of hiding this for the last column
     // and when the screen is too narrow for multiple columns.
-    `<div className='notion-spacer' />`
+    `<div className='notion-spacer'></div>`
   );
 }
 
