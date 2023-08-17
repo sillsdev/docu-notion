@@ -80,5 +80,5 @@ export type IDocuNotionContext = {
   // If the output is creating things like react elements, you can append their import definitions
   // to this array so they get added to the page.
   // e.g. context.imports.push(`import ReactPlayer from "react-player";`);
-  imports?: string[];
+  imports: string[];
 };

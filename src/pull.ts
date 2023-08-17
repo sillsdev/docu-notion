@@ -111,6 +111,7 @@ async function outputPages(
     options: options,
     pages: pages,
     counts: counts, // review will this get copied or pointed to?
+    imports: [],
     convertNotionLinkToLocalDocusaurusLink: (url: string) =>
       convertInternalUrl(context, url),
   };
