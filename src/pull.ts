@@ -309,7 +309,7 @@ async function rateLimit() {
   await notionLimiter.removeTokens(1);
 }
 
-async function getBlockChildren(id: string): Promise<NotionBlock[]> {
+export async function getBlockChildren(id: string): Promise<NotionBlock[]> {
   // we can only get so many responses per call, so we set this to
   // the first response we get, then keep adding to its array of blocks
   // with each subsequent response

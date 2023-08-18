@@ -153,7 +153,7 @@ async function doTransformsOnMarkdown(
   return body;
 }
 
-async function doNotionToMarkdown(
+export async function doNotionToMarkdown(
   docunotionContext: IDocuNotionContext,
   blocks: Array<NotionBlock>
 ) {
@@ -162,7 +162,8 @@ async function doNotionToMarkdown(
   );
 
   const markdown =
-    docunotionContext.notionToMarkdown.toMarkdownString(mdBlocks);
+    docunotionContext.notionToMarkdown.toMarkdownString(mdBlocks).parent;
+
   return markdown;
 }
 
