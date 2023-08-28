@@ -29,6 +29,7 @@ import { exit } from "process";
 import { IDocuNotionConfig, loadConfigAsync } from "./config/configuration";
 import { NotionBlock } from "./types";
 import { convertInternalUrl } from "./plugins/internalLinks";
+import { ListBlockChildrenResponseResults } from "notion-to-md/build/types";
 
 export type DocuNotionOptions = {
   notionToken: string;
@@ -342,7 +343,10 @@ async function getBlockChildren(id: string): Promise<NotionBlock[]> {
     );
     exit(1);
   }
-  return (overallResult?.results as BlockObjectResponse[]) ?? [];
+
+  const result = (overallResult?.results as BlockObjectResponse[]) ?? [];
+  numberChildrenIfNumberedList(result);
+  return result;
 }
 export function initNotionClient(notionToken: string): Client {
   notionClient = new Client({
@@ -366,4 +370,23 @@ async function fromPageId(
     metadata,
     foundDirectlyInOutline,
   });
+}
+
+// This function is copied (and renamed from modifyNumberedListObject) from notion-to-md.
+// They always run it on the results of their getBlockChildren.
+// When we use our own getBlockChildren, we need to run it too.
+export function numberChildrenIfNumberedList(
+  blocks: ListBlockChildrenResponseResults
+): void {
+  let numberedListIndex = 0;
+
+  for (const block of blocks) {
+    if ("type" in block && block.type === "numbered_list_item") {
+      // add numbers
+      // @ts-ignore
+      block.numbered_list_item.number = ++numberedListIndex;
+    } else {
+      numberedListIndex = 0;
+    }
+  }
 }

@@ -162,7 +162,7 @@ async function doNotionToMarkdown(
   );
 
   const markdown =
-    docunotionContext.notionToMarkdown.toMarkdownString(mdBlocks);
+    docunotionContext.notionToMarkdown.toMarkdownString(mdBlocks).parent || "";
   return markdown;
 }
 
