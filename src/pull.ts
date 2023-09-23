@@ -284,10 +284,12 @@ export async function executeWithRateLimitAndRetries<T>(
         e.message.includes("timeout") ||
         e.message.includes("Timeout") ||
         e.message.includes("limit") ||
-        e.message.includes("Limit")
+        e.message.includes("Limit") ||
+        e?.code === "notionhq_client_response_error" ||
+        e?.code === "service_unavailable"
       ) {
         const secondsToWait = i + 1;
-        info(
+        warning(
           `While doing "${label}", got error "${
             e.message as string
           }". Will retry after  ${secondsToWait}s...`

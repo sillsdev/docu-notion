@@ -7,6 +7,7 @@ import { error, info, logDebug, logDebugFn, verbose, warning } from "./log";
 import { NotionPage } from "./NotionPage";
 import { IDocuNotionConfig } from "./config/configuration";
 import { NotionBlock } from "./types";
+import { executeWithRateLimitAndRetries } from "./pull";
 
 export async function getMarkdownForPage(
   config: IDocuNotionConfig,
@@ -157,8 +158,14 @@ async function doNotionToMarkdown(
   docunotionContext: IDocuNotionContext,
   blocks: Array<NotionBlock>
 ) {
-  const mdBlocks = await docunotionContext.notionToMarkdown.blocksToMarkdown(
-    blocks
+  let mdBlocks: any;
+  await executeWithRateLimitAndRetries(
+    "notionToMarkdown.blocksToMarkdown",
+    async () => {
+      mdBlocks = await docunotionContext.notionToMarkdown.blocksToMarkdown(
+        blocks
+      );
+    }
   );
 
   const markdown =
