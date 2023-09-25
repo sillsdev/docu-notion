@@ -292,7 +292,7 @@ export async function executeWithRateLimitAndRetries<T>(
         warning(
           `While doing "${label}", got error "${
             e.message as string
-          }". Will retry after  ${secondsToWait}s...`
+          }". Will retry after ${secondsToWait}s...`
         );
         await new Promise(resolve => setTimeout(resolve, 1000 * secondsToWait));
       } else {
