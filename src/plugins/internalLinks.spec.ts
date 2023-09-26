@@ -5,7 +5,6 @@ import { standardCalloutTransformer } from "./CalloutTransformer";
 import { standardExternalLinkConversion } from "./externalLinks";
 
 import { standardInternalLinkConversion } from "./internalLinks";
-import { standardNumberedListTransformer } from "./NumberedListTransformer";
 
 test("urls that show up as raw text get left that way", async () => {
   const results = await getMarkdown({
@@ -569,7 +568,6 @@ async function getMarkdown(block: object, targetPage?: NotionPage) {
   const config = {
     plugins: [
       standardCalloutTransformer,
-      standardNumberedListTransformer,
       standardInternalLinkConversion,
       standardExternalLinkConversion,
     ],

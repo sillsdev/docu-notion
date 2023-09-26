@@ -29,6 +29,7 @@ import { exit } from "process";
 import { IDocuNotionConfig, loadConfigAsync } from "./config/configuration";
 import { NotionBlock } from "./types";
 import { convertInternalUrl } from "./plugins/internalLinks";
+import { ListBlockChildrenResponseResults } from "notion-to-md/build/types";
 
 export type DocuNotionOptions = {
   notionToken: string;
@@ -111,6 +112,7 @@ async function outputPages(
     options: options,
     pages: pages,
     counts: counts, // review will this get copied or pointed to?
+    imports: [],
     convertNotionLinkToLocalDocusaurusLink: (url: string) =>
       convertInternalUrl(context, url),
   };
@@ -282,13 +284,15 @@ export async function executeWithRateLimitAndRetries<T>(
         e.message.includes("timeout") ||
         e.message.includes("Timeout") ||
         e.message.includes("limit") ||
-        e.message.includes("Limit")
+        e.message.includes("Limit") ||
+        e?.code === "notionhq_client_response_error" ||
+        e?.code === "service_unavailable"
       ) {
         const secondsToWait = i + 1;
-        info(
+        warning(
           `While doing "${label}", got error "${
             e.message as string
-          }". Will retry after  ${secondsToWait}s...`
+          }". Will retry after ${secondsToWait}s...`
         );
         await new Promise(resolve => setTimeout(resolve, 1000 * secondsToWait));
       } else {
@@ -341,7 +345,10 @@ async function getBlockChildren(id: string): Promise<NotionBlock[]> {
     );
     exit(1);
   }
-  return (overallResult?.results as BlockObjectResponse[]) ?? [];
+
+  const result = (overallResult?.results as BlockObjectResponse[]) ?? [];
+  numberChildrenIfNumberedList(result);
+  return result;
 }
 export function initNotionClient(notionToken: string): Client {
   notionClient = new Client({
@@ -365,4 +372,23 @@ async function fromPageId(
     metadata,
     foundDirectlyInOutline,
   });
+}
+
+// This function is copied (and renamed from modifyNumberedListObject) from notion-to-md.
+// They always run it on the results of their getBlockChildren.
+// When we use our own getBlockChildren, we need to run it too.
+export function numberChildrenIfNumberedList(
+  blocks: ListBlockChildrenResponseResults
+): void {
+  let numberedListIndex = 0;
+
+  for (const block of blocks) {
+    if ("type" in block && block.type === "numbered_list_item") {
+      // add numbers
+      // @ts-ignore
+      block.numbered_list_item.number = ++numberedListIndex;
+    } else {
+      numberedListIndex = 0;
+    }
+  }
 }

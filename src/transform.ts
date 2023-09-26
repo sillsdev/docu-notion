@@ -7,6 +7,7 @@ import { error, info, logDebug, logDebugFn, verbose, warning } from "./log";
 import { NotionPage } from "./NotionPage";
 import { IDocuNotionConfig } from "./config/configuration";
 import { NotionBlock } from "./types";
+import { executeWithRateLimitAndRetries } from "./pull";
 
 export async function getMarkdownForPage(
   config: IDocuNotionConfig,
@@ -56,15 +57,14 @@ export async function getMarkdownFromNotionBlocks(
   //console.log("markdown after link fixes", markdown);
 
   // simple regex-based tweaks. These are usually related to docusaurus
-  const { imports, body } = await doTransformsOnMarkdown(
-    context,
-    config,
-    markdown
-  );
+  const body = await doTransformsOnMarkdown(context, config, markdown);
 
   // console.log("markdown after regex fixes", markdown);
   // console.log("body after regex", body);
 
+  const uniqueImports = [...new Set(context.imports)];
+  const imports = uniqueImports.join("\n");
+  context.imports = []; // reset for next page
   return `${imports}\n${body}`;
 }
 
@@ -106,7 +106,6 @@ async function doTransformsOnMarkdown(
   let body = input;
   //console.log("body before regex: " + body);
   let match;
-  const imports = new Set<string>();
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   for (const mod of regexMods) {
@@ -143,27 +142,40 @@ async function doTransformsOnMarkdown(
           body =
             precedingPart +
             partStartingFromThisMatch.replace(original, replacement);
+
           // add any library imports
-          mod.imports?.forEach(imp => imports.add(imp));
+          if (!context.imports) context.imports = [];
+          context.imports.push(...(mod.imports || []));
         }
       }
     }
   }
   logDebug("doTransformsOnMarkdown", "body after regex: " + body);
-  const uniqueImports = [...new Set(imports)];
-  return { body, imports: [...uniqueImports].join("\n") };
+  return body;
 }
 
 async function doNotionToMarkdown(
   docunotionContext: IDocuNotionContext,
   blocks: Array<NotionBlock>
 ) {
-  const mdBlocks = await docunotionContext.notionToMarkdown.blocksToMarkdown(
-    blocks
+  let mdBlocks: any;
+  await executeWithRateLimitAndRetries(
+    "notionToMarkdown.blocksToMarkdown",
+    async () => {
+      mdBlocks = await docunotionContext.notionToMarkdown.blocksToMarkdown(
+        // We need to provide a copy of blocks.
+        // Calling blocksToMarkdown can modify the values in the blocks. If it does, and then
+        // we have to retry, we end up retrying with the modified values, which
+        // causes various issues (like using the transformed image url instead of the original one).
+        // Note, currently, we don't do anything else with blocks after this.
+        // If that changes, we'll need to figure out a more sophisticated approach.
+        JSON.parse(JSON.stringify(blocks))
+      );
+    }
   );
 
   const markdown =
-    docunotionContext.notionToMarkdown.toMarkdownString(mdBlocks);
+    docunotionContext.notionToMarkdown.toMarkdownString(mdBlocks).parent || "";
   return markdown;
 }
 

@@ -53,7 +53,9 @@ export type IRegexMarkdownModification = {
   // normally, anything in code blocks is will be ignored. If you want to make changes inside of code blocks, set this to true.
   includeCodeBlocks?: boolean;
 
-  // If the output is creating things like react elements, you can import their definitions here
+  // If the output is creating things like react elements, you can append their import definitions
+  // to this array so they get added to the page.
+  // e.g. mod.imports.push(`import ReactPlayer from "react-player";`);
   imports?: string[];
 };
 
@@ -74,4 +76,9 @@ export type IDocuNotionContext = {
   convertNotionLinkToLocalDocusaurusLink: (url: string) => string | undefined;
   pages: NotionPage[];
   counts: ICounts;
+
+  // If the output is creating things like react elements, you can append their import definitions
+  // to this array so they get added to the page.
+  // e.g. context.imports.push(`import ReactPlayer from "react-player";`);
+  imports: string[];
 };

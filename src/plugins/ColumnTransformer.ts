@@ -1,8 +1,12 @@
 import { NotionAPI } from "notion-client";
 import { NotionToMarkdown } from "notion-to-md";
-import { ListBlockChildrenResponseResult } from "notion-to-md/build/types";
+import {
+  ListBlockChildrenResponseResult,
+  MdBlock,
+} from "notion-to-md/build/types";
 import { IGetBlockChildrenFn, IPlugin } from "./pluginTypes";
 import { executeWithRateLimitAndRetries } from "../pull";
+import { NotionBlock } from "../types";
 
 export const standardColumnTransformer: IPlugin = {
   name: "standardColumnTransformer",
@@ -30,25 +34,24 @@ async function notionColumnToMarkdown(
 
   if (!has_children) return "";
 
-  const children = await getBlockChildren(id);
-
-  const childrenPromises = children.map(
-    async column => await notionToMarkdown.blockToMarkdown(column)
+  const columnChildren: NotionBlock[] = await getBlockChildren(id);
+  const childrenMdBlocksArray: MdBlock[][] = await Promise.all(
+    columnChildren.map(
+      async child => await notionToMarkdown.blocksToMarkdown([child])
+    )
+  );
+  const childrenMarkdown = childrenMdBlocksArray.map(
+    mdBlockArray => notionToMarkdown.toMarkdownString(mdBlockArray).parent
   );
 
-  const childrenStrings: string[] = await Promise.all(childrenPromises);
-
   const columnWidth = await getColumnWidth(block);
-
-  // note: it would look better in the markup with \n, but that
-  // causes notion-to-md to give us ":::A" instead of \n for some reason.
   return (
-    `<div class='notion-column' style={{width: '${columnWidth}'}}>\n\n${childrenStrings.join(
-      "\n\n"
-    )}\n\n</div>` +
+    `<div class='notion-column' style={{width: '${columnWidth}'}}>\n\n${childrenMarkdown.join(
+      "\n"
+    )}\n</div>` +
     // Spacer between columns. CSS takes care of hiding this for the last column
     // and when the screen is too narrow for multiple columns.
-    `<div className='notion-spacer' />`
+    `<div className='notion-spacer'></div>`
   );
 }
 
