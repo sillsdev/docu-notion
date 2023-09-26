@@ -8,13 +8,22 @@ import { getMarkdownFromNotionBlocks } from "../transform";
 import { IDocuNotionConfig } from "../config/configuration";
 import { NotionBlock } from "../types";
 import { convertInternalUrl } from "./internalLinks";
+import { numberChildrenIfNumberedList } from "../pull";
 
 export async function blocksToMarkdown(
   config: IDocuNotionConfig,
   blocks: NotionBlock[],
-  pages?: NotionPage[]
+  pages?: NotionPage[],
+  // Notes on children:
+  //   - These children will apply to each block in blocks. (could enhance but not needed yet)
+  //   - If you are passing in children, it is probably because your parent block has has_children=true.
+  //     In that case, notion-to-md will make an API call... you'll need to set any validApiKey.
+  children?: NotionBlock[],
+  validApiKey?: string
 ): Promise<string> {
-  const notionClient = new Client({ auth: "unused" });
+  const notionClient = new Client({
+    auth: validApiKey || "unused",
+  });
   const notionToMD = new NotionToMarkdown({
     notionClient,
   });
@@ -25,12 +34,12 @@ export async function blocksToMarkdown(
   // }
   const docunotionContext: IDocuNotionContext = {
     notionToMarkdown: notionToMD,
-    // TODO when does this actually need to do get some children?
-    // We can add a children argument to this method, but for the tests
-    // I have so far, it's not needed.
     getBlockChildren: (id: string) => {
+      // We call numberChildrenIfNumberedList here because the real getBlockChildren does
+      if (children) numberChildrenIfNumberedList(children);
+
       return new Promise<NotionBlock[]>((resolve, reject) => {
-        resolve([]);
+        resolve(children ?? []);
       });
     },
     convertNotionLinkToLocalDocusaurusLink: (url: string) => {

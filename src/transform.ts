@@ -7,6 +7,7 @@ import { error, info, logDebug, logDebugFn, verbose, warning } from "./log";
 import { NotionPage } from "./NotionPage";
 import { IDocuNotionConfig } from "./config/configuration";
 import { NotionBlock } from "./types";
+import { executeWithRateLimitAndRetries } from "./pull";
 
 export async function getMarkdownForPage(
   config: IDocuNotionConfig,
@@ -157,13 +158,23 @@ async function doNotionToMarkdown(
   docunotionContext: IDocuNotionContext,
   blocks: Array<NotionBlock>
 ) {
-  const mdBlocks = await docunotionContext.notionToMarkdown.blocksToMarkdown(
-    blocks
+  let mdBlocks: any;
+  await executeWithRateLimitAndRetries(
+    "notionToMarkdown.blocksToMarkdown",
+    async () => {
+      mdBlocks = await docunotionContext.notionToMarkdown.blocksToMarkdown(
+        // We need to provide a copy of blocks.
+        // Calling blocksToMarkdown can modify the values in the blocks. If it does, and then
+        // we have to retry, we end up retrying with the modified values, which
+        // causes various issues (like using the transformed image url instead of the original one).
+        // Note, currently, we don't do anything else with blocks after this.
+        // If that changes, we'll need to figure out a more sophisticated approach.
+        JSON.parse(JSON.stringify(blocks))
+      );
+    }
   );
 
-  const markdown =
-    docunotionContext.notionToMarkdown.toMarkdownString(mdBlocks).parent;
-
+  const markdown =    docunotionContext.notionToMarkdown.toMarkdownString(mdBlocks).parent || "";
   return markdown;
 }
 

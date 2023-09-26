@@ -6,7 +6,6 @@ import { standardColumnListTransformer } from "../plugins/ColumnListTransformer"
 import { standardColumnTransformer } from "../plugins/ColumnTransformer";
 import { standardEscapeHtmlBlockModifier } from "../plugins/EscapeHtmlBlockModifier";
 import { standardHeadingTransformer } from "../plugins/HeadingTransformer";
-import { standardNumberedListTransformer } from "../plugins/NumberedListTransformer";
 import { standardTableTransformer } from "../plugins/TableTransformer";
 import { standardVideoTransformer } from "../plugins/VideoTransformer";
 import { standardExternalLinkConversion } from "../plugins/externalLinks";
@@ -25,7 +24,6 @@ const defaultConfig: IDocuNotionConfig = {
     standardImageTransformer,
     standardCalloutTransformer,
     standardTableTransformer,
-    standardNumberedListTransformer,
     standardVideoTransformer,
 
     // Link modifiers, which are special because they can read metadata from all the pages in order to figure out the correct url
