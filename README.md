@@ -17,13 +17,13 @@ You can name it anything you like, e.g. "Documentation Root".
 
 ## 3. Create a Notion Integration
 
-In order for docu-notion to read your site via Notion's API, you need to create what Notion calls an "integration". Follow [these instructions](https://developers.notion.com/docs/getting-started) to make an integration and get your token. Limit your integration to "READ" access.
+In order for docu-notion to read your site via Notion's API, you need to create what Notion calls an "integration". Follow [these instructions](https://developers.notion.com/docs/getting-started) to make an integration and get your token. Remember to limit your integration to "READ" access.
 
-## 4. "Invite" your Notion Integration to read you page
+## 4. Connect your Integration
 
-In Notion, click "Share" on the root of your documentation and "invite" your integration to it.
+Go to the page that will be the root of your site. This page should have, as direct children, your "Outline" (required) and "Database" (optional) pages. Follow [these instructions](https://developers.notion.com/docs/create-a-notion-integration#give-your-integration-page-permissions).
 
-![image](https://user-images.githubusercontent.com/8448/168930238-1dcf46df-a690-4839-bf4c-c63157f104d8.png)
+<img width="318" alt="image" src="https://github.com/sillsdev/docu-notion/assets/8448/810c6dca-f9ab-4370-93b4-dc1479332af7">
 
 ## 5. Add your pages under your Outline page.
 
@@ -35,7 +35,7 @@ First, determine the id of your root page by clicking "Share" and looking at the
 https://www.notion.so/hattonjohn/My-Docs-0456aa5842946bdbea3a4f37c97a0e5
 means that the id is "0456aa5842946PRETEND4f37c97a0e5".
 
-Determine where you want the markdown files and images to land. The following works well for Docusaurus instances:
+Try it out:
 
 ```
 npx @sillsdev/docu-notion -n secret_PRETEND123456789PRETEND123456789PRETEND6789 -r 0456aa5842946PRETEND4f37c97a0e5"

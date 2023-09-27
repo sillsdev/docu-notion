@@ -57,7 +57,7 @@ export async function notionPull(options: DocuNotionOptions): Promise<void> {
   const optionsForLogging = { ...options };
   // Just show the first few letters of the notion token, which start with "secret" anyhow.
   optionsForLogging.notionToken =
-    optionsForLogging.notionToken.substring(0, 3) + "...";
+    optionsForLogging.notionToken.substring(0, 10) + "...";
 
   const config = await loadConfigAsync();
 
@@ -79,6 +79,24 @@ export async function notionPull(options: DocuNotionOptions): Promise<void> {
   );
 
   info("Connecting to Notion...");
+
+  // Do a  quick test to see if we can connect to the root so that we can give a better error than just a generic "could not find page" one.
+  try {
+    await executeWithRateLimitAndRetries("retrieving root page", async () => {
+      await notionClient.pages.retrieve({ page_id: options.rootPage });
+    });
+  } catch (e: any) {
+    error(
+      `docu-notion could not retrieve the root page from Notion. \r\na) Check that the root page id really is "${
+        options.rootPage
+      }".\r\nb) Check that your Notion API token (the "Integration Secret") is correct. It starts with "${
+        optionsForLogging.notionToken
+      }".\r\nc) Check that your root page includes your "integration" in its "connections".\r\nThis internal error message may help:\r\n    ${
+        e.message as string
+      }`
+    );
+    exit(1);
+  }
 
   group(
     "Stage 1: walk children of the page named 'Outline', looking for pages..."
