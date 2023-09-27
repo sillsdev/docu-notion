@@ -23,7 +23,7 @@ In order for docu-notion to read your site via Notion's API, you need to create 
 
 Go to the page that will be the root of your site. This page should have, as direct children, your "Outline" (required) and "Database" (optional) pages. Follow [these instructions](https://developers.notion.com/docs/create-a-notion-integration#give-your-integration-page-permissions).
 
-<img width="318" alt="image" src="https://github.com/sillsdev/docu-notion/assets/8448/66e04ba9-cbf4-45c4-aca9-2746589809b0">
+<img width="318" alt="image" src="https://github.com/sillsdev/docu-notion/assets/8448/810c6dca-f9ab-4370-93b4-dc1479332af7">
 
 ## 5. Add your pages under your Outline page.
 
@@ -35,7 +35,7 @@ First, determine the id of your root page by clicking "Share" and looking at the
 https://www.notion.so/hattonjohn/My-Docs-0456aa5842946bdbea3a4f37c97a0e5
 means that the id is "0456aa5842946PRETEND4f37c97a0e5".
 
-Determine where you want the markdown files and images to land. The following works well for Docusaurus instances:
+Try it out:
 
 ```
 npx @sillsdev/docu-notion -n secret_PRETEND123456789PRETEND123456789PRETEND6789 -r 0456aa5842946PRETEND4f37c97a0e5"
