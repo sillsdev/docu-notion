@@ -13,6 +13,7 @@
     "// test out with a private sample notion db": "",
     "large-site-test": "npm run ts -- -n $SIL_BLOOM_DOCS_NOTION_TOKEN -r $SIL_BLOOM_DOCS_NOTION_ROOT_PAGE  --locales en,fr   --log-level debug",
     "pull-test-tagged": "npm run ts -- -n $DOCU_NOTION_INTEGRATION_TOKEN -r $DOCU_NOTION_TEST_ROOT_PAGE_ID  --log-level debug --status-tag test",
+    "pull-test-css": "npm run ts -- --css-output-directory ./test/css -n $DOCU_NOTION_INTEGRATION_TOKEN -r $DOCU_NOTION_TEST_ROOT_PAGE_ID  --log-level debug --status-tag test",
     "pull-sample-site": "npm run ts -- -n $DOCU_NOTION_INTEGRATION_TOKEN -r $DOCU_NOTION_SAMPLE_ROOT_PAGE  --log-level debug",
     "// test with a semi-stable/public site:": "",
     "pull-sample": "npm run ts -- -n $DOCU_NOTION_INTEGRATION_TOKEN -r $DOCU_NOTION_SAMPLE_ROOT_PAGE -m ./sample --locales en,es,fr,de --log-level verbose",

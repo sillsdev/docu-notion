@@ -1,9 +1,11 @@
+import * as fs from "fs-extra";
 import { Option, program } from "commander";
 import { setLogLevel } from "./log";
 
-import { notionPull, DocuNotionOptions } from "./pull";
+import { notionPull } from "./pull";
+import path from "path";
 
-export function run() {
+export async function run(): Promise<void> {
   const pkg = require("../package.json");
   // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
   console.log(`docu-notion version ${pkg.version}`);
@@ -21,8 +23,13 @@ export function run() {
     )
     .option(
       "-m, --markdown-output-path  <string>",
-      "Root of the hierarchy for md files. WARNING: node-pull-mdx will delete files from this directory. Note also that if it finds localized images, it will create an i18n/ directory as a sibling.",
+      "Root of the hierarchy for md files. WARNING: docu-notion will delete files from this directory. Note also that if it finds localized images, it will create an i18n/ directory as a sibling.",
       "./docs"
+    )
+    .option(
+      "--css-output-directory  <string>",
+      "docu-notion has a docu-notion-styles.css file that you will need to use to get things like notion columns to look right. This option specifies where that file should be copied to.",
+      "./css"
     )
     .option(
       "-t, --status-tag  <string>",
@@ -54,8 +61,27 @@ export function run() {
   program.showHelpAfterError();
   program.parse();
   setLogLevel(program.opts().logLevel);
-  console.log(JSON.stringify(program.opts));
-  notionPull(program.opts() as DocuNotionOptions).then(() =>
+  console.log(JSON.stringify(program.opts()));
+
+  // copy in the this version of the css needed to make columns (and maybe other things?) work
+  let pathToCss = "";
+  try {
+    pathToCss = require.resolve(
+      "@sillsdev/docu-notion/dist/docu-notion-styles.css"
+    );
+  } catch (e) {
+    // when testing from the docu-notion project itself:
+    pathToCss = "./src/css/docu-notion-styles.css";
+  }
+  // make any missing parts of the path exist
+  fs.ensureDirSync(program.opts().cssOutputDirectory);
+  fs.copyFileSync(
+    pathToCss,
+    path.join(program.opts().cssOutputDirectory, "docu-notion-styles.css")
+  );
+
+  // pull and convert
+  await notionPull(program.opts()).then(() =>
     console.log("docu-notion Finished.")
   );
 }
