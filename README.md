@@ -10,7 +10,7 @@ Example Site: https://sillsdev.github.io/docu-notion-sample-site/
 
 First, prepare your markdown-based static file system like [Docusaurus](https://docusaurus.io/). For a shortcut with github actions, search, and deployment to github pages, you can just copy [this template](https://github.com/sillsdev/docu-notion-sample-site).
 
-If you do not use the above sample, you will need to manually add [notion-styles.css](src/css/notion-styles.css) to your site. This enables multi-column layouts and another other special styling that we need to make the output of docu-notion look right.
+If you do not use the above sample, you will need to manually tell your `docusaurus.config.js` about `docu-notion-styles.css`. See [Styling and Layout](https://docusaurus.io/docs/styling-layout). This stylesheet enables various Notion things to look right, for example multi-column layouts. By default, docu-notion will copy this file to the `css/` directory. There is an option to change that location if you want.
 
 ## 2. In Notion, duplicate the docu-notion template
 
