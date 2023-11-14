@@ -31,8 +31,8 @@ export async function getMarkdownForPage(
   logDebugFn("markdown from page", () => JSON.stringify(blocks, null, 2));
 
   const body = await getMarkdownFromNotionBlocks(context, config, blocks);
-  const frontmatter = getFrontMatter(page); // todo should be a plugin
-  return `${frontmatter}\n${body}`;
+  const frontMatter = getMarkdownFrontMatter(context, config, page);
+  return `${frontMatter}\n${body}`;
 }
 
 // this is split off from getMarkdownForPage so that unit tests can provide the block contents
@@ -263,14 +263,18 @@ function registerNotionToMarkdownCustomTransforms(
   });
 }
 
-// enhance:make this built-in plugin so that it can be overridden
-function getFrontMatter(page: NotionPage): string {
-  let frontmatter = "---\n";
-  frontmatter += `title: ${page.nameOrTitle.replaceAll(":", "-")}\n`; // I have not found a way to escape colons
-  frontmatter += `sidebar_position: ${page.order}\n`;
-  frontmatter += `slug: ${page.slug ?? ""}\n`;
-  if (page.keywords) frontmatter += `keywords: [${page.keywords}]\n`;
-
-  frontmatter += "---\n";
-  return frontmatter;
+function getMarkdownFrontMatter(
+  context: IDocuNotionContext,
+  config: IDocuNotionConfig,
+  page: NotionPage
+): string {
+  let frontMatter = "---\n";
+  config.plugins.forEach(plugin => {
+    if (plugin.frontMatterGenerator) {
+      logDebug("transforming page with plugin", plugin.name);
+      frontMatter += plugin.frontMatterGenerator?.getFrontMatter(context, page);
+    }
+  });
+  frontMatter += "---\n";
+  return frontMatter;
 }
