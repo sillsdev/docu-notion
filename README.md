@@ -148,3 +148,12 @@ To map Notion callouts to Docusaurus admonitions, ensure the icon is for the typ
 - 🔥➜ danger
 
 The default admonition type, if no matching icon is found, is "note".
+
+# Known Workarounds
+
+### Start a numbered list at a number other than 1
+In Notion, make sure the block is "Text," not "Numbered List".
+- But make sure the number does NOT have a space in front of it. This can/will cause issues with sub-list items.
+- One way to get Notion to let you do this:
+    - Create a numbered list item where the text duplicates the number you want. Convert that numbered list item to "Text."
+    - i.e. Type "1. 1. Item one." Notion makes the first "1." into a number in a list. When you convert back to "Text," you're left with plain text "1. Item one."
