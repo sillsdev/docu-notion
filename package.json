@@ -1,7 +1,7 @@
 {
   "scripts": {
     "test": "vitest",
-    "build": "npm run test -- --run && tsc && cp ./src/css/*.css dist/",
+    "build": "npm run test -- --run && tsc && cp ./src/css/*.css dist/ && echo Build successful",
     "build-only": "tsc && cp ./src/css/*.css dist/",
     "clean": "rimraf ./dist/",
     "semantic-release": "semantic-release",

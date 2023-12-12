@@ -197,11 +197,38 @@ async function getPagesRecursively(
     pageInfo.hasParagraphs &&
     pageInfo.childPageIdsAndOrder.length
   ) {
-    error(
-      `Skipping "${pageInTheOutline.nameOrTitle}"  and its children. docu-notion does not support pages that are both levels and have content at the same time.`
-    );
-    ++counts.skipped_because_level_cannot_have_content;
-    return;
+      warning(`Note: The page "${pageInTheOutline.nameOrTitle}" contains both childrens and content so it should produce a level with an index page`);
+      // error(
+      //   `Skipping "${pageInTheOutline.nameOrTitle}"  and its children. docu-notion does not support pages that are both levels and have content at the same time.`
+      // );
+      // ++counts.skipped_because_level_cannot_have_content;
+      // return;
+
+      // set IsCategory flag
+      pageInTheOutline.metadata.parent.IsCategory = true;
+      
+      // Add a new level for this page
+      let layoutContext = layoutStrategy.newLevel(
+        options.markdownOutputPath,
+        pageInTheOutline.order,
+        incomingContext,
+        pageInTheOutline.nameOrTitle
+      );
+    
+      // Push the current page into the pages array
+      pages.push(pageInTheOutline);
+
+      // Recursively process each child page
+      for (const childPageInfo of pageInfo.childPageIdsAndOrder) {
+        await getPagesRecursively(
+          options,
+          layoutContext,
+          childPageInfo.id,
+          childPageInfo.order,
+          false
+        );
+      }
+    }
   }
   if (!rootLevel && pageInfo.hasParagraphs) {
     pages.push(pageInTheOutline);
@@ -212,7 +239,7 @@ async function getPagesRecursively(
     // it has both? Well then we assume it's a content page.
     if (pageInfo.linksPageIdsAndOrder?.length) {
       warning(
-        `Note: The page "${pageInTheOutline.nameOrTitle}" is in the outline, has content, and also points at other pages. It will be treated as a simple content page. This is no problem, unless you intended to have all your content pages in the database (kanban workflow) section.`
+        `Note: The page "${pageInTheOutline.nameOrTitle}" is in the outline, has content and also points at other pages but doesn't have childrens. It will be treated as a simple content page. This is no problem, unless you intended to have all your content pages in the database (kanban workflow) section.`
       );
     }
   }
