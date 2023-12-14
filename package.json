@@ -62,13 +62,13 @@
     "vite": "^4.2.1",
     "vitest": "^0.30.1"
   },
-  "name": "@sillsdev/docu-notion",
+  "name": "docu-notion-kira",
   "description": "Download Notion pages as markdown and image files, preserving hierarchy and enabling workflow properties. Works with Docusaurus.",
   "license": "MIT",
   "author": {
-    "name": "SIL Language Software Development",
-    "email": "sillsdev@users.noreply.github.com",
-    "url": "https://github.com/sillsdev"
+    "name": "KIRA Network",
+    "email": "hello@kira.network",
+    "url": "https://kira.network"
   },
   "keywords": [
     "docusaurus",
@@ -77,9 +77,9 @@
     "documentation"
   ],
   "bugs": {
-    "url": "https://github.com/sillsdev/docu-notion/issues"
+    "url": "https://github.com/KiraCore/docu-notion-kira/issues"
   },
-  "homepage": "https://github.com/sillsdev/docu-notion#readme",
+  "homepage": "https://github.com/KiraCore/docu-notion-kira#readme",
   "main": "./dist/index.js",
   "bin": "dist/index.js",
   "files": [

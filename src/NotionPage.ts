@@ -67,7 +67,7 @@ export class NotionPage {
         },
     */
 
-     // Check IsCategory flag under parent for level pages with index content
+    // Check IsCategory flag under parent for level pages with index content
     if (this.metadata.parent.IsCategory) {
       return PageType.CategoryIndex;
     }
