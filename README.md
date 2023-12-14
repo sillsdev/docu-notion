@@ -1,4 +1,4 @@
-# docu-notion
+# docu-notion-kira
 
 docu-notion lets you use Notion as your editor for [Docusaurus](https://docusaurus.io/). Using Notion instead of raw markdown files means that you don't have to teach non-developers how to make git commits and pull requests. It also allows you to leverage Notion's database tools to control workflow, Notion's commenting feature to discuss changes, etc.
 
