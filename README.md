@@ -3,7 +3,7 @@ KIRA's documentation system integrates with docu-notion-kira, a forked version o
 
 # How It Works ?
 
-The system operates with two main components:
+Docu-notion fetches content from a provided Notion page and produce a structured folder of markdown-base files. The notion page being fetched has two main components:
 
 1. **The Database (Optional)** - This is where the documentation pages are stored. They include content and are equipped with workflow properties to facilitate a Kanban-style management process where pages can have metadata that can be leveraged and are published according to their ‘status’.
 2. **The Outline Page (Mandatory)** - This is a central Notion page that organizes content hierarchically. It serves as the foundation of the documentation structure. The arrangement of sub-pages within the Outline is directly reflected in the final documentation site and its sidebar navigation. These sub-pages should link back to the relevant documents housed in the database.
