@@ -67,7 +67,7 @@ export async function run(): Promise<void> {
   let pathToCss = "";
   try {
     pathToCss = require.resolve(
-      "@sillsdev/docu-notion/dist/docu-notion-styles.css"
+      "@kmlbgn/docu-notion-kira/dist/docu-notion-styles.css"
     );
   } catch (e) {
     // when testing from the docu-notion project itself:
