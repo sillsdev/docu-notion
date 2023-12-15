@@ -1,120 +1,122 @@
-# docu-notion-kira
+# Description
+KIRA's documentation system integrates with docu-notion-kira, a forked version of docu-notion tailored for Kira Network, which allows the use of Notion as the primary editing platform to produce content suitable for static site generators like Docusaurus. This unique combination meets several challenging requirements, such as workflow features, localization support via Crowdin, and capabilities for both online and offline distribution. Future plans include adding versioning capabilities.
 
-docu-notion lets you use Notion as your editor for [Docusaurus](https://docusaurus.io/). Using Notion instead of raw markdown files means that you don't have to teach non-developers how to make git commits and pull requests. It also allows you to leverage Notion's database tools to control workflow, Notion's commenting feature to discuss changes, etc.
+# How It Works ?
 
-Example Site: https://sillsdev.github.io/docu-notion-sample-site/
+The system operates with two main components:
 
-# Instructions
+1. **The Database (Optional)** - This is where the documentation pages are stored. They include content and are equipped with workflow properties to facilitate a Kanban-style management process where pages can have metadata that can be leveraged and are published according to their ‘status’.
+2. **The Outline Page (Mandatory)** - This is a central Notion page that organizes content hierarchically. It serves as the foundation of the documentation structure. The arrangement of sub-pages within the Outline is directly reflected in the final documentation site and its sidebar navigation. These sub-pages should link back to the relevant documents housed in the database.
 
-## 1. Set up your documentation site.
+### **Page Structure in the Outline**
 
-First, prepare your markdown-based static file system like [Docusaurus](https://docusaurus.io/). For a shortcut with github actions, search, and deployment to github pages, you can just copy [this template](https://github.com/sillsdev/docu-notion-sample-site).
+Each page listed under the Outline page is expected to be only one of the following type:
 
-If you do not use the above sample, you will need to manually tell your `docusaurus.config.js` about `docu-notion-styles.css`. See [Styling and Layout](https://docusaurus.io/docs/styling-layout). This stylesheet enables various Notion things to look right, for example multi-column layouts. By default, docu-notion will copy this file to the `css/` directory. There is an option to change that location if you want.
+- sub-pages (a page containing others pages with content and/or sub-pages)
+- symbolic links to other pages of the database (if the database is utilized)
+- or standard page with content
+    
+    The use of the database is optional because pages with content can be directly included in the Outline. However, these pages won't have access to the advanced workflow features provided by the database integration. Sub-pages function as subsections of the documentation. They are transformed into dropdown menus in the sidebar of the documentation site. Due to this structural role, sub-pages cannot hold content themselves (which won’t be displayed), they are only meant to organize the documentation and provide navigation to more detailed content contained in linked or nested pages.
 
-## 2. In Notion, duplicate the docu-notion template
+# Setup: Docu-notion-kira + docusaurus
 
-Go to [this template page](https://hattonjohn.notion.site/Documentation-Template-Docusaurus-0e998b32da3c47edad0f62a25b49818c). Duplicate it into your own workspace.
-You can name it anything you like, e.g. "Documentation Root".
+#### Host specs:
 
-## 3. Create a Notion Integration
+Ubuntu 20.04
 
-In order for docu-notion to read your site via Notion's API, you need to create what Notion calls an "integration". Follow [these instructions](https://developers.notion.com/docs/getting-started) to make an integration and get your token. Remember to limit your integration to "READ" access.
+#### Software specs:
 
-## 4. Connect your Integration
+- NodeJS `[v21.4.0]`
+- npm `[v10.2.4]`
+- yarn `[v1.22.21]`
 
-Go to the page that will be the root of your site. This page should have, as direct children, your "Outline" (required) and "Database" (optional) pages. Follow [these instructions](https://developers.notion.com/docs/create-a-notion-integration#give-your-integration-page-permissions).
+## NodeJS installation
 
-<img width="318" alt="image" src="https://github.com/sillsdev/docu-notion/assets/8448/810c6dca-f9ab-4370-93b4-dc1479332af7">
+1. **Create a Temporary Directory:**
 
-## 5. Add your pages under your Outline page.
+  ```bash
+  mkdir -p ~/tmp && cd ~/tmp 
+  ```
 
-Currently, docu-notion expects that each page has only one of the following: sub-pages, links to other pages, or normal content. Do not mix them. You can add content pages directly here, but then you won't be able to make use of the workflow features. If those matter to you, instead make new pages under the "Database" and then link to them in your outline pages.
+2. **Download NodeJS:** 
 
-## 6. Pull your pages
+  ```bash
+  wget https://nodejs.org/dist/v21.4.0/node-v21.4.0-linux-x64.tar.xz
+  ```
 
-First, determine the id of your root page by clicking "Share" and looking at the url it gives you. E.g.
-https://www.notion.so/hattonjohn/My-Docs-0456aa5842946bdbea3a4f37c97a0e5
-means that the id is "0456aa5842946PRETEND4f37c97a0e5".
+3. **Unpack NodeJS and Set Environment Variables:**
+   * Use one of the following methods:
+    * **Method A (Persistent Environment Variables):**
+        ```bash
+        sudo mkdir -p /usr/local/lib/nodejs
+        sudo tar -xJvf node-v21.4.0-linux-x64.tar.xz -C /usr/local/lib/nodejs
+        echo 'export NODEJS_HOME=/usr/local/lib/nodejs/node-v21.4.0-linux-x64' | sudo tee -a /etc/profile
+        echo 'export PATH=$NODEJS_HOME/bin:$PATH' | sudo tee -a /etc/profile
+        source /etc/profile
+        ```
+    
+    * **Method B (Temporary Environment Variables):**
+        ```bash
+        sudo mkdir -p /usr/local/lib/nodejs
+        sudo tar -xJvf node-v21.4.0-linux-x64.tar.xz -C /usr/local/lib/nodejs
+        echo 'export NODEJS_HOME=/usr/local/lib/nodejs/node-v21.4.0-linux-x64' | sudo tee -a /etc/profile
+        echo 'export PATH=$NODEJS_HOME/bin:$PATH' | sudo tee -a /etc/profile
+        source /etc/profile
+        ```
 
-Try it out:
+4. **Install yarn:**
 
-```
-npx @sillsdev/docu-notion -n secret_PRETEND123456789PRETEND123456789PRETEND6789 -r 0456aa5842946PRETEND4f37c97a0e5"
-```
+  ```bash
+  npm install --global yarn
+  ```
 
-Likely, you will want to store these codes in your environment variables and then use them like this:
+5. **Check Installed Versions:**
 
-```
-(windows)
-npx @sillsdev/docu-notion -n %MY_NOTION_TOKEN% -r %MY_NOTION_DOCS_ROOT_PAGE_ID%
-```
+  ```bash
+  node -v
+  npm -v
+  yarn -v
+  ```
 
-```
-(linux / mac)
-npx @sillsdev/docu-notion -n $MY_NOTION_TOKEN -r $MY_NOTION_DOCS_ROOT_PAGE_ID
-```
+## Clone and Prepare Repository for Docusaurus
 
-NOTE: In the above, we are using `npx` to use the latest `docu-notion`. A more conservative approach would be to `npm i cross-var @sillsdev/docu-notion` and then create a script in your package.json like this:
+1. **Clone the Repository:**
 
-```
- "scripts": {
-     "pull": "cross-var docu-notion -n %DOCU_NOTION_INTEGRATION_TOKEN% -r %DOCU_NOTION_ROOT_PAGE%"
-  }
-```
+  ```bash
+  cd ~/tmp
+  git clone https://github.com/kmlbgn/docs.kira.network.git
+  ```
 
-and then run that with `npm run pull`.
+2. **Set Notion API Token and Root Page:**
+  * Replace *** with your Notion token and root page ID. 
+  * Set Environment Variables:
+    ```bash
+    export DOCU_NOTION_SAMPLE_ROOT_PAGE=[***]
+    export DOCU_NOTION_INTEGRATION_TOKEN=[***]
+    ```
+  * Go to the root page and add docu-notion-kira integration. This page should have, as direct children, "Outline" (required) and "Database" (optional) pages. Follow these instructions. Source: [Notion integration](https://developers.notion.com/docs/create-a-notion-integration#give-your-integration-page-permissions)
 
-## 7. Commit
+3. **Install Dependencies:**
+  ```bash
+  npm install
+  ```
 
-Most projects should probably commit the current markdown and image files each time you run docu-notion.
+4. **Parse Pages with docu-notion:**
 
-Note that if you choose not to commit, the workflow feature (see below) won't work for you. Imagine the case where a document that previously had a `Status` property of `Publish` now has a different status. You probably want to keep publishing the old version until the new one is ready. But if you don't commit files, your CI system (e.g. Github Actions) won't have the old version around, so it will disappear from your site.
+  ```bash
+  npx docu-notion -n $DOCU_NOTION_INTEGRATION_TOKEN -r $DOCU_NOTION_SAMPLE_ROOT_PAGE
+  ```
 
-# Using a Notion database for workflow
+## Starting Docusaurus Server
 
-One of the big attractions of Notion for large documentation projects is that you can treat your pages as database items. The advantage of this is that they can then have metadata properties that fit your workflow. For example, we use a simple kanban board view to see where each page is in our workflow:
+1. **Navigate to the Project Directory:**
+2. **Start the Docusaurus Server:**
+  ```bash
+  yarn start
+  ```
+  * Source [Docusaurus Intallation Guide](https://docusaurus.io/docs/installation)
 
-![image](https://user-images.githubusercontent.com/8448/168929745-e6529375-bb1e-47e9-b8a6-7a1467c8900f.png)
-
-`docu-notion` supports this by letting you link to database pages from your outline.
-
-![image](https://user-images.githubusercontent.com/8448/168929668-f83d7c86-75d2-48e9-940c-84c5268a2854.png)
-
-# Page properties
-
-![image](https://user-images.githubusercontent.com/8448/197016100-ab016111-2fa1-420a-a884-05318783096e.png)
-
-> **Note**
-> For some reason Notion only allows properties on pages that are part of a database. So if you create pages directly in the Outline, you won't be able to fill in any of these properties, other than the page title.
-
-## Slugs
-
-By default, pages will be given a slug based on the Notion id. For a human-readable URL, add a notion property named `Slug` to your database pages and enter a value in there that will work well in a URL. That is, no spaces, ?, #, /, etc.
-
-## Known Limitations
-
-docu-notion is not doing anything smart with regards to previously Published but now not Published documents. All it does is ignore every Notion document that doesn't have `status == Publish`. So if the old version of the document is still in your file tree when your static site generator (e.g. Docusaurus) runs, then it will appear on your website. If it isn't there, it won't. If you rename directories or move the document, docu-notion will not realize this and will delete the previously published markdown file.
-
-# Text Localization
-
-Localize your files in Crowdin (or whatever) based on the markdown files, not in Notion. For how to do this with Docusaurus, see [Docusaurus i18n](https://docusaurus.io/docs/i18n/crowdin).
-
-# Screenshot Localization
-
-The only way we know of to provide localization of image in the current Docusaurus (2.0) is to place the images in the same directory as the markdown, and use relative paths for images. Most projects probably won't localize _every_ image, so we also need a way to "fall back" to the original screenshot when the localized one is missing. `docu-notion` facilitates this. If no localized version of an image is available, `docu-notion` places a copy of the original image into the correct location.
-
-So how do you provide these localized screenshot files? Crowdin can handle localizing assets, and in the future we may support that. For now, we currently support a different approach. If you place for example `fr https:\\imgur.com\1234.png` in the caption of a screenshot in Notion, `docu-notion` will fetch that image and save it in the right place to be found when in French mode. Getting URLs to screenshots is easy with screenshot utilities such as [Greenshot](https://getgreenshot.org/) that support uploading to imgur. Note that `docu-notion` stores a copy of all images in your source tree, so you wouldn't lose the images if imgur were to go away.
-
-NOTE: that as far as I can tell, when you run `docusaurus start` docusaurus 2.0 offers the language picker but it doesn't actually work. So to test out the localized version, do `docusaurus build` followed by `docusaurus serve`.
-
-NOTE: if you just localize an image, it will not get picked up. You also must localize the page that uses the image. Otherwise, Docusaurus will use the English document and when that asks for `./the-image-path`, it will find the image there in the English section, not your other language section.
-
-# Automated builds with Github Actions
-
-Here is a working Github Action script to copy and customize: https://github.com/BloomBooks/bloom-docs/blob/master/.github/workflows/release.yml
-
-# Command line
+# Docu-notion Command line
 
 Usage: docu-notion -n <token> -r <root> [options]
 
@@ -131,10 +133,9 @@ Options:
 | -i, --img-output-path <string>        |           | Path to directory where images will be stored. If this is not included, images will be placed in the same directory as the document that uses them, which then allows for localization of screenshots.             |
 | -p, --img-prefix-in-markdown <string> |           | When referencing an image from markdown, prefix with this path instead of the full img-output-path. Should be used only in conjunction with --img-output-path.                                                     |
 | -h, --help                            |           | display help for command                                                                                                                                                                                           |
+# Custom parsing (Plugins)
 
-# Plugins
-
-If your project needs some processing that docu-notion doesn't already provide, you can provide a plugin that does it. See the [plugin readme](src/plugins/README.md).
+Custom parsing logic can be created using plugins. See the [plugin readme](src/plugins/README.md).
 
 # Callouts ➜ Admonitions
 
@@ -148,12 +149,3 @@ To map Notion callouts to Docusaurus admonitions, ensure the icon is for the typ
 - 🔥➜ danger
 
 The default admonition type, if no matching icon is found, is "note".
-
-# Known Workarounds
-
-### Start a numbered list at a number other than 1
-In Notion, make sure the block is "Text," not "Numbered List".
-- But make sure the number does NOT have a space in front of it. This can/will cause issues with sub-list items.
-- One way to get Notion to let you do this:
-    - Create a numbered list item where the text duplicates the number you want. Convert that numbered list item to "Text."
-    - i.e. Type "1. 1. Item one." Notion makes the first "1." into a number in a list. When you convert back to "Text," you're left with plain text "1. Item one."
