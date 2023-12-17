@@ -41,14 +41,17 @@ export async function getMarkdownFromNotionBlocks(
   config: IDocuNotionConfig,
   blocks: Array<NotionBlock>
 ): Promise<string> {
+  // Filter out child page blocks before converting to markdown because there is no case where we want the content of an actual child page to be appended to the index.md of it's category level index.md
+  const filteredBlocks = blocks.filter(block => block.type !== 'child_page');
+
   // changes to the blocks we get from notion API
-  doNotionBlockTransforms(blocks, config);
+  doNotionBlockTransforms(filteredBlocks, config);
 
   // overrides for the default notion-to-markdown conversions
   registerNotionToMarkdownCustomTransforms(config, context);
 
   // the main conversion to markdown, using the notion-to-md library
-  let markdown = await doNotionToMarkdown(context, blocks); // ?
+  let markdown = await doNotionToMarkdown(context, filteredBlocks); // ?
 
   // corrections to links after they are converted to markdown,
   // with access to all the pages we've seen

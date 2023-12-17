@@ -214,11 +214,12 @@ async function getPagesRecursively(
       incomingContext,
       pageInTheOutline.nameOrTitle
     );
-  
-    // Push the current page into the pages array
+
+    // Forward level for index.md and push it into the pages array
+    pageInTheOutline.layoutContext = layoutContext;
     pages.push(pageInTheOutline);
 
-    // Recursively process each child page
+    // Recursively process each child page and page link
     for (const childPageInfo of pageInfo.childPageIdsAndOrder) {
       await getPagesRecursively(
         options,
@@ -226,6 +227,16 @@ async function getPagesRecursively(
         childPageInfo.id,
         childPageInfo.order,
         false
+      );
+    }
+    for (const linkPageInfo of pageInfo.linksPageIdsAndOrder) {
+      pages.push(
+        await fromPageId(
+          layoutContext,
+          linkPageInfo.id,
+          linkPageInfo.order,
+          false
+        )
       );
     }
   }

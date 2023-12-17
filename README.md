@@ -1,5 +1,5 @@
 # Description
-KIRA's documentation system integrates with docu-notion-kira, a forked version of docu-notion tailored for Kira Network, which allows the use of Notion as the primary editing platform to produce content suitable for static site generators like Docusaurus. This unique combination meets several challenging requirements, such as workflow features, localization support via Crowdin, and capabilities for both online and offline distribution. Future plans include adding versioning capabilities.
+KIRA's documentation system integrates with docu-notion-kira, a forked version of [docu-notion](https://github.com/sillsdev/docu-notion) tailored for Kira Network, which allows the use of Notion as the primary editing platform to produce content suitable for static site generators like Docusaurus. This unique combination meets several challenging requirements, such as workflow features, localization support via Crowdin, and capabilities for both online and offline distribution. Future plans include adding versioning capabilities.
 
 # How It Works ?
 
