@@ -1,6 +1,6 @@
 import * as fs from "fs-extra";
 import FileType, { FileTypeResult } from "file-type";
-import fetch from "node-fetch";
+import axios from "axios";
 import * as Path from "path";
 import { makeImagePersistencePlan } from "./MakeImagePersistencePlan";
 import { warning, logDebug, verbose, info } from "./log";
@@ -150,9 +150,12 @@ async function processImageBlock(
 }
 
 async function readPrimaryImage(imageSet: ImageSet) {
-  const response = await fetch(imageSet.primaryUrl);
-  const arrayBuffer = await response.arrayBuffer();
-  imageSet.primaryBuffer = Buffer.from(arrayBuffer);
+  // In Mar 2024, we started having a problem getting a particular gif from imgur using
+  // node-fetch. Switching to axios resolved it. I don't know why.
+  const response = await axios.get(imageSet.primaryUrl, {
+    responseType: "arraybuffer",
+  });
+  imageSet.primaryBuffer = Buffer.from(response.data, "utf-8");
   imageSet.fileType = await FileType.fromBuffer(imageSet.primaryBuffer);
 }
 
