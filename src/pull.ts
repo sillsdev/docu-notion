@@ -39,6 +39,7 @@ export type DocuNotionOptions = {
   imgOutputPath: string;
   imgPrefixInMarkdown: string;
   statusTag: string;
+  requireSlugs?: boolean;
 };
 
 let layoutStrategy: LayoutStrategy;
@@ -49,6 +50,7 @@ const counts = {
   skipped_because_empty: 0,
   skipped_because_status: 0,
   skipped_because_level_cannot_have_content: 0,
+  error_because_no_slug: 0,
 };
 
 export async function notionPull(options: DocuNotionOptions): Promise<void> {
@@ -156,10 +158,19 @@ async function outputPages(
       );
       ++context.counts.skipped_because_status;
     } else {
+      if (options.requireSlugs && !page.hasExplicitSlug) {
+        error(
+          `Page "${page.nameOrTitle}" is missing a required slug. (--require-slugs is set.)`
+        );
+        ++counts.error_because_no_slug;
+      }
+
       const markdown = await getMarkdownForPage(config, context, page);
       writePage(page, markdown);
     }
   }
+
+  if (counts.error_because_no_slug > 0) exit(1);
 
   info(`Finished processing ${pages.length} pages`);
   info(JSON.stringify(counts));
