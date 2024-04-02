@@ -59,6 +59,7 @@ export async function blocksToMarkdown(
       imgOutputPath: "",
       imgPrefixInMarkdown: "",
       statusTag: "",
+      requireSlugs: false,
     },
     pages: pages ?? [],
     counts: {

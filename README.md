@@ -90,7 +90,9 @@ One of the big attractions of Notion for large documentation projects is that yo
 
 ## Slugs
 
-By default, pages will be given a slug based on the Notion id. For a human-readable URL, add a notion property named `Slug` to your database pages and enter a value in there that will work well in a URL. That is, no spaces, ?, #, /, etc.
+By default, pages will be given a slug based on the Notion ID. For a human-readable URL, add a notion property named `Slug` to your database pages and enter a value in there that will work well in a URL. That is, no spaces, ?, #, /, etc.
+
+See `Options` to require slugs in Notion.
 
 ## Known Limitations
 
@@ -130,7 +132,8 @@ Options:
 | -l, --log-level <level>               |           | Log level (choices: `info`, `verbose`, `debug`)                                                                                                                                                                    |
 | -i, --img-output-path <string>        |           | Path to directory where images will be stored. If this is not included, images will be placed in the same directory as the document that uses them, which then allows for localization of screenshots.             |
 | -p, --img-prefix-in-markdown <string> |           | When referencing an image from markdown, prefix with this path instead of the full img-output-path. Should be used only in conjunction with --img-output-path.                                                     |
-| -h, --help                            |           | display help for command                                                                                                                                                                                           |
+| --require-slugs                       |           | If set, docu-notion will require that all pages have a slug set in Notion. |
+| -h, --help                            |           | display help for command                              |
 
 # Plugins
 

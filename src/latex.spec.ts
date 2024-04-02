@@ -48,6 +48,7 @@ test("Latex Rendering", async () => {
       imgOutputPath: "",
       imgPrefixInMarkdown: "",
       statusTag: "",
+      requireSlugs: false,
     },
 
     pages: pages,
