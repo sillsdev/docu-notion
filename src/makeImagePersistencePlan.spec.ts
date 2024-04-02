@@ -42,6 +42,18 @@ test("primary file with defaults for image output path and prefix", () => {
   );
   expect(imageSet.filePathToUseInMarkdown).toBe(`./${expectedHash}.png`);
 });
+test("falls back to getting file extension from url if not in fileType", () => {
+  const imageSet: ImageSet = {
+    primaryUrl: "https://s3.us-west-2.amazonaws.com/primaryImage.png",
+    localizedUrls: [],
+    pathToParentDocument: "/pathToParentSomewhere/",
+  };
+  makeImagePersistencePlan(imageSet, "", "");
+  const expectedHash = hashOfString(
+    "https://s3.us-west-2.amazonaws.com/primaryImage.png"
+  );
+  expect(imageSet.outputFileName).toBe(`${expectedHash}.png`);
+});
 
 test("properly extract UUID from old-style notion image url", () => {
   const imageSet: ImageSet = {
