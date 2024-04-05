@@ -133,7 +133,7 @@ test("inline links to external site", async () => {
   expect(results.trim()).toBe("Inline [github](https://github.com)");
 });
 
-async function getMarkdown(block: object) {
+async function getMarkdown(block: Record<string, unknown>) {
   const config = {
     plugins: [standardExternalLinkConversion],
   };
