@@ -6,7 +6,7 @@ Example Site: https://sillsdev.github.io/docu-notion-sample-site/
 
 # Instructions
 
-## 1. Set up your documentation site.
+## 1. Set up your documentation site
 
 First, prepare your markdown-based static file system like [Docusaurus](https://docusaurus.io/). For a shortcut with github actions, search, and deployment to github pages, you can just copy [this template](https://github.com/sillsdev/docu-notion-sample-site).
 
@@ -27,15 +27,15 @@ Go to the page that will be the root of your site. This page should have, as dir
 
 <img width="318" alt="image" src="https://github.com/sillsdev/docu-notion/assets/8448/810c6dca-f9ab-4370-93b4-dc1479332af7">
 
-## 5. Add your pages under your Outline page.
+## 5. Add your pages under your Outline page
 
 Currently, docu-notion expects that each page has only one of the following: sub-pages, links to other pages, or normal content. Do not mix them. You can add content pages directly here, but then you won't be able to make use of the workflow features. If those matter to you, instead make new pages under the "Database" and then link to them in your outline pages.
 
 ## 6. Pull your pages
 
-First, determine the id of your root page by clicking "Share" and looking at the url it gives you. E.g.
-https://www.notion.so/hattonjohn/My-Docs-0456aa5842946bdbea3a4f37c97a0e5
-means that the id is "0456aa5842946PRETEND4f37c97a0e5".
+First, determine the ID of your root page by clicking "Share" and looking at the url it gives you. E.g.
+`https://www.notion.so/hattonjohn/My-Docs-0456aa5842946PRETEND4f37c97a0e5`
+means that the ID is `0456aa5842946PRETEND4f37c97a0e5`.
 
 Try it out:
 
@@ -114,26 +114,27 @@ NOTE: if you just localize an image, it will not get picked up. You also must lo
 
 # Automated builds with Github Actions
 
-Here is a working Github Action script to copy and customize: https://github.com/BloomBooks/bloom-docs/blob/master/.github/workflows/release.yml
+Here is a [working Github Action script to copy and customize](https://github.com/BloomBooks/bloom-docs/blob/master/.github/workflows/release.yml).
 
 # Command line
 
-Usage: docu-notion -n <token> -r <root> [options]
+Usage: `docu-notion -n <token> -r <root> [options]`
 
 Options:
 
 | flag                                  | required? | description                                                                                                                                                                                                        |
 | ------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| -n, --notion-token <string>           | required  | notion api token, which looks like `secret_3bc1b50XFYb15123RHF243x43450XFY33250XFYa343`                                                                                                                            |
-| -r, --root-page <string>              | required  | The 31 character ID of the page which is the root of your docs page in notion. The code will look like `9120ec9960244ead80fa2ef4bc1bba25`. This page must have a child page named 'Outline'                        |
-| -m, --markdown-output-path <string>   |           | Root of the hierarchy for md files. WARNING: node-pull-mdx will delete files from this directory. Note also that if it finds localized images, it will create an i18n/ directory as a sibling. (default: "./docs") |
-| -t, --status-tag <string>             |           | Database pages without a Notion page property 'status' matching this will be ignored. Use '\*' to ignore status altogether. (default: `Publish`)                                                                   |
-| --locales <codes>                     |           | Comma-separated list of iso 639-2 codes, the same list as in docusaurus.config.js, minus the primary (i.e. 'en'). This is needed for image localization. (default: [])                                             |
-| -l, --log-level <level>               |           | Log level (choices: `info`, `verbose`, `debug`)                                                                                                                                                                    |
-| -i, --img-output-path <string>        |           | Path to directory where images will be stored. If this is not included, images will be placed in the same directory as the document that uses them, which then allows for localization of screenshots.             |
-| -p, --img-prefix-in-markdown <string> |           | When referencing an image from markdown, prefix with this path instead of the full img-output-path. Should be used only in conjunction with --img-output-path.                                                     |
-| --require-slugs                       |           | If set, docu-notion will fail if any pages it would otherwise publish are missing a slug in Notion. |
-| -h, --help                            |           | display help for command                              |
+| `-n, --notion-token <string>`           | required  | notion api token, which looks like `secret_3bc1b50XFYb15123RHF243x43450XFY33250XFYa343`                                                                                                                            |
+| `-r, --root-page <string>`              | required  | The 31 character ID of the page which is the root of your docs page in notion. The code will look like `9120ec9960244ead80fa2ef4bc1bba25`. This page must have a child page named 'Outline'                        |
+| `-m, --markdown-output-path <string>`   |           | Root of the hierarchy for md files. WARNING: node-pull-mdx will delete files from this directory. Note also that if it finds localized images, it will create an i18n/ directory as a sibling. (default: `./docs`) |
+| `-t, --status-tag <string>`             |           | Database pages without a Notion page property 'status' matching this will be ignored. Use '\*' to ignore status altogether. (default: `Publish`)                                                                   |
+| `--locales <codes>`                     |           | Comma-separated list of iso 639-2 codes, the same list as in docusaurus.config.js, minus the primary (i.e. 'en'). This is needed for image localization. (default: `[]`)                                             |
+| `-l, --log-level <level>`               |           | Log level (choices: `info`, `verbose`, `debug`)                                                                                                                                                                    |
+| `-i, --img-output-path <string>`        |           | Path to directory where images will be stored. If this is not included, images will be placed in the same directory as the document that uses them, which then allows for localization of screenshots.             |
+| `-p, --img-prefix-in-markdown <string>` |           | When referencing an image from markdown, prefix with this path instead of the full img-output-path. Should be used only in conjunction with --img-output-path.                                                     |
+| `--require-slugs`                       |           | If set, docu-notion will fail if any pages it would otherwise publish are missing a slug in Notion. |
+| `--image-file-name-format <format>`     |           | choices:<ul><li>`default`: {page slug (if any)}.{original file name (if it can be determined)}.{image block ID}</li><li>`content-hash`: Use a hash of the image content.</li><li>`legacy`: Use the legacy (before v0.16) method of determining file names. Set this to maintain backward compatibility.</li></ul>All formats will use the original file extension. |
+| `-h, --help`                            |           | display help for command                              |
 
 # Plugins
 
@@ -155,8 +156,10 @@ The default admonition type, if no matching icon is found, is "note".
 # Known Workarounds
 
 ### Start a numbered list at a number other than 1
+
 In Notion, make sure the block is "Text," not "Numbered List".
+
 - But make sure the number does NOT have a space in front of it. This can/will cause issues with sub-list items.
 - One way to get Notion to let you do this:
-    - Create a numbered list item where the text duplicates the number you want. Convert that numbered list item to "Text."
-    - i.e. Type "1. 1. Item one." Notion makes the first "1." into a number in a list. When you convert back to "Text," you're left with plain text "1. Item one."
+  - Create a numbered list item where the text duplicates the number you want. Convert that numbered list item to "Text."
+  - i.e. Type "1. 1. Item one." Notion makes the first "1." into a number in a list. When you convert back to "Text," you're left with plain text "1. Item one."
