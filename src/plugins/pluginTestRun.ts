@@ -48,8 +48,11 @@ export async function blocksToMarkdown(
     imports: [],
 
     //TODO might be needed for some tests, e.g. the image transformer...
-    directoryContainingMarkdown: "not yet",
-    relativeFilePathToFolderContainingPage: "not yet",
+    pageInfo: {
+      directoryContainingMarkdown: "not yet",
+      relativeFilePathToFolderContainingPage: "not yet",
+      slug: "not yet",
+    },
     layoutStrategy: new HierarchicalNamedLayoutStrategy(),
     options: {
       notionToken: "",
@@ -90,8 +93,8 @@ export async function blocksToMarkdown(
   };
 
   if (pages && pages.length) {
-    console.log(pages[0].matchesLinkId);
-    console.log(docunotionContext.pages[0].matchesLinkId);
+    // console.log(pages[0].matchesLinkId);
+    // console.log(docunotionContext.pages[0].matchesLinkId);
   }
   const r = await getMarkdownFromNotionBlocks(
     docunotionContext,
@@ -230,14 +233,14 @@ export function makeSamplePageObject(options: {
     foundDirectlyInOutline: false,
   });
 
-  console.log(p.matchesLinkId);
+  // console.log(p.matchesLinkId);
 
   return p;
 }
 
 export async function oneBlockToMarkdown(
   config: IDocuNotionConfig,
-  block: object,
+  block: Record<string, unknown>,
   targetPage?: NotionPage
 ): Promise<string> {
   // just in case someone expects these other properties that aren't normally relevant,

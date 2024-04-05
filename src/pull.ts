@@ -31,6 +31,7 @@ import { NotionBlock } from "./types";
 import { convertInternalUrl } from "./plugins/internalLinks";
 import { ListBlockChildrenResponseResults } from "notion-to-md/build/types";
 
+type ImageFileNameFormat = "default" | "content-hash" | "legacy";
 export type DocuNotionOptions = {
   notionToken: string;
   rootPage: string;
@@ -40,6 +41,7 @@ export type DocuNotionOptions = {
   imgPrefixInMarkdown: string;
   statusTag: string;
   requireSlugs?: boolean;
+  imageFileNameFormat?: ImageFileNameFormat;
 };
 
 let layoutStrategy: LayoutStrategy;
@@ -125,8 +127,12 @@ async function outputPages(
 ) {
   const context: IDocuNotionContext = {
     getBlockChildren: getBlockChildren,
-    directoryContainingMarkdown: "", // this changes with each page
-    relativeFilePathToFolderContainingPage: "", // this changes with each page
+    // this changes with each page
+    pageInfo: {
+      directoryContainingMarkdown: "",
+      relativeFilePathToFolderContainingPage: "",
+      slug: "",
+    },
     layoutStrategy: layoutStrategy,
     notionToMarkdown: notionToMarkdown,
     options: options,
@@ -141,12 +147,13 @@ async function outputPages(
     const mdPath = layoutStrategy.getPathForPage(page, ".md");
 
     // most plugins should not write to disk, but those handling image files need these paths
-    context.directoryContainingMarkdown = Path.dirname(mdPath);
+    context.pageInfo.directoryContainingMarkdown = Path.dirname(mdPath);
     // TODO: This needs clarifying: getLinkPathForPage() is about urls, but
     // downstream images.ts is using it as a file system path
-    context.relativeFilePathToFolderContainingPage = Path.dirname(
+    context.pageInfo.relativeFilePathToFolderContainingPage = Path.dirname(
       layoutStrategy.getLinkPathForPage(page)
     );
+    context.pageInfo.slug = page.slug;
 
     if (
       page.type === PageType.DatabasePage &&
