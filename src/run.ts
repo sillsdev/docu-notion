@@ -56,6 +56,11 @@ export async function run(): Promise<void> {
     .option(
       "-p, --img-prefix-in-markdown <string>",
       "When referencing an image from markdown, prefix with this path instead of the full img-output-path. Should be used only in conjunction with --img-output-path."
+    )
+    .option(
+      "--require-slugs",
+      "If set, docu-notion will fail if any pages it would otherwise publish are missing a slug in Notion.",
+      false
     );
 
   program.showHelpAfterError();
