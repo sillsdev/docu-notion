@@ -1,6 +1,5 @@
 import { NotionToMarkdown } from "notion-to-md";
 import { HierarchicalNamedLayoutStrategy } from "./HierarchicalNamedLayoutStrategy";
-import { LayoutStrategy } from "./LayoutStrategy";
 import { NotionPage } from "./NotionPage";
 
 import { getMarkdownFromNotionBlocks } from "./transform";
@@ -36,8 +35,12 @@ test("Latex Rendering", async () => {
         resolve(new Array<NotionBlock>())
       );
     },
-    directoryContainingMarkdown: "", // this changes with each page
-    relativeFilePathToFolderContainingPage: "", // this changes with each page
+    // this changes with each page
+    pageInfo: {
+      directoryContainingMarkdown: "",
+      relativeFilePathToFolderContainingPage: "",
+      slug: "",
+    },
     layoutStrategy: layoutStrategy,
     notionToMarkdown: new NotionToMarkdown({ notionClient }),
     options: {
