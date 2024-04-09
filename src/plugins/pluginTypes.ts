@@ -71,8 +71,7 @@ export type IDocuNotionContext = {
   options: DocuNotionOptions;
   getBlockChildren: IGetBlockChildrenFn;
   notionToMarkdown: NotionToMarkdown;
-  directoryContainingMarkdown: string;
-  relativeFilePathToFolderContainingPage: string;
+  pageInfo: IDocuNotionContextPageInfo;
   convertNotionLinkToLocalDocusaurusLink: (url: string) => string | undefined;
   pages: NotionPage[];
   counts: ICounts;
@@ -81,4 +80,10 @@ export type IDocuNotionContext = {
   // to this array so they get added to the page.
   // e.g. context.imports.push(`import ReactPlayer from "react-player";`);
   imports: string[];
+};
+
+export type IDocuNotionContextPageInfo = {
+  directoryContainingMarkdown: string;
+  relativeFilePathToFolderContainingPage: string;
+  slug: string;
 };
