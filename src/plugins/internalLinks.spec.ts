@@ -564,7 +564,10 @@ test("internal link inside codeblock ignored", async () => {
   );
 });
 
-async function getMarkdown(block: object, targetPage?: NotionPage) {
+async function getMarkdown(
+  block: Record<string, unknown>,
+  targetPage?: NotionPage
+) {
   const config = {
     plugins: [
       standardCalloutTransformer,

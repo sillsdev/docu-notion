@@ -31,6 +31,7 @@ import { NotionBlock } from "./types";
 import { convertInternalUrl } from "./plugins/internalLinks";
 import { ListBlockChildrenResponseResults } from "notion-to-md/build/types";
 
+type ImageFileNameFormat = "default" | "content-hash" | "legacy";
 export type DocuNotionOptions = {
   notionToken: string;
   rootPage: string;
@@ -39,6 +40,8 @@ export type DocuNotionOptions = {
   imgOutputPath: string;
   imgPrefixInMarkdown: string;
   statusTag: string;
+  requireSlugs?: boolean;
+  imageFileNameFormat?: ImageFileNameFormat;
 };
 
 let layoutStrategy: LayoutStrategy;
@@ -49,6 +52,7 @@ const counts = {
   skipped_because_empty: 0,
   skipped_because_status: 0,
   skipped_because_level_cannot_have_content: 0,
+  error_because_no_slug: 0,
 };
 
 export async function notionPull(options: DocuNotionOptions): Promise<void> {
@@ -123,8 +127,12 @@ async function outputPages(
 ) {
   const context: IDocuNotionContext = {
     getBlockChildren: getBlockChildren,
-    directoryContainingMarkdown: "", // this changes with each page
-    relativeFilePathToFolderContainingPage: "", // this changes with each page
+    // this changes with each page
+    pageInfo: {
+      directoryContainingMarkdown: "",
+      relativeFilePathToFolderContainingPage: "",
+      slug: "",
+    },
     layoutStrategy: layoutStrategy,
     notionToMarkdown: notionToMarkdown,
     options: options,
@@ -139,12 +147,13 @@ async function outputPages(
     const mdPath = layoutStrategy.getPathForPage(page, ".md");
 
     // most plugins should not write to disk, but those handling image files need these paths
-    context.directoryContainingMarkdown = Path.dirname(mdPath);
+    context.pageInfo.directoryContainingMarkdown = Path.dirname(mdPath);
     // TODO: This needs clarifying: getLinkPathForPage() is about urls, but
     // downstream images.ts is using it as a file system path
-    context.relativeFilePathToFolderContainingPage = Path.dirname(
+    context.pageInfo.relativeFilePathToFolderContainingPage = Path.dirname(
       layoutStrategy.getLinkPathForPage(page)
     );
+    context.pageInfo.slug = page.slug;
 
     if (
       page.type === PageType.DatabasePage &&
@@ -156,10 +165,19 @@ async function outputPages(
       );
       ++context.counts.skipped_because_status;
     } else {
+      if (options.requireSlugs && !page.hasExplicitSlug) {
+        error(
+          `Page "${page.nameOrTitle}" is missing a required slug. (--require-slugs is set.)`
+        );
+        ++counts.error_because_no_slug;
+      }
+
       const markdown = await getMarkdownForPage(config, context, page);
       writePage(page, markdown);
     }
   }
+
+  if (counts.error_because_no_slug > 0) exit(1);
 
   info(`Finished processing ${pages.length} pages`);
   info(JSON.stringify(counts));

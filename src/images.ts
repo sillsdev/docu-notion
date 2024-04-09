@@ -1,13 +1,17 @@
 import * as fs from "fs-extra";
 import FileType, { FileTypeResult } from "file-type";
-import fetch from "node-fetch";
+import axios from "axios";
 import * as Path from "path";
 import { makeImagePersistencePlan } from "./MakeImagePersistencePlan";
 import { warning, logDebug, verbose, info } from "./log";
 import { ListBlockChildrenResponseResult } from "notion-to-md/build/types";
-import { IDocuNotionContext, IPlugin } from "./plugins/pluginTypes";
+import {
+  IDocuNotionContext,
+  IDocuNotionContextPageInfo,
+  IPlugin,
+} from "./plugins/pluginTypes";
 
-// We several things here:
+// We handle several things here:
 // 1) copy images locally instead of leaving them in Notion
 // 2) change the links to point here
 // 3) read the caption and if there are localized images, get those too
@@ -32,8 +36,7 @@ export type ImageSet = {
   localizedUrls: Array<{ iso632Code: string; url: string }>;
 
   // then we fill this in from processImageBlock():
-  pathToParentDocument?: string;
-  relativePathToParentDocument?: string;
+  pageInfo?: IDocuNotionContextPageInfo;
 
   // then we fill these in readPrimaryImage():
   primaryBuffer?: Buffer;
@@ -75,12 +78,7 @@ export const standardImageTransformer: IPlugin = {
       getStringFromBlock: (
         context: IDocuNotionContext,
         block: ListBlockChildrenResponseResult
-      ) =>
-        markdownToMDImageTransformer(
-          block,
-          context.directoryContainingMarkdown,
-          context.relativeFilePathToFolderContainingPage
-        ),
+      ) => markdownToMDImageTransformer(block, context),
     },
   ],
 };
@@ -89,16 +87,11 @@ export const standardImageTransformer: IPlugin = {
 // eslint-disable-next-line @typescript-eslint/require-await
 export async function markdownToMDImageTransformer(
   block: ListBlockChildrenResponseResult,
-  fullPathToDirectoryContainingMarkdown: string,
-  relativePathToThisPage: string
+  context: IDocuNotionContext
 ): Promise<string> {
   const image = (block as any).image;
 
-  await processImageBlock(
-    image,
-    fullPathToDirectoryContainingMarkdown,
-    relativePathToThisPage
-  );
+  await processImageBlock(block, context);
 
   // just concatenate the caption text parts together
   const altText: string = image.caption
@@ -112,21 +105,26 @@ export async function markdownToMDImageTransformer(
 }
 
 async function processImageBlock(
-  imageBlock: any,
-  pathToParentDocument: string,
-  relativePathToThisPage: string
+  block: any,
+  context: IDocuNotionContext
 ): Promise<void> {
+  const imageBlock = block.image;
   logDebug("processImageBlock", JSON.stringify(imageBlock));
 
   const imageSet = parseImageBlock(imageBlock);
-  imageSet.pathToParentDocument = pathToParentDocument;
-  imageSet.relativePathToParentDocument = relativePathToThisPage;
+  imageSet.pageInfo = context.pageInfo;
 
   // enhance: it would much better if we could split the changes to markdown separately from actual reading/writing,
   // so that this wasn't part of the markdown-creation loop. It's already almost there; we just need to
   // save the imageSets somewhere and then do the actual reading/writing later.
   await readPrimaryImage(imageSet);
-  makeImagePersistencePlan(imageSet, imageOutputPath, imagePrefix);
+  makeImagePersistencePlan(
+    context.options,
+    imageSet,
+    block.id,
+    imageOutputPath,
+    imagePrefix
+  );
   await saveImage(imageSet);
 
   // change the src to point to our copy of the image
@@ -150,9 +148,12 @@ async function processImageBlock(
 }
 
 async function readPrimaryImage(imageSet: ImageSet) {
-  const response = await fetch(imageSet.primaryUrl);
-  const arrayBuffer = await response.arrayBuffer();
-  imageSet.primaryBuffer = Buffer.from(arrayBuffer);
+  // In Mar 2024, we started having a problem getting a particular gif from imgur using
+  // node-fetch. Switching to axios resolved it. I don't know why.
+  const response = await axios.get(imageSet.primaryUrl, {
+    responseType: "arraybuffer",
+  });
+  imageSet.primaryBuffer = Buffer.from(response.data, "utf-8");
   imageSet.fileType = await FileType.fromBuffer(imageSet.primaryBuffer);
 }
 
@@ -175,7 +176,9 @@ async function saveImage(imageSet: ImageSet): Promise<void> {
     }
     const directory = `./i18n/${
       localizedImage.iso632Code
-    }/docusaurus-plugin-content-docs/current/${imageSet.relativePathToParentDocument!}`;
+    }/docusaurus-plugin-content-docs/current/${
+      imageSet.pageInfo!.relativeFilePathToFolderContainingPage
+    }`;
 
     writeImageIfNew(
       (directory + "/" + imageSet.outputFileName!).replaceAll("//", "/"),
