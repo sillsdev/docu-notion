@@ -31,6 +31,48 @@ test("urls that show up as raw text get left that way", async () => {
   expect(results.trim()).toBe("https://github.com");
 });
 
+// See https://github.com/sillsdev/docu-notion/issues/97
+test("mention-style link to an existing page", async () => {
+  const targetPageId = "123";
+  const targetPage: NotionPage = makeSamplePageObject({
+    slug: undefined,
+    name: "Hello World",
+    id: targetPageId,
+  });
+
+  const results = await getMarkdown(
+    {
+      type: "paragraph",
+      paragraph: {
+        rich_text: [
+          {
+            type: "mention",
+            mention: {
+              type: "page",
+              page: {
+                id: `${targetPageId}`,
+              },
+            },
+            annotations: {
+              bold: false,
+              italic: false,
+              strikethrough: false,
+              underline: false,
+              code: false,
+              color: "default",
+            },
+            plain_text: "foo",
+            href: `https://www.notion.so/${targetPageId}`,
+          },
+        ],
+        color: "default",
+      },
+    },
+    targetPage
+  );
+  expect(results.trim()).toBe(`[foo](/${targetPageId})`);
+});
+
 test("link to an existing page on this site that has no slug", async () => {
   const targetPageId = "123";
   const targetPage: NotionPage = makeSamplePageObject({
