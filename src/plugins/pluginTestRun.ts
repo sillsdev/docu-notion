@@ -241,7 +241,8 @@ export function makeSamplePageObject(options: {
 export async function oneBlockToMarkdown(
   config: IDocuNotionConfig,
   block: Record<string, unknown>,
-  targetPage?: NotionPage
+  targetPage?: NotionPage,
+  targetPage2?: NotionPage
 ): Promise<string> {
   // just in case someone expects these other properties that aren't normally relevant,
   // we merge the given block properties into an actual, full block
@@ -280,6 +281,6 @@ export async function oneBlockToMarkdown(
   return await blocksToMarkdown(
     config,
     [fullBlock as NotionBlock],
-    targetPage ? [dummyPage1, targetPage, dummyPage2] : undefined
+    targetPage ? [dummyPage1, targetPage, targetPage2 ?? dummyPage2] : undefined
   );
 }
