@@ -31,6 +31,48 @@ test("urls that show up as raw text get left that way", async () => {
   expect(results.trim()).toBe("https://github.com");
 });
 
+// See https://github.com/sillsdev/docu-notion/issues/97
+test("mention-style link to an existing page", async () => {
+  const targetPageId = "123";
+  const targetPage: NotionPage = makeSamplePageObject({
+    slug: undefined,
+    name: "Hello World",
+    id: targetPageId,
+  });
+
+  const results = await getMarkdown(
+    {
+      type: "paragraph",
+      paragraph: {
+        rich_text: [
+          {
+            type: "mention",
+            mention: {
+              type: "page",
+              page: {
+                id: `${targetPageId}`,
+              },
+            },
+            annotations: {
+              bold: false,
+              italic: false,
+              strikethrough: false,
+              underline: false,
+              code: false,
+              color: "default",
+            },
+            plain_text: "foo",
+            href: `https://www.notion.so/${targetPageId}`,
+          },
+        ],
+        color: "default",
+      },
+    },
+    targetPage
+  );
+  expect(results.trim()).toBe(`[foo](/${targetPageId})`);
+});
+
 test("link to an existing page on this site that has no slug", async () => {
   const targetPageId = "123";
   const targetPage: NotionPage = makeSamplePageObject({
@@ -564,9 +606,87 @@ test("internal link inside codeblock ignored", async () => {
   );
 });
 
+test("multiple internal links in a paragraph", async () => {
+  const targetPageAId = "123";
+  const targetPageA: NotionPage = makeSamplePageObject({
+    slug: undefined,
+    name: "Hello World A",
+    id: targetPageAId,
+  });
+  const targetPageBId = "456";
+  const targetPageB: NotionPage = makeSamplePageObject({
+    slug: undefined,
+    name: "Hello World B",
+    id: targetPageBId,
+  });
+
+  const results = await getMarkdown(
+    {
+      type: "paragraph",
+      paragraph: {
+        rich_text: [
+          {
+            type: "text",
+            text: {
+              content: "A",
+              link: { url: `/${targetPageAId}` },
+            },
+            annotations: {
+              bold: false,
+              italic: false,
+              strikethrough: false,
+              underline: false,
+              code: false,
+              color: "default",
+            },
+            plain_text: "A",
+            href: `/${targetPageAId}`,
+          },
+          {
+            type: "text",
+            text: { content: " ", link: null },
+            annotations: {
+              bold: false,
+              italic: false,
+              strikethrough: false,
+              underline: false,
+              code: false,
+              color: "default",
+            },
+            plain_text: " ",
+            href: null,
+          },
+          {
+            type: "text",
+            text: {
+              content: "B",
+              link: { url: `/${targetPageBId}` },
+            },
+            annotations: {
+              bold: false,
+              italic: false,
+              strikethrough: false,
+              underline: false,
+              code: false,
+              color: "default",
+            },
+            plain_text: "B",
+            href: `/${targetPageBId}`,
+          },
+        ],
+        color: "default",
+      },
+    },
+    targetPageA,
+    targetPageB
+  );
+  expect(results.trim()).toBe(`[A](/${targetPageAId}) [B](/${targetPageBId})`);
+});
+
 async function getMarkdown(
   block: Record<string, unknown>,
-  targetPage?: NotionPage
+  targetPage?: NotionPage,
+  targetPage2?: NotionPage
 ) {
   const config = {
     plugins: [
@@ -575,5 +695,5 @@ async function getMarkdown(
       standardExternalLinkConversion,
     ],
   };
-  return await oneBlockToMarkdown(config, block, targetPage);
+  return await oneBlockToMarkdown(config, block, targetPage, targetPage2);
 }

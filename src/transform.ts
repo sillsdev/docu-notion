@@ -189,7 +189,7 @@ function doLinkFixes(
   markdown: string,
   config: IDocuNotionConfig
 ): string {
-  const linkRegExp = /\[.*\]\([^\)]*\)/g;
+  const linkRegExp = /\[.*?\]\([^\)]*?\)/g;
 
   logDebug("markdown before link fixes", markdown);
   let match: RegExpExecArray | null;

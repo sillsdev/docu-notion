@@ -216,7 +216,7 @@ async function getPagesRecursively(
     pageInfo.childPageIdsAndOrder.length
   ) {
     error(
-      `Skipping "${pageInTheOutline.nameOrTitle}"  and its children. docu-notion does not support pages that are both levels and have content at the same time.`
+      `Skipping "${pageInTheOutline.nameOrTitle}"  and its children. docu-notion does not support pages that are both levels and have text content (paragraphs) at the same time. Normally outline pages should just be composed of 1) links to other pages and 2) child pages (other levels of the outline). Note that @-mention style links appear as text paragraphs to docu-notion so must not be used to form the outline.`
     );
     ++counts.skipped_because_level_cannot_have_content;
     return;

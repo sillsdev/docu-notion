@@ -40,7 +40,9 @@ function convertInternalLink(
   context: IDocuNotionContext,
   markdownLink: string
 ): string {
-  const linkRegExp = /\[([^\]]+)?\]\(\/?([^),^/]+)\)/g;
+  // match both [foo](/123) and [bar](https://www.notion.so/123) <-- the "mention" link style
+  const linkRegExp =
+    /\[([^\]]+)?\]\((?:https?:\/\/www\.notion\.so\/|\/)?([^),^/]+)\)/g;
   const match = linkRegExp.exec(markdownLink);
   if (match === null) {
     warning(
@@ -125,7 +127,10 @@ export const standardInternalLinkConversion: IPlugin = {
     // (has some other text that's been turned into a link) or "raw".
     // Raw links come in without a leading slash, e.g. [link_to_page](4a6de8c0-b90b-444b-8a7b-d534d6ec71a4)
     // Inline links come in with a leading slash, e.g. [pointer to the introduction](/4a6de8c0b90b444b8a7bd534d6ec71a4)
-    match: /\[([^\]]+)?\]\((?!mailto:)(\/?[^),^/]+)\)/,
+    // "Mention" links come in as full URLs, e.g. [link_to_page](https://www.notion.so/62f1187010214b0883711a1abb277d31)
+    // YOu can create them either with @+the name of a page, or by pasting a URL and then selecting the "Mention" option.
+    match:
+      /\[([^\]]+)?\]\((?!mailto:)(https:\/\/www\.notion\.so\/[^),^/]+|\/?[^),^/]+)\)/,
     convert: convertInternalLink,
   },
 };
