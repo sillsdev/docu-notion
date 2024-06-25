@@ -35,6 +35,11 @@ export type IPlugin = {
   // simple regex replacements on the markdown output
   regexMarkdownModifications?: IRegexMarkdownModification[];
 
+  // operations on pages to define the markdown's frontMatter
+  frontMatterGenerator?: {
+    getFrontMatter: (context: IDocuNotionContext, page: NotionPage) => string;
+  };
+
   // Allow a plugin to perform an async operation at the start of docu-notion.
   // Notice that the plugin itself is given, so you can add things to it.
   init?(plugin: IPlugin): Promise<void>;
