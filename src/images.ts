@@ -201,7 +201,7 @@ function writeImageIfNew(path: string, buffer: Buffer) {
     verbose("Adding image " + path);
     fs.mkdirsSync(Path.dirname(path));
   }
-  fs.createWriteStream(path).write(buffer); // async but we're not waiting
+  fs.writeFileSync(path, buffer);
 }
 
 export function parseImageBlock(image: any): ImageSet {
