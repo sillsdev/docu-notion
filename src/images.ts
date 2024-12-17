@@ -1,7 +1,6 @@
 import * as fs from "fs-extra";
 import FileType, { FileTypeResult } from "file-type";
 import axios from "axios";
-import * as Path from "path";
 import { makeImagePersistencePlan } from "./MakeImagePersistencePlan";
 import { warning, logDebug, verbose, info } from "./log";
 import { ListBlockChildrenResponseResult } from "notion-to-md/build/types";
@@ -10,6 +9,7 @@ import {
   IDocuNotionContextPageInfo,
   IPlugin,
 } from "./plugins/pluginTypes";
+import { writeAsset } from "./assets";
 
 // We handle several things here:
 // 1) copy images locally instead of leaving them in Notion
@@ -158,11 +158,13 @@ async function readPrimaryImage(imageSet: ImageSet) {
 }
 
 async function saveImage(imageSet: ImageSet): Promise<void> {
-  writeImageIfNew(imageSet.primaryFileOutputPath!, imageSet.primaryBuffer!);
+  const path = imageSet.primaryFileOutputPath!;
+  imageWasSeen(path);
+  writeAsset(path, imageSet.primaryBuffer!);
 
   for (const localizedImage of imageSet.localizedUrls) {
     let buffer = imageSet.primaryBuffer!;
-    // if we have a urls for the localized screenshot, download it
+    // if we have a url for the localized screenshot, download it
     if (localizedImage?.url.length > 0) {
       verbose(`Retrieving ${localizedImage.iso632Code} version...`);
       const response = await fetch(localizedImage.url);
@@ -180,28 +182,13 @@ async function saveImage(imageSet: ImageSet): Promise<void> {
       imageSet.pageInfo!.relativeFilePathToFolderContainingPage
     }`;
 
-    writeImageIfNew(
-      (directory + "/" + imageSet.outputFileName!).replaceAll("//", "/"),
-      buffer
+    const newPath = (directory + "/" + imageSet.outputFileName!).replaceAll(
+      "//",
+      "/"
     );
+    imageWasSeen(newPath);
+    writeAsset(newPath, buffer);
   }
-}
-
-function writeImageIfNew(path: string, buffer: Buffer) {
-  imageWasSeen(path);
-
-  // Note: it's tempting to not spend time writing this out if we already have
-  // it from a previous run. But we don't really know it's the same. A) it
-  // could just have the same name, B) it could have been previously
-  // unlocalized and thus filled with a copy of the primary language image
-  // while and now is localized.
-  if (fs.pathExistsSync(path)) {
-    verbose("Replacing image " + path);
-  } else {
-    verbose("Adding image " + path);
-    fs.mkdirsSync(Path.dirname(path));
-  }
-  fs.createWriteStream(path).write(buffer); // async but we're not waiting
 }
 
 export function parseImageBlock(image: any): ImageSet {
