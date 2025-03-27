@@ -1,7 +1,7 @@
 name: Release
 on:
   push:
-    branches: [main, release]
+    branches: [main, release, metapage-custom-plugins]
 jobs:
   release:
     name: Release

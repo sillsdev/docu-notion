@@ -25,6 +25,8 @@
   "//notion-client@4": "also ESM related problem",
   "//note: ts-node": "really is a runtime dependency",
   "dependencies": {
+    "@metapages/hash-query": "^0.8.6",
+    "@metapages/metapage": "^1.7.6",
     "@notionhq/client": "2.2.3",
     "axios": "^1.6.8",
     "chalk": "^4.1.2",
@@ -35,6 +37,7 @@
     "fs-extra": "^10.1.0",
     "limiter": "^2.1.0",
     "markdown-table": "^2.0.0",
+    "node-fetch": "^3.3.2",
     "notion-client": "^4",
     "notion-to-md": "3.1.1",
     "path": "^0.12.7",
@@ -66,20 +69,21 @@
   "description": "Download Notion pages as markdown and image files, preserving hierarchy and enabling workflow properties. Works with Docusaurus.",
   "license": "MIT",
   "author": {
-    "name": "SIL Language Software Development",
+    "name": "Metapages: scientific workflows and publishing",
     "email": "260221+dionjwa@users.noreply.github.com",
-    "url": "https://github.com/dionjwa"
+    "url": "https://github.com/metapages"
   },
   "keywords": [
     "docusaurus",
     "notion",
     "markdown",
-    "documentation"
+    "documentation",
+    "metapages"
   ],
   "bugs": {
-    "url": "https://github.com/dionjwa/docu-notion/issues"
+    "url": "https://github.com/metapages/docu-notion/issues"
   },
-  "homepage": "https://github.com/dionjwa/docu-notion#readme",
+  "homepage": "https://github.com/metapages/docu-notion#readme",
   "main": "./dist/index.js",
   "bin": "dist/index.js",
   "files": [
