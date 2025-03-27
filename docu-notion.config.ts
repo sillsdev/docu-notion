@@ -41,6 +41,12 @@ const config: IDocuNotionConfig = {
     // here's we're adding a plugin that doesn't take any customization
     dummyMarkdownModifier,
   ],
+  // Specify paths to custom plugin directories
+  // These plugins will be loaded in addition to the ones specified above
+  customPluginPaths: [
+    "./custom-plugins", // Load plugins from the custom-plugins directory
+    // Add more custom plugin directories as needed
+  ],
 };
 
 export default config;
