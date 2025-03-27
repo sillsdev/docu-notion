@@ -68,7 +68,7 @@
   "author": {
     "name": "SIL Language Software Development",
     "email": "260221+dionjwa@users.noreply.github.com",
-    "url": "https://github.com/sillsdev"
+    "url": "https://github.com/dionjwa"
   },
   "keywords": [
     "docusaurus",
@@ -77,9 +77,9 @@
     "documentation"
   ],
   "bugs": {
-    "url": "https://github.com/sillsdev/docu-notion/issues"
+    "url": "https://github.com/dionjwa/docu-notion/issues"
   },
-  "homepage": "https://github.com/sillsdev/docu-notion#readme",
+  "homepage": "https://github.com/dionjwa/docu-notion#readme",
   "main": "./dist/index.js",
   "bin": "dist/index.js",
   "files": [
