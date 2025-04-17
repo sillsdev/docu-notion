@@ -1,6 +1,5 @@
 import * as fs from "fs-extra";
 import FileType, { FileTypeResult } from "file-type";
-import axios from "axios";
 import { makeImagePersistencePlan } from "./MakeImagePersistencePlan";
 import { warning, logDebug, verbose, info } from "./log";
 import { ListBlockChildrenResponseResult } from "notion-to-md/build/types";
@@ -150,10 +149,13 @@ async function processImageBlock(
 async function readPrimaryImage(imageSet: ImageSet) {
   // In Mar 2024, we started having a problem getting a particular gif from imgur using
   // node-fetch. Switching to axios resolved it. I don't know why.
-  const response = await axios.get(imageSet.primaryUrl, {
-    responseType: "arraybuffer",
-  });
-  imageSet.primaryBuffer = Buffer.from(response.data, "utf-8");
+  // Then, in Apr 2025, we started getting 429 responses from imgur through axios,
+  // so we switched to fetch. Just a guess, but probably imgur keeps locking down
+  // what it suspects as code running to scrape images. Apparently, imgur is getting
+  // to be more and more of a liability, so we should probably stop using it.
+  const response = await fetch(imageSet.primaryUrl);
+  const arrayBuffer = await response.arrayBuffer();
+  imageSet.primaryBuffer = Buffer.from(arrayBuffer);
   imageSet.fileType = await FileType.fromBuffer(imageSet.primaryBuffer);
 }
 
