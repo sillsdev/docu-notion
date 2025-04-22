@@ -1,7 +1,7 @@
 import * as fs from "fs-extra";
 import FileType, { FileTypeResult } from "file-type";
 import { makeImagePersistencePlan } from "./MakeImagePersistencePlan";
-import { warning, logDebug, verbose, info } from "./log";
+import { logDebug, verbose } from "./log";
 import { ListBlockChildrenResponseResult } from "notion-to-md/build/types";
 import {
   IDocuNotionContext,
