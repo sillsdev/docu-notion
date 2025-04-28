@@ -287,7 +287,7 @@ function writePage(page: NotionPage, finalMarkdown: string) {
 }
 
 const notionLimiter = new RateLimiter({
-  tokensPerInterval: 3,
+  tokensPerInterval: 2,
   interval: "second",
 });
 
