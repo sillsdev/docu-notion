@@ -42,6 +42,7 @@ export type DocuNotionOptions = {
   statusTag: string;
   requireSlugs?: boolean;
   imageFileNameFormat?: ImageFileNameFormat;
+  allowMixedContentPages?: boolean;
 };
 
 let layoutStrategy: LayoutStrategy;
@@ -105,7 +106,7 @@ export async function notionPull(options: DocuNotionOptions): Promise<void> {
   group(
     "Stage 1: walk children of the page named 'Outline', looking for pages..."
   );
-  await getPagesRecursively(options, "", options.rootPage, 0, true);
+  await getPagesRecursively(options, config, "", options.rootPage, 0, true);
   logDebug("getPagesRecursively", JSON.stringify(pages, null, 2));
   info(`Found ${pages.length} pages`);
   endGroup();
@@ -191,11 +192,15 @@ async function outputPages(
 // able to figure out what the url will be for any links between content pages.
 async function getPagesRecursively(
   options: DocuNotionOptions,
+  config: IDocuNotionConfig,
   incomingContext: string,
   pageIdOfThisParent: string,
   orderOfThisParent: number,
   rootLevel: boolean
 ) {
+  // Merge config and options for allowMixedContentPages
+  const allowMixedContentPages = config.allowMixedContentPages || options.allowMixedContentPages;
+  
   const pageInTheOutline = await fromPageId(
     incomingContext,
     pageIdOfThisParent,
@@ -213,15 +218,21 @@ async function getPagesRecursively(
   if (
     !rootLevel &&
     pageInfo.hasParagraphs &&
-    pageInfo.childPageIdsAndOrder.length
+    (pageInfo.childPageIdsAndOrder.length || pageInfo.linksPageIdsAndOrder.length) &&
+    !allowMixedContentPages
   ) {
     error(
-      `Skipping "${pageInTheOutline.nameOrTitle}"  and its children. docu-notion does not support pages that are both levels and have text content (paragraphs) at the same time. Normally outline pages should just be composed of 1) links to other pages and 2) child pages (other levels of the outline). Note that @-mention style links appear as text paragraphs to docu-notion so must not be used to form the outline.`
+      `Skipping "${pageInTheOutline.nameOrTitle}"  and its children. docu-notion does not support pages that are both levels and have text content (paragraphs) at the same time. Normally outline pages should just be composed of 1) links to other pages and 2) child pages (other levels of the outline). Note that @-mention style links appear as text paragraphs to docu-notion so must not be used to form the outline. To enable this feature, set allowMixedContentPages: true in your docu-notion.config.ts file.`
     );
     ++counts.skipped_because_level_cannot_have_content;
     return;
   }
   if (!rootLevel && pageInfo.hasParagraphs) {
+    // If this page has child pages OR linked pages and allowMixedContentPages is enabled, mark it as mixed content BEFORE adding to pages
+    if ((pageInfo.childPageIdsAndOrder.length || pageInfo.linksPageIdsAndOrder?.length) && allowMixedContentPages) {
+      pageInTheOutline.hasMixedContent = true;
+    }
+    
     pages.push(pageInTheOutline);
 
     // The best practice is to keep content pages in the "database" (e.g. kanban board), but we do allow people to make pages in the outline directly.
@@ -233,11 +244,58 @@ async function getPagesRecursively(
         `Note: The page "${pageInTheOutline.nameOrTitle}" is in the outline, has content, and also points at other pages. It will be treated as a simple content page. This is no problem, unless you intended to have all your content pages in the database (kanban workflow) section.`
       );
     }
+    
+    // If this page has child pages and allowMixedContentPages is enabled, process the children
+    if (pageInfo.childPageIdsAndOrder.length && allowMixedContentPages) {
+      let layoutContext = incomingContext;
+      if (!rootLevel && pageInTheOutline.nameOrTitle !== "Outline") {
+        layoutContext = layoutStrategy.newLevel(
+          options.markdownOutputPath,
+          pageInTheOutline.order,
+          incomingContext,
+          pageInTheOutline.nameOrTitle
+        );
+      }
+      for (const childPageInfo of pageInfo.childPageIdsAndOrder) {
+        await getPagesRecursively(
+          options,
+          config,
+          layoutContext,
+          childPageInfo.id,
+          childPageInfo.order,
+          false
+        );
+      }
+    }
+    
+    // If this page has linked pages and allowMixedContentPages is enabled, process the linked pages in the same folder
+    if (pageInfo.linksPageIdsAndOrder?.length && allowMixedContentPages && pageInTheOutline.hasMixedContent) {
+      let layoutContext = incomingContext;
+      if (!rootLevel && pageInTheOutline.nameOrTitle !== "Outline") {
+        layoutContext = layoutStrategy.newLevel(
+          options.markdownOutputPath,
+          pageInTheOutline.order,
+          incomingContext,
+          pageInTheOutline.nameOrTitle
+        );
+      }
+      for (const linkPageInfo of pageInfo.linksPageIdsAndOrder) {
+        pages.push(
+          await fromPageId(
+            layoutContext,
+            linkPageInfo.id,
+            linkPageInfo.order,
+            false
+          )
+        );
+      }
+    }
   }
   // a normal outline page that exists just to create the level, pointing at database pages that belong in this level
+  // Skip if this page was already processed as a mixed content page
   else if (
-    pageInfo.childPageIdsAndOrder.length ||
-    pageInfo.linksPageIdsAndOrder.length
+    (pageInfo.childPageIdsAndOrder.length || pageInfo.linksPageIdsAndOrder.length) &&
+    !pageInTheOutline.hasMixedContent
   ) {
     let layoutContext = incomingContext;
     // don't make a level for "Outline" page at the root
@@ -252,6 +310,7 @@ async function getPagesRecursively(
     for (const childPageInfo of pageInfo.childPageIdsAndOrder) {
       await getPagesRecursively(
         options,
+        config,
         layoutContext,
         childPageInfo.id,
         childPageInfo.order,
@@ -259,6 +318,7 @@ async function getPagesRecursively(
       );
     }
 
+    // Process linked pages for regular outline pages
     for (const linkPageInfo of pageInfo.linksPageIdsAndOrder) {
       pages.push(
         await fromPageId(
@@ -280,7 +340,16 @@ async function getPagesRecursively(
 }
 
 function writePage(page: NotionPage, finalMarkdown: string) {
-  const mdPath = layoutStrategy.getPathForPage(page, ".md");
+  let mdPath: string;
+  
+  if (page.hasMixedContent) {
+    // For pages with mixed content, create an index.md file
+    mdPath = layoutStrategy.getIndexPathForPage(page, ".md");
+  } else {
+    // Regular behavior for normal pages
+    mdPath = layoutStrategy.getPathForPage(page, ".md");
+  }
+  
   verbose(`writing ${mdPath}`);
   fs.writeFileSync(mdPath, finalMarkdown, {});
   ++counts.output_normally;

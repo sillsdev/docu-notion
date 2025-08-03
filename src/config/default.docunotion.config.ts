@@ -34,6 +34,7 @@ const defaultConfig: IDocuNotionConfig = {
     imgurGifEmbed,
     gifEmbed,
   ],
+  allowMixedContentPages: false,
 };
 
 export default defaultConfig;

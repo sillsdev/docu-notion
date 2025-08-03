@@ -62,6 +62,11 @@ export async function run(): Promise<void> {
       "If set, docu-notion will fail if any pages it would otherwise publish are missing a slug in Notion.",
       false
     )
+    .option(
+      "--allow-mixed-content-pages",
+      "If set, docu-notion will allow pages that have both content and child pages, creating index.md files for Docusaurus compatibility.",
+      false
+    )
     .addOption(
       new Option(
         "--image-file-name-format <format>",

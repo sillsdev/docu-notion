@@ -19,6 +19,7 @@ export class NotionPage {
   public order: number;
   public layoutContext: string; // where we found it in the hierarchy of the outline
   public foundDirectlyInOutline: boolean; // the page was found as a descendent of /outline instead of being linked to
+  public hasMixedContent: boolean = false; // indicates if this page has both content and child pages
 
   public constructor(args: {
     layoutContext: string;

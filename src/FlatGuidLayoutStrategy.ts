@@ -27,4 +27,9 @@ export class FlatGuidLayoutStrategy extends LayoutStrategy {
     // In this strategy, we don't care about the location or the title
     return this.rootDirectory + "/" + page.pageId + extensionWithDot;
   }
+
+  public getIndexPathForPage(page: NotionPage, extensionWithDot: string): string {
+    // For flat layout, mixed content pages still use the page ID but with "index" prefix
+    return this.rootDirectory + "/index-" + page.pageId + extensionWithDot;
+  }
 }

@@ -29,7 +29,15 @@ Go to the page that will be the root of your site. This page should have, as dir
 
 ## 5. Add your pages under your Outline page
 
-Currently, docu-notion expects that each page has only one of the following: sub-pages, links to other pages, or normal content. Do not mix them. You can add content pages directly here, but then you won't be able to make use of the workflow features. If those matter to you, instead make new pages under the "Database" and then link to them in your outline pages.
+By default, docu-notion expects that each page has only one of the following: sub-pages, links to other pages, or normal content. However, you can now enable **mixed content pages** to have pages with both content and child pages (perfect for Docusaurus index pages).
+
+To enable this feature, either:
+- Add `--allow-mixed-content-pages` to your command line
+- Or set `allowMixedContentPages: true` in your `docu-notion.config.ts` file
+
+When enabled, pages with both content and child pages will create `index.md` files compatible with Docusaurus structure.
+
+You can add content pages directly here, but then you won't be able to make use of the workflow features. If those matter to you, instead make new pages under the "Database" and then link to them in your outline pages.
 
 ## 6. Pull your pages
 

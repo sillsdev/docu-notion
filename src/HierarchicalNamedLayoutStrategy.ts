@@ -31,8 +31,8 @@ export class HierarchicalNamedLayoutStrategy extends LayoutStrategy {
       // crowdin complains about some characters in file names. I haven't found
       // the actual list, so these are from memory.
       .replaceAll('"', "")
-      .replaceAll("“", "")
-      .replaceAll("”", "")
+      .replaceAll(/[""]/g, "")
+      .replaceAll(/[""]/g, "")
       .replaceAll("'", "")
       .replaceAll("?", "-");
 
@@ -40,6 +40,30 @@ export class HierarchicalNamedLayoutStrategy extends LayoutStrategy {
     const path =
       this.rootDirectory + context + sanitizedName + extensionWithDot;
 
+    return path;
+  }
+
+  public getIndexPathForPage(page: NotionPage, extensionWithDot: string): string {
+    // For mixed content pages, create a directory with the page name and put index.md inside
+    const sanitizedName = sanitize(page.nameForFile())
+      .replaceAll("//", "/")
+      .replaceAll("%20", "-")
+      .replaceAll(" ", "-")
+      // crowdin complains about some characters in file names. I haven't found
+      // the actual list, so these are from memory.
+      .replaceAll('"', "")
+      .replaceAll(/[""]/g, "")
+      .replaceAll(/[""]/g, "")
+      .replaceAll("'", "")
+      .replaceAll("?", "-");
+
+    const context = ("/" + page.layoutContext + "/").replaceAll("//", "/");
+    const pageDirectory = this.rootDirectory + context + sanitizedName;
+    
+    // Ensure the directory exists
+    fs.mkdirSync(pageDirectory, { recursive: true });
+    
+    const path = pageDirectory + "/index" + extensionWithDot;
     return path;
   }
 

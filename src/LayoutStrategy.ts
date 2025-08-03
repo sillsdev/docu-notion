@@ -32,6 +32,11 @@ export abstract class LayoutStrategy {
     page: NotionPage,
     extensionWithDot: string
   ): string;
+  
+  public abstract getIndexPathForPage(
+    page: NotionPage,
+    extensionWithDot: string
+  ): string;
 
   public getLinkPathForPage(page: NotionPage): string {
     // the url we return starts with a "/", meaning it is relative to the root of the markdown root (e.g. /docs root in Docusaurus)

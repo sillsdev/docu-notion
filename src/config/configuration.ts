@@ -7,6 +7,7 @@ import { exit } from "process";
 
 export type IDocuNotionConfig = {
   plugins: IPlugin[];
+  allowMixedContentPages?: boolean;
 };
 
 // read the plugins from the config file
