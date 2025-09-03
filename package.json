@@ -26,7 +26,6 @@
   "//note: ts-node": "really is a runtime dependency",
   "dependencies": {
     "@notionhq/client": "2.2.3",
-    "axios": "^1.6.8",
     "chalk": "^4.1.2",
     "commander": "^9.2.0",
     "cosmiconfig": "^8.0.0",

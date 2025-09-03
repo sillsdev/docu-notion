@@ -1,15 +1,14 @@
 import * as fs from "fs-extra";
 import FileType, { FileTypeResult } from "file-type";
-import axios from "axios";
-import * as Path from "path";
 import { makeImagePersistencePlan } from "./MakeImagePersistencePlan";
-import { warning, logDebug, verbose, info } from "./log";
+import { logDebug, verbose } from "./log";
 import { ListBlockChildrenResponseResult } from "notion-to-md/build/types";
 import {
   IDocuNotionContext,
   IDocuNotionContextPageInfo,
   IPlugin,
 } from "./plugins/pluginTypes";
+import { writeAsset } from "./assets";
 
 // We handle several things here:
 // 1) copy images locally instead of leaving them in Notion
@@ -150,19 +149,26 @@ async function processImageBlock(
 async function readPrimaryImage(imageSet: ImageSet) {
   // In Mar 2024, we started having a problem getting a particular gif from imgur using
   // node-fetch. Switching to axios resolved it. I don't know why.
-  const response = await axios.get(imageSet.primaryUrl, {
-    responseType: "arraybuffer",
-  });
-  imageSet.primaryBuffer = Buffer.from(response.data, "utf-8");
+  // Then, in Apr 2025, we started getting 429 responses from imgur through axios,
+  // so we switched to node's built-in fetch (different than the node-fetch package).
+  // Just a guess, but probably imgur keeps locking down what it suspects as code running
+  // to scrape images.
+  // Apparently, imgur is getting to be more and more of a liability,
+  // so we should probably stop using it.
+  const response = await fetch(imageSet.primaryUrl);
+  const arrayBuffer = await response.arrayBuffer();
+  imageSet.primaryBuffer = Buffer.from(arrayBuffer);
   imageSet.fileType = await FileType.fromBuffer(imageSet.primaryBuffer);
 }
 
 async function saveImage(imageSet: ImageSet): Promise<void> {
-  writeImageIfNew(imageSet.primaryFileOutputPath!, imageSet.primaryBuffer!);
+  const path = imageSet.primaryFileOutputPath!;
+  imageWasSeen(path);
+  writeAsset(path, imageSet.primaryBuffer!);
 
   for (const localizedImage of imageSet.localizedUrls) {
     let buffer = imageSet.primaryBuffer!;
-    // if we have a urls for the localized screenshot, download it
+    // if we have a url for the localized screenshot, download it
     if (localizedImage?.url.length > 0) {
       verbose(`Retrieving ${localizedImage.iso632Code} version...`);
       const response = await fetch(localizedImage.url);
@@ -180,28 +186,13 @@ async function saveImage(imageSet: ImageSet): Promise<void> {
       imageSet.pageInfo!.relativeFilePathToFolderContainingPage
     }`;
 
-    writeImageIfNew(
-      (directory + "/" + imageSet.outputFileName!).replaceAll("//", "/"),
-      buffer
+    const newPath = (directory + "/" + imageSet.outputFileName!).replaceAll(
+      "//",
+      "/"
     );
+    imageWasSeen(newPath);
+    writeAsset(newPath, buffer);
   }
-}
-
-function writeImageIfNew(path: string, buffer: Buffer) {
-  imageWasSeen(path);
-
-  // Note: it's tempting to not spend time writing this out if we already have
-  // it from a previous run. But we don't really know it's the same. A) it
-  // could just have the same name, B) it could have been previously
-  // unlocalized and thus filled with a copy of the primary language image
-  // while and now is localized.
-  if (fs.pathExistsSync(path)) {
-    verbose("Replacing image " + path);
-  } else {
-    verbose("Adding image " + path);
-    fs.mkdirsSync(Path.dirname(path));
-  }
-  fs.createWriteStream(path).write(buffer); // async but we're not waiting
 }
 
 export function parseImageBlock(image: any): ImageSet {

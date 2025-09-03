@@ -10,6 +10,8 @@ import { NotionBlock } from "../types";
 import { convertInternalUrl } from "./internalLinks";
 import { numberChildrenIfNumberedList } from "../pull";
 
+export const kTemporaryTestDirectory = "tempTestFileDir";
+
 export async function blocksToMarkdown(
   config: IDocuNotionConfig,
   blocks: NotionBlock[],
@@ -49,7 +51,7 @@ export async function blocksToMarkdown(
 
     //TODO might be needed for some tests, e.g. the image transformer...
     pageInfo: {
-      directoryContainingMarkdown: "not yet",
+      directoryContainingMarkdown: kTemporaryTestDirectory,
       relativeFilePathToFolderContainingPage: "not yet",
       slug: "not yet",
     },
