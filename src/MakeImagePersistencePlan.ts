@@ -111,6 +111,9 @@ export function hashOfString(s: string): number {
 }
 
 function hashOfBufferContent(buffer: Buffer): string {
-  const hash = crypto.createHash("sha256").update(buffer).digest("hex");
+  const hash = crypto
+    .createHash("sha256")
+    .update(Uint8Array.from(buffer))
+    .digest("hex");
   return hash.slice(0, 20);
 }

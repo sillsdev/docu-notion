@@ -57,7 +57,7 @@
     "prettier": "^2.2.1",
     "rimraf": "^4.1.2",
     "semantic-release": "^19.0.2",
-    "typescript": "^4.6.4",
+    "typescript": "^5.9.3",
     "vite": "^4.2.1",
     "vitest": "^0.30.1"
   },
@@ -88,6 +88,6 @@
     "access": "public"
   },
   "volta": {
-    "node": "18.16.0"
+    "node": "22.21.0"
   }
 }
