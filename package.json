@@ -1,7 +1,7 @@
 {
   "scripts": {
-    "test": "vitest",
-    "build": "npm run test -- --run && tsc && cp ./src/css/*.css dist/",
+    "test": "vitest --run",
+    "build": "npm run test && tsc && cp ./src/css/*.css dist/",
     "build-only": "tsc && cp ./src/css/*.css dist/",
     "clean": "rimraf ./dist/",
     "semantic-release": "semantic-release",
@@ -18,6 +18,7 @@
     "// test with a semi-stable/public site:": "",
     "pull-sample": "npm run ts -- -n $DOCU_NOTION_INTEGRATION_TOKEN -r $DOCU_NOTION_SAMPLE_ROOT_PAGE -m ./sample --locales en,es,fr,de --log-level verbose",
     "pull-sample-with-paths": "npm run ts -- -n $DOCU_NOTION_INTEGRATION_TOKEN -r $DOCU_NOTION_SAMPLE_ROOT_PAGE -m ./sample --img-output-path ./sample_img",
+    "pull-sample-incremental": "npm run ts -- -n $DOCU_NOTION_INTEGRATION_TOKEN -r $DOCU_NOTION_SAMPLE_ROOT_PAGE -m ./sample --locales en,es,fr,de --log-level verbose --incremental",
     "lint": "eslint . --ext .ts"
   },
   "//file-type": "have to use this version before they switched to ESM, which gives a compile error related to require()",

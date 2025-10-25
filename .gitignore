@@ -8,3 +8,5 @@ docs/
 *.orig
 
 css/docu-notion-styles.css
+
+.docu-notion-state.json

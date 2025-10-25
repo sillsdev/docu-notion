@@ -31,7 +31,7 @@ export async function loadConfigAsync(): Promise<IDocuNotionConfig> {
       (p: IPlugin) => p.init !== undefined
     );
     const initializers = pluginsWithInitializers?.map(
-      (p: IPlugin) => () => p!.init!(p)
+      (p: IPlugin) => () => p.init!(p)
     );
 
     await Promise.all(initializers || []);

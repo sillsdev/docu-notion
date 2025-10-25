@@ -69,6 +69,11 @@ export async function run(): Promise<void> {
       )
         .choices(["default", "content-hash", "legacy"])
         .default("default")
+    )
+    .option(
+      "--incremental",
+      "[Experimental] Enable incremental pull mode. Only downloads pages modified since last pull.",
+      false
     );
 
   program.showHelpAfterError();

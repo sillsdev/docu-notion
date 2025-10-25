@@ -112,7 +112,7 @@ beforeEach(() => {
 
 test("smoketest ", async () => {
   const config = { plugins: [standardEscapeHtmlBlockModifier] };
-  let results = await blocksToMarkdown(config, blocks);
+  const results = await blocksToMarkdown(config, blocks);
   // shouldn't escape inside a code block
   expect(results).toContain("This is code: if(1 < 3)");
   // should escape outside a code block

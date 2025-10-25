@@ -135,7 +135,8 @@ async function doTransformsOnMarkdown(
           replacement = mod.replacementPattern.replace("$1", match[2]);
         }
         if (replacement !== undefined) {
-          verbose(`[${(mod as any).name}] ${original} --> ${replacement}`);
+          const modName = (mod as any).name as string;
+          verbose(`[${modName}] ${original} --> ${replacement}`);
 
           const precedingPart = body.substring(0, match.index); // ?
           const partStartingFromThisMatch = body.substring(match.index); // ?
@@ -189,7 +190,7 @@ function doLinkFixes(
   markdown: string,
   config: IDocuNotionConfig
 ): string {
-  const linkRegExp = /\[.*?\]\([^\)]*?\)/g;
+  const linkRegExp = /\[.*?\]\([^)]*?\)/g;
 
   logDebug("markdown before link fixes", markdown);
   let match: RegExpExecArray | null;

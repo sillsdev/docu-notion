@@ -1,1 +1,6 @@
 src/types/global.d.ts
+dist/
+node_modules/
+*.config.ts
+vite.config.ts
+docu-notion.config.ts

@@ -30,6 +30,17 @@ import { IDocuNotionConfig, loadConfigAsync } from "./config/configuration";
 import { NotionBlock } from "./types";
 import { convertInternalUrl } from "./plugins/internalLinks";
 import { ListBlockChildrenResponseResults } from "notion-to-md/build/types";
+import {
+  loadIncrementalState,
+  saveIncrementalState,
+  canDoIncrementalPull,
+  createIncrementalState,
+  updateIncrementalState,
+  removeDeletedPagesFromState,
+  IncrementalState,
+  needsProcessing,
+  OutlineStructure,
+} from "./IncrementalState";
 
 type ImageFileNameFormat = "default" | "content-hash" | "legacy";
 export type DocuNotionOptions = {
@@ -42,6 +53,7 @@ export type DocuNotionOptions = {
   statusTag: string;
   requireSlugs?: boolean;
   imageFileNameFormat?: ImageFileNameFormat;
+  incremental?: boolean;
 };
 
 let layoutStrategy: LayoutStrategy;
@@ -102,28 +114,272 @@ export async function notionPull(options: DocuNotionOptions): Promise<void> {
     exit(1);
   }
 
-  group(
-    "Stage 1: walk children of the page named 'Outline', looking for pages..."
-  );
+  // Load state if exists
+  let state: IncrementalState | null = null;
+  let isIncrementalMode = false;
+  const stateFile = "./docu-notion-state.json";
+
+  if (options.incremental) {
+    state = await loadIncrementalState(stateFile);
+    isIncrementalMode = canDoIncrementalPull(state, {
+      rootPage: options.rootPage,
+      statusTag: options.statusTag,
+      markdownOutputPath: options.markdownOutputPath,
+    });
+
+    if (!isIncrementalMode && state) {
+      warning(
+        "Cannot perform incremental pull (configuration changed). Falling back to full pull."
+      );
+      state = null;
+    } else if (!state) {
+      info(
+        "No state file found. Performing full pull to initialize incremental state."
+      );
+    }
+  }
+
+  // Full pull: delete old state file
+  if (!isIncrementalMode && (await fs.pathExists(stateFile))) {
+    info(`Deleting old state file: ${stateFile}`);
+    await fs.remove(stateFile);
+  }
+
+  info(isIncrementalMode ? "🔄 Incremental pull..." : "📥 Full pull...");
+
+  // Stage 1: Discover all pages (same for both modes)
+  group("Stage 1: Discovering pages...");
   await getPagesRecursively(options, "", options.rootPage, 0, true);
   logDebug("getPagesRecursively", JSON.stringify(pages, null, 2));
-  info(`Found ${pages.length} pages`);
+
+  // Filter to changed pages if incremental
+  let pagesToProcess = pages;
+  let deletedPageIds: string[] = [];
+
+  if (isIncrementalMode && state) {
+    const changeSet = detectChanges(pages, state);
+    pagesToProcess = [...changeSet.newPages, ...changeSet.modifiedPages];
+    deletedPageIds = changeSet.deletedPageIds;
+
+    info(
+      `Changes: ${changeSet.newPages.length} new, ${changeSet.modifiedPages.length} modified, ${deletedPageIds.length} deleted`
+    );
+
+    if (pagesToProcess.length === 0 && deletedPageIds.length === 0) {
+      info("✨ No changes detected!");
+      endGroup();
+      return;
+    }
+  } else {
+    info(`Found ${pages.length} pages`);
+  }
   endGroup();
+
+  // Stage 2: Convert pages to markdown (same for both modes)
   group(
-    `Stage 2: convert ${pages.length} Notion pages to markdown and save locally...`
+    `Stage 2: Converting ${pagesToProcess.length} Notion pages to markdown...`
   );
-  await outputPages(options, config, pages);
+
+  // Track output paths for state update
+  const outputPaths = new Map<string, string>();
+  for (const page of pagesToProcess) {
+    layoutStrategy.pageWasSeen(page);
+    const mdPath = layoutStrategy.getPathForPage(page, ".md");
+    outputPaths.set(page.pageId, mdPath);
+  }
+
+  await outputPages(options, config, pagesToProcess, state);
   endGroup();
-  group("Stage 3: clean up old files & images...");
-  await layoutStrategy.cleanupOldFiles();
-  await cleanupOldImages();
+
+  // Stage 3: Cleanup (conditional logic)
+  group("Stage 3: Cleaning up...");
+  if (isIncrementalMode && state) {
+    // Incremental cleanup: only remove deleted/moved files
+    await cleanupDeletedFiles(state, deletedPageIds, pagesToProcess);
+  } else {
+    // Full cleanup: remove all orphaned files
+    await layoutStrategy.cleanupOldFiles();
+    await cleanupOldImages();
+  }
   endGroup();
+
+  // Always save state for next run
+  info("Saving state for future incremental pulls...");
+  const outlineStructure: { [pageId: string]: any } = {};
+
+  // Build outline structure from all discovered pages (excluding deleted ones)
+  const deletedPageIdSet = new Set(deletedPageIds);
+  const existingPages = pages.filter(p => !deletedPageIdSet.has(p.pageId));
+
+  for (const page of existingPages) {
+    const blocks = await getBlockChildren(page.pageId);
+    outlineStructure[page.pageId] = buildOutlineStructure(page.pageId, blocks);
+  }
+
+  const newState = createIncrementalState(
+    {
+      rootPage: options.rootPage,
+      statusTag: options.statusTag,
+      markdownOutputPath: options.markdownOutputPath,
+    },
+    pages,
+    outlineStructure,
+    state?.images || {} // Preserve existing image tracking
+  );
+
+  // Update state for processed pages
+  if (isIncrementalMode && state) {
+    updateIncrementalState(newState, pagesToProcess, outputPaths);
+    removeDeletedPagesFromState(newState, deletedPageIds);
+  }
+
+  await saveIncrementalState(stateFile, newState);
+  info(`✅ State saved to ${stateFile}`);
+}
+
+/**
+ * Detect what has changed since the last pull
+ */
+function detectChanges(
+  allDiscoveredPages: NotionPage[],
+  state: IncrementalState
+): {
+  newPages: NotionPage[];
+  modifiedPages: NotionPage[];
+  deletedPageIds: string[];
+} {
+  const lastPullTime = new Date(state.lastPullTimestamp);
+  const modifiedPages: NotionPage[] = [];
+  const newPages: NotionPage[] = [];
+  const discoveredPageIds = new Set<string>();
+
+  // Check each discovered page
+  for (const page of allDiscoveredPages) {
+    discoveredPageIds.add(page.pageId);
+
+    if (!state.pages[page.pageId]) {
+      newPages.push(page);
+      verbose(`New page detected: ${page.nameOrTitle}`);
+    } else if (needsProcessing(page, state, lastPullTime)) {
+      modifiedPages.push(page);
+      verbose(`Modified page detected: ${page.nameOrTitle}`);
+    }
+  }
+
+  // Detect deleted pages
+  const deletedPageIds: string[] = [];
+  for (const pageId in state.pages) {
+    if (!discoveredPageIds.has(pageId)) {
+      const pageState = state.pages[pageId];
+      deletedPageIds.push(pageId);
+      verbose(`Deleted page detected: ${pageState.outputPath}`);
+    }
+  }
+
+  return {
+    modifiedPages,
+    newPages,
+    deletedPageIds,
+  };
+}
+
+/**
+ * Clean up files for deleted or moved pages (incremental mode)
+ */
+async function cleanupDeletedFiles(
+  state: IncrementalState,
+  deletedPageIds: string[],
+  processedPages: NotionPage[]
+): Promise<void> {
+  // Remove files for deleted pages
+  for (const pageId of deletedPageIds) {
+    const pageState = state.pages[pageId];
+    if (pageState && pageState.outputPath) {
+      if (await fs.pathExists(pageState.outputPath)) {
+        verbose(`Deleting file for deleted page: ${pageState.outputPath}`);
+        await fs.remove(pageState.outputPath);
+      }
+    }
+  }
+
+  // Remove old files for pages that moved (slug changed)
+  for (const page of processedPages) {
+    const oldState = state.pages[page.pageId];
+    if (oldState) {
+      const newPath = layoutStrategy.getPathForPage(page, ".md");
+      if (oldState.outputPath !== newPath) {
+        if (await fs.pathExists(oldState.outputPath)) {
+          verbose(`Deleting old file after move: ${oldState.outputPath}`);
+          await fs.remove(oldState.outputPath);
+        }
+      }
+    }
+  }
+
+  // Clean up empty directories
+  const dirsToCheck = new Set<string>();
+  for (const pageId of deletedPageIds) {
+    const pageState = state.pages[pageId];
+    if (pageState?.outputPath) {
+      dirsToCheck.add(Path.dirname(pageState.outputPath));
+    }
+  }
+
+  for (const dir of dirsToCheck) {
+    await cleanupEmptyDirectories(dir);
+  }
+}
+
+/**
+ * Recursively remove empty directories
+ */
+async function cleanupEmptyDirectories(dir: string): Promise<void> {
+  if (!(await fs.pathExists(dir))) return;
+
+  const entries = await fs.readdir(dir);
+  if (entries.length === 0) {
+    verbose(`Removing empty directory: ${dir}`);
+    await fs.rmdir(dir);
+    // Try parent directory
+    const parent = Path.dirname(dir);
+    if (parent !== dir) {
+      await cleanupEmptyDirectories(parent);
+    }
+  }
+}
+
+/**
+ * Build outline structure from blocks
+ */
+function buildOutlineStructure(
+  pageId: string,
+  blocks: NotionBlock[]
+): OutlineStructure {
+  const structure: OutlineStructure = {
+    children: [],
+    links: [],
+  };
+
+  for (const block of blocks) {
+    if ((block as any).type === "child_page") {
+      structure.children.push((block as any).id);
+    } else if ((block as any).type === "link_to_page") {
+      const linkTo = (block as any).link_to_page;
+      if (linkTo.type === "page_id") {
+        structure.links.push(linkTo.page_id as string);
+      }
+    }
+  }
+
+  return structure;
 }
 
 async function outputPages(
   options: DocuNotionOptions,
   config: IDocuNotionConfig,
-  pages: Array<NotionPage>
+  pages: Array<NotionPage>,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _state: IncrementalState | null = null // Will be used for image checking in future
 ) {
   const context: IDocuNotionContext = {
     getBlockChildren: getBlockChildren,
@@ -208,7 +464,7 @@ async function getPagesRecursively(
   );
 
   const r = await getBlockChildren(pageInTheOutline.pageId);
-  const pageInfo = await pageInTheOutline.getContentInfo(r);
+  const pageInfo = pageInTheOutline.getContentInfo(r);
 
   if (
     !rootLevel &&
@@ -222,7 +478,10 @@ async function getPagesRecursively(
     return;
   }
   if (!rootLevel && pageInfo.hasParagraphs) {
-    pages.push(pageInTheOutline);
+    // Check if this page was already added to avoid duplicates
+    if (!pages.some(p => p.pageId === pageInTheOutline.pageId)) {
+      pages.push(pageInTheOutline);
+    }
 
     // The best practice is to keep content pages in the "database" (e.g. kanban board), but we do allow people to make pages in the outline directly.
     // So how can we tell the difference between a page that is supposed to be content and one that is meant to form the sidebar? If it
@@ -260,14 +519,16 @@ async function getPagesRecursively(
     }
 
     for (const linkPageInfo of pageInfo.linksPageIdsAndOrder) {
-      pages.push(
-        await fromPageId(
-          layoutContext,
-          linkPageInfo.id,
-          linkPageInfo.order,
-          false
-        )
+      const linkedPage = await fromPageId(
+        layoutContext,
+        linkPageInfo.id,
+        linkPageInfo.order,
+        false
       );
+      // Check if this page was already added to avoid duplicates
+      if (!pages.some(p => p.pageId === linkedPage.pageId)) {
+        pages.push(linkedPage);
+      }
     }
   } else {
     console.info(

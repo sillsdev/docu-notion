@@ -65,6 +65,16 @@ NOTE: In the above, we are using `npx` to use the latest `docu-notion`. A more c
 
 and then run that with `npm run pull`.
 
+### Incremental Pulls (Experimental)
+
+For faster builds, use `--incremental` to only download pages that changed since the last pull:
+
+```
+npx @sillsdev/docu-notion -n $MY_NOTION_TOKEN -r $MY_NOTION_ROOT_PAGE --incremental
+```
+
+The first run performs a full pull and saves state. Subsequent runs only process changes. See [INCREMENTAL.md](INCREMENTAL.md) for details.
+
 ## 7. Commit
 
 Most projects should probably commit the current markdown and image files each time you run docu-notion.
@@ -122,19 +132,20 @@ Usage: `docu-notion -n <token> -r <root> [options]`
 
 Options:
 
-| flag                                  | required? | description                                                                                                                                                                                                        |
-| ------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `-n, --notion-token <string>`           | required  | notion api token, which looks like `secret_3bc1b50XFYb15123RHF243x43450XFY33250XFYa343`                                                                                                                            |
-| `-r, --root-page <string>`              | required  | The 31 character ID of the page which is the root of your docs page in notion. The code will look like `9120ec9960244ead80fa2ef4bc1bba25`. This page must have a child page named 'Outline'                        |
-| `-m, --markdown-output-path <string>`   |           | Root of the hierarchy for md files. WARNING: node-pull-mdx will delete files from this directory. Note also that if it finds localized images, it will create an i18n/ directory as a sibling. (default: `./docs`) |
-| `-t, --status-tag <string>`             |           | Database pages without a Notion page property 'status' matching this will be ignored. Use '\*' to ignore status altogether. (default: `Publish`)                                                                   |
-| `--locales <codes>`                     |           | Comma-separated list of iso 639-2 codes, the same list as in docusaurus.config.js, minus the primary (i.e. 'en'). This is needed for image localization. (default: `[]`)                                             |
-| `-l, --log-level <level>`               |           | Log level (choices: `info`, `verbose`, `debug`)                                                                                                                                                                    |
-| `-i, --img-output-path <string>`        |           | Path to directory where images will be stored. If this is not included, images will be placed in the same directory as the document that uses them, which then allows for localization of screenshots.             |
-| `-p, --img-prefix-in-markdown <string>` |           | When referencing an image from markdown, prefix with this path instead of the full img-output-path. Should be used only in conjunction with --img-output-path.                                                     |
-| `--require-slugs`                       |           | If set, docu-notion will fail if any pages it would otherwise publish are missing a slug in Notion. |
+| flag                                    | required? | description                                                                                                                                                                                                                                                                                                         |
+| --------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `-n, --notion-token <string>`           | required  | notion api token, which looks like `secret_3bc1b50XFYb15123RHF243x43450XFY33250XFYa343`                                                                                                                                                                                                                             |
+| `-r, --root-page <string>`              | required  | The 31 character ID of the page which is the root of your docs page in notion. The code will look like `9120ec9960244ead80fa2ef4bc1bba25`. This page must have a child page named 'Outline'                                                                                                                         |
+| `-m, --markdown-output-path <string>`   |           | Root of the hierarchy for md files. WARNING: node-pull-mdx will delete files from this directory. Note also that if it finds localized images, it will create an i18n/ directory as a sibling. (default: `./docs`)                                                                                                  |
+| `-t, --status-tag <string>`             |           | Database pages without a Notion page property 'status' matching this will be ignored. Use '\*' to ignore status altogether. (default: `Publish`)                                                                                                                                                                    |
+| `--locales <codes>`                     |           | Comma-separated list of iso 639-2 codes, the same list as in docusaurus.config.js, minus the primary (i.e. 'en'). This is needed for image localization. (default: `[]`)                                                                                                                                            |
+| `-l, --log-level <level>`               |           | Log level (choices: `info`, `verbose`, `debug`)                                                                                                                                                                                                                                                                     |
+| `-i, --img-output-path <string>`        |           | Path to directory where images will be stored. If this is not included, images will be placed in the same directory as the document that uses them, which then allows for localization of screenshots.                                                                                                              |
+| `-p, --img-prefix-in-markdown <string>` |           | When referencing an image from markdown, prefix with this path instead of the full img-output-path. Should be used only in conjunction with --img-output-path.                                                                                                                                                      |
+| `--require-slugs`                       |           | If set, docu-notion will fail if any pages it would otherwise publish are missing a slug in Notion.                                                                                                                                                                                                                 |
+| `--incremental`                         |           | **[Experimental]** Enable incremental pull mode. Only downloads pages modified since last pull. See [INCREMENTAL.md](INCREMENTAL.md).                                                                                                                                                                               |
 | `--image-file-name-format <format>`     |           | choices:<ul><li>`default`: {page slug (if any)}.{image block ID}</li><li>`content-hash`: Use a hash of the image content.</li><li>`legacy`: Use the legacy (before v0.16) method of determining file names. Set this to maintain backward compatibility.</li></ul>All formats will use the original file extension. |
-| `-h, --help`                            |           | display help for command                              |
+| `-h, --help`                            |           | display help for command                                                                                                                                                                                                                                                                                            |
 
 # Plugins
 

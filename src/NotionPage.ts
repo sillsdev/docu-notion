@@ -197,9 +197,6 @@ export class NotionPage {
 
     const p = (this.metadata as any).properties?.[property];
     if (!p) {
-      throw new Error(
-        `missing ${property} in ${JSON.stringify(this.metadata, null, 2)}`
-      );
       return undefined;
     }
 
@@ -239,13 +236,11 @@ export class NotionPage {
     }
   }
 
-  public async getContentInfo(
-    children: ListBlockChildrenResponseResults
-  ): Promise<{
+  public getContentInfo(children: ListBlockChildrenResponseResults): {
     childPageIdsAndOrder: { id: string; order: number }[];
     linksPageIdsAndOrder: { id: string; order: number }[];
     hasParagraphs: boolean;
-  }> {
+  } {
     for (let i = 0; i < children.length; i++) {
       (children[i] as any).order = i;
     }

@@ -2,7 +2,7 @@
 
 import { run } from "./run";
 
-run();
+void run();
 
 // for plugins to import
 
