@@ -24,7 +24,7 @@ import {
   ListBlockChildrenResponse,
 } from "@notionhq/client/build/src/api-endpoints";
 import { RateLimiter } from "limiter";
-import { Client, isFullBlock } from "@notionhq/client";
+import { APIErrorCode, Client, isFullBlock } from "@notionhq/client";
 import { exit } from "process";
 import { IDocuNotionConfig, loadConfigAsync } from "./config/configuration";
 import { NotionBlock } from "./types";
@@ -86,9 +86,7 @@ export async function notionPull(options: DocuNotionOptions): Promise<void> {
 
   // Do a  quick test to see if we can connect to the root so that we can give a better error than just a generic "could not find page" one.
   try {
-    await executeWithRateLimitAndRetries("retrieving root page", async () => {
-      await notionClient.pages.retrieve({ page_id: options.rootPage });
-    });
+    await notionClient.pages.retrieve({ page_id: options.rootPage });
   } catch (e: any) {
     error(
       `docu-notion could not retrieve the root page from Notion. \r\na) Check that the root page id really is "${
@@ -294,11 +292,33 @@ const notionLimiter = new RateLimiter({
 let notionClient: Client;
 
 async function getPageMetadata(id: string): Promise<GetPageResponse> {
-  return await executeWithRateLimitAndRetries(`pages.retrieve(${id})`, () => {
-    return notionClient.pages.retrieve({
-      page_id: id,
-    });
+  return await notionClient.pages.retrieve({
+    page_id: id,
   });
+}
+
+function isRetryableNotionError(error: any): boolean {
+  const message = String(error?.message || "");
+  return (
+    error?.code === "notionhq_client_request_timeout" ||
+    error?.code === "notionhq_client_response_error" ||
+    error?.code === "service_unavailable" ||
+    error?.code === APIErrorCode.RateLimited ||
+    message.includes("timeout") ||
+    message.includes("Timeout") ||
+    message.includes("limit") ||
+    message.includes("Limit")
+  );
+}
+
+function getRetryDelayMilliseconds(error: any, retryIndex: number): number {
+  const retryAfterHeader = error?.headers?.get?.("retry-after");
+  const retryAfterSeconds = Number.parseInt(retryAfterHeader || "", 10);
+  if (Number.isFinite(retryAfterSeconds) && retryAfterSeconds > 0) {
+    return retryAfterSeconds * 1000;
+  }
+
+  return (retryIndex + 1) * 1000;
 }
 
 // While everything works fine locally, on Github Actions we are getting a lot of timeouts, so
@@ -315,22 +335,14 @@ export async function executeWithRateLimitAndRetries<T>(
       return await asyncFunction();
     } catch (e: any) {
       lastException = e;
-      if (
-        e?.code === "notionhq_client_request_timeout" ||
-        e.message.includes("timeout") ||
-        e.message.includes("Timeout") ||
-        e.message.includes("limit") ||
-        e.message.includes("Limit") ||
-        e?.code === "notionhq_client_response_error" ||
-        e?.code === "service_unavailable"
-      ) {
-        const secondsToWait = i + 1;
+      if (isRetryableNotionError(e)) {
+        const millisecondsToWait = getRetryDelayMilliseconds(e, i);
         warning(
           `While doing "${label}", got error "${
             e.message as string
-          }". Will retry after ${secondsToWait}s...`
+          }". Will retry after ${millisecondsToWait / 1000}s...`
         );
-        await new Promise(resolve => setTimeout(resolve, 1000 * secondsToWait));
+        await new Promise(resolve => setTimeout(resolve, millisecondsToWait));
       } else {
         throw e;
       }
@@ -359,11 +371,9 @@ async function getBlockChildren(id: string): Promise<NotionBlock[]> {
   // we could switch to using that (I don't know if it does rate limiting?)
   do {
     const response: ListBlockChildrenResponse =
-      await executeWithRateLimitAndRetries(`getBlockChildren(${id})`, () => {
-        return notionClient.blocks.children.list({
-          start_cursor: start_cursor as string | undefined,
-          block_id: id,
-        });
+      await notionClient.blocks.children.list({
+        start_cursor: start_cursor as string | undefined,
+        block_id: id,
       });
 
     if (!overallResult) {
@@ -390,6 +400,13 @@ export function initNotionClient(notionToken: string): Client {
   notionClient = new Client({
     auth: notionToken,
   });
+  const originalRequest = notionClient.request.bind(notionClient);
+  notionClient.request = async args => {
+    return await executeWithRateLimitAndRetries(
+      `${args.method.toUpperCase()} ${args.path}`,
+      () => originalRequest(args)
+    );
+  };
   return notionClient;
 }
 async function fromPageId(

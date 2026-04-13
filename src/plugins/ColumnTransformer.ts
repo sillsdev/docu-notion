@@ -35,11 +35,15 @@ async function notionColumnToMarkdown(
   if (!has_children) return "";
 
   const columnChildren: NotionBlock[] = await getBlockChildren(id);
-  const childrenMdBlocksArray: MdBlock[][] = await Promise.all(
-    columnChildren.map(
-      async child => await notionToMarkdown.blocksToMarkdown([child])
-    )
-  );
+  const childrenMdBlocksArray: MdBlock[][] = [];
+  for (const child of columnChildren) {
+    // Intentionally serialize these subtree conversions. notion-to-md will fetch
+    // nested block children during blocksToMarkdown(), and parallelizing sibling
+    // columns creates bursts that can exceed Notion's per-integration rate limit.
+    childrenMdBlocksArray.push(
+      await notionToMarkdown.blocksToMarkdown([child])
+    );
+  }
   const childrenMarkdown = childrenMdBlocksArray.map(
     mdBlockArray => notionToMarkdown.toMarkdownString(mdBlockArray).parent
   );

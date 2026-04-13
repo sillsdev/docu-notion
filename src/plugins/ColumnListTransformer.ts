@@ -14,12 +14,13 @@ async function notionColumnListToMarkdown(
   if (!has_children) return "";
 
   const column_list_children = await getBlockChildren(id);
-
-  const column_list_promise = column_list_children.map(
-    async column => await notionToMarkdown.blockToMarkdown(column)
-  );
-
-  const columns: string[] = await Promise.all(column_list_promise);
+  const columns: string[] = [];
+  for (const column of column_list_children) {
+    // Keep column rendering sequential. A column block can trigger more Notion
+    // reads downstream, so Promise.all() here would turn one page into a burst
+    // of concurrent API requests during stage 2.
+    columns.push(await notionToMarkdown.blockToMarkdown(column));
+  }
 
   return `<div class='notion-row'>\n${columns.join("\n\n")}\n</div>`;
 }
