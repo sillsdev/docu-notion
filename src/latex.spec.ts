@@ -80,6 +80,7 @@ test("Latex Rendering", async () => {
       },
       has_children: false,
       archived: false,
+      in_trash: false,
       type: "paragraph",
       paragraph: {
         rich_text: [
@@ -98,6 +99,7 @@ test("Latex Rendering", async () => {
             href: null,
           },
         ],
+        icon: null,
         color: "default",
       },
     },

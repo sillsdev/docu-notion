@@ -1,5 +1,5 @@
-import { GetPageResponse } from "@notionhq/client/build/src/api-endpoints";
-import { NotionPage } from "./NotionPage";
+import { GetPageResponse } from "@notionhq/client";
+import { NotionPage, PageType } from "./NotionPage";
 
 describe("NotionPage", () => {
   const mockMetadata: GetPageResponse = {
@@ -153,6 +153,76 @@ describe("NotionPage", () => {
       const result = page.getPlainTextProperty("nonexistent", "Default Value");
 
       expect(result).toBe("Default Value");
+    });
+  });
+
+  describe("page type detection", () => {
+    it("treats data_source_id pages as database pages", () => {
+      const page = new NotionPage({
+        layoutContext: "Test Context",
+        pageId: "123",
+        order: 1,
+        metadata: {
+          ...mockMetadata,
+          parent: {
+            type: "data_source_id",
+            data_source_id: "source-123",
+            database_id: "database-123",
+          } as any,
+          properties: {
+            Name: {
+              id: "title",
+              type: "title",
+              title: [
+                {
+                  type: "text",
+                  text: {
+                    content: "Columns",
+                    link: null,
+                  },
+                  annotations: {
+                    bold: false,
+                    italic: false,
+                    strikethrough: false,
+                    underline: false,
+                    code: false,
+                    color: "default",
+                  },
+                  plain_text: "Columns",
+                  href: null,
+                },
+              ],
+            },
+            Status: {
+              id: "status",
+              type: "select",
+              select: {
+                id: "publish",
+                name: "Publish",
+                color: "green",
+              },
+            },
+          } as any,
+        },
+        foundDirectlyInOutline: false,
+      });
+
+      expect(page.type).toBe(PageType.DatabasePage);
+      expect(page.nameOrTitle).toBe("Columns");
+      expect(page.status).toBe("Publish");
+    });
+
+    it("keeps workspace pages as simple pages", () => {
+      const page = new NotionPage({
+        layoutContext: "Test Context",
+        pageId: "123",
+        order: 1,
+        metadata: mockMetadata,
+        foundDirectlyInOutline: true,
+      });
+
+      expect(page.type).toBe(PageType.Simple);
+      expect(page.nameOrTitle).toBe("FooBar");
     });
   });
 });

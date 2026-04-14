@@ -19,12 +19,13 @@ import {
 import { IDocuNotionContext } from "./plugins/pluginTypes";
 import { getMarkdownForPage } from "./transform";
 import {
+  APIErrorCode,
   BlockObjectResponse,
+  Client,
   GetPageResponse,
   ListBlockChildrenResponse,
-} from "@notionhq/client/build/src/api-endpoints";
+} from "@notionhq/client";
 import { RateLimiter } from "limiter";
-import { APIErrorCode, Client, isFullBlock } from "@notionhq/client";
 import { exit } from "process";
 import { IDocuNotionConfig, loadConfigAsync } from "./config/configuration";
 import { NotionBlock } from "./types";
@@ -43,6 +44,8 @@ export type DocuNotionOptions = {
   requireSlugs?: boolean;
   imageFileNameFormat?: ImageFileNameFormat;
 };
+
+const kNotionApiVersion = "2026-03-11";
 
 let layoutStrategy: LayoutStrategy;
 let notionToMarkdown: NotionToMarkdown;
@@ -360,6 +363,12 @@ async function rateLimit() {
   await notionLimiter.removeTokens(1);
 }
 
+function isFullBlockFromChildrenList(
+  block: ListBlockChildrenResponse["results"][number]
+): block is BlockObjectResponse {
+  return "type" in block;
+}
+
 async function getBlockChildren(id: string): Promise<NotionBlock[]> {
   // we can only get so many responses per call, so we set this to
   // the first response we get, then keep adding to its array of blocks
@@ -372,7 +381,7 @@ async function getBlockChildren(id: string): Promise<NotionBlock[]> {
   do {
     const response: ListBlockChildrenResponse =
       await notionClient.blocks.children.list({
-        start_cursor: start_cursor as string | undefined,
+        start_cursor,
         block_id: id,
       });
 
@@ -385,20 +394,31 @@ async function getBlockChildren(id: string): Promise<NotionBlock[]> {
     start_cursor = response?.next_cursor;
   } while (start_cursor != null);
 
-  if (overallResult?.results?.some(b => !isFullBlock(b))) {
+  if (overallResult?.results?.some(b => !isFullBlockFromChildrenList(b))) {
     error(
       `The Notion API returned some blocks that were not full blocks. docu-notion does not handle this yet. Please report it.`
     );
     exit(1);
   }
 
-  const result = (overallResult?.results as BlockObjectResponse[]) ?? [];
+  const result: BlockObjectResponse[] = [];
+  if (overallResult) {
+    const blocks = overallResult.results;
+    for (const block of blocks) {
+      if (isFullBlockFromChildrenList(block)) {
+        result.push(block);
+      }
+    }
+  }
   numberChildrenIfNumberedList(result);
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return result;
 }
 export function initNotionClient(notionToken: string): Client {
   notionClient = new Client({
     auth: notionToken,
+    // width_ratio on column blocks is available in newer Notion API versions.
+    notionVersion: kNotionApiVersion,
   });
   const originalRequest = notionClient.request.bind(notionClient);
   notionClient.request = async args => {

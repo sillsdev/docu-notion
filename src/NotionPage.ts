@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
-import { GetPageResponse } from "@notionhq/client/build/src/api-endpoints";
+import { GetPageResponse } from "@notionhq/client";
 import { parseLinkId } from "./plugins/internalLinks";
 import { ListBlockChildrenResponseResults } from "notion-to-md/build/types";
 
@@ -11,6 +11,11 @@ import { ListBlockChildrenResponseResults } from "notion-to-md/build/types";
 export enum PageType {
   DatabasePage,
   Simple,
+}
+
+function isDatabaseBackedPage(metadata: GetPageResponse): boolean {
+  const parentType = (metadata as any).parent?.type;
+  return parentType === "database_id" || parentType === "data_source_id";
 }
 
 export class NotionPage {
@@ -64,7 +69,7 @@ export class NotionPage {
             ...
         },
     */
-    return (this.metadata as any).parent.type === "database_id"
+    return isDatabaseBackedPage(this.metadata)
       ? PageType.DatabasePage
       : PageType.Simple;
   }

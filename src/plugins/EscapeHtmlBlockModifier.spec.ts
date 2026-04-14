@@ -24,6 +24,7 @@ beforeEach(() => {
       },
       has_children: false,
       archived: false,
+      in_trash: false,
       type: "paragraph",
       paragraph: {
         rich_text: [
@@ -42,6 +43,7 @@ beforeEach(() => {
             href: null,
           },
         ],
+        icon: null,
         color: "default",
       },
     },
@@ -64,6 +66,7 @@ beforeEach(() => {
       },
       has_children: false,
       archived: false,
+      in_trash: false,
       type: "paragraph",
       paragraph: {
         rich_text: [
@@ -82,6 +85,7 @@ beforeEach(() => {
             href: null,
           },
         ],
+        icon: null,
         color: "default",
       },
     },
@@ -104,8 +108,9 @@ beforeEach(() => {
       },
       has_children: false,
       archived: false,
+      in_trash: false,
       type: "paragraph",
-      paragraph: { rich_text: [], color: "default" },
+      paragraph: { rich_text: [], icon: null, color: "default" },
     },
   ];
 });

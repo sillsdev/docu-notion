@@ -1,5 +1,5 @@
 import { Client } from "@notionhq/client";
-import { GetPageResponse } from "@notionhq/client/build/src/api-endpoints";
+import { GetPageResponse } from "@notionhq/client";
 import { NotionToMarkdown } from "notion-to-md";
 import { IDocuNotionContext } from "./pluginTypes";
 import { HierarchicalNamedLayoutStrategy } from "../HierarchicalNamedLayoutStrategy";

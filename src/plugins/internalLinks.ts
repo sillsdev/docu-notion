@@ -2,6 +2,40 @@ import { IDocuNotionContext, IPlugin } from "./pluginTypes";
 import { error, warning } from "../log";
 import { NotionPage } from "../NotionPage";
 
+const kNotionUrlRegExp =
+  /^https?:\/\/(?:www\.)?notion\.so\/|^https?:\/\/app\.notion\.com\//;
+
+function getLegacyTrailingSegment(pathOrId: string): string | undefined {
+  const trimmedPath = pathOrId.replace(/^\/+|\/+$/g, "");
+  const lastPathSegment = trimmedPath.split("/").at(-1);
+  if (!lastPathSegment) return undefined;
+
+  const trailingDashSegment = lastPathSegment.split("-").at(-1);
+  return trailingDashSegment || lastPathSegment;
+}
+
+function normalizeLinkBaseId(baseLinkId: string): string {
+  const withoutQuery = baseLinkId.split("?")[0];
+
+  if (kNotionUrlRegExp.test(withoutQuery)) {
+    try {
+      const url = new URL(withoutQuery);
+      const trimmedPath = url.pathname.replace(/^\/+|\/+$/g, "");
+      const appPathWithoutPrefix = trimmedPath.startsWith("p/")
+        ? trimmedPath.substring(2)
+        : trimmedPath;
+      return (
+        getLegacyTrailingSegment(appPathWithoutPrefix) || appPathWithoutPrefix
+      );
+    } catch {
+      return withoutQuery;
+    }
+  }
+
+  const withoutLeadingSlash = withoutQuery.replace(/^\/+/, "");
+  return withoutLeadingSlash;
+}
+
 // converts a url to a local link, if it is a link to a page in the Notion site
 // only here for plugins, notion won't normally be giving us raw urls (at least not that I've noticed)
 // If it finds a URL but can't find the page it points to, it will return undefined.
@@ -10,19 +44,18 @@ export function convertInternalUrl(
   context: IDocuNotionContext,
   url: string
 ): string | undefined {
-  const kGetIDFromNotionURL = /https:\/\/www\.notion\.so\S+-([a-z,0-9]+)+.*/;
-  const match = kGetIDFromNotionURL.exec(url);
-  if (match === null) {
+  const { baseLinkId } = parseLinkId(url);
+  if (baseLinkId === url) {
     warning(
       `[standardInternalLinkConversion] Could not parse link ${url} as a Notion URL`
     );
     return undefined;
   }
-  const id = match[1];
+
   const pages = context.pages;
   // find the page where pageId matches hrefFromNotion
   const targetPage = pages.find(p => {
-    return p.matchesLinkId(id);
+    return p.matchesLinkId(baseLinkId);
   });
 
   if (!targetPage) {
@@ -40,9 +73,8 @@ function convertInternalLink(
   context: IDocuNotionContext,
   markdownLink: string
 ): string {
-  // match both [foo](/123) and [bar](https://www.notion.so/123) <-- the "mention" link style
-  const linkRegExp =
-    /\[([^\]]+)?\]\((?:https?:\/\/www\.notion\.so\/|\/)?([^),^/]+)\)/g;
+  // match both [foo](/123) and [bar](https://app.notion.com/p/123) mention-style links
+  const linkRegExp = /\[([^\]]+)?\]\(([^)]+)\)/;
   const match = linkRegExp.exec(markdownLink);
   if (match === null) {
     warning(
@@ -113,11 +145,11 @@ export function parseLinkId(fullLinkId: string): {
   const iHash: number = fullLinkId.indexOf("#");
   if (iHash >= 0) {
     return {
-      baseLinkId: fullLinkId.substring(0, iHash),
+      baseLinkId: normalizeLinkBaseId(fullLinkId.substring(0, iHash)),
       fragmentId: fullLinkId.substring(iHash),
     };
   }
-  return { baseLinkId: fullLinkId, fragmentId: "" };
+  return { baseLinkId: normalizeLinkBaseId(fullLinkId), fragmentId: "" };
 }
 
 export const standardInternalLinkConversion: IPlugin = {
@@ -128,9 +160,10 @@ export const standardInternalLinkConversion: IPlugin = {
     // Raw links come in without a leading slash, e.g. [link_to_page](4a6de8c0-b90b-444b-8a7b-d534d6ec71a4)
     // Inline links come in with a leading slash, e.g. [pointer to the introduction](/4a6de8c0b90b444b8a7bd534d6ec71a4)
     // "Mention" links come in as full URLs, e.g. [link_to_page](https://www.notion.so/62f1187010214b0883711a1abb277d31)
+    // Newer Notion links can also use app.notion.com, including /p/<page-id> URLs.
     // YOu can create them either with @+the name of a page, or by pasting a URL and then selecting the "Mention" option.
     match:
-      /\[([^\]]+)?\]\((?!mailto:)(https:\/\/www\.notion\.so\/[^),^/]+|\/?[^),^/]+)\)/,
+      /\[([^\]]+)?\]\((?!mailto:)(https?:\/\/(?:www\.)?notion\.so\/[^),^/]+|https?:\/\/app\.notion\.com\/(?:p\/)?[^),^/]+|\/?[^),^/]+)\)/,
     convert: convertInternalLink,
   },
 };

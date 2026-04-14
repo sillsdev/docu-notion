@@ -4,7 +4,7 @@ import { makeSamplePageObject, oneBlockToMarkdown } from "./pluginTestRun";
 import { standardCalloutTransformer } from "./CalloutTransformer";
 import { standardExternalLinkConversion } from "./externalLinks";
 
-import { standardInternalLinkConversion } from "./internalLinks";
+import { parseLinkId, standardInternalLinkConversion } from "./internalLinks";
 
 test("urls that show up as raw text get left that way", async () => {
   const results = await getMarkdown({
@@ -71,6 +71,68 @@ test("mention-style link to an existing page", async () => {
     targetPage
   );
   expect(results.trim()).toBe(`[foo](/${targetPageId})`);
+});
+
+test("mention-style link using app.notion.com/p resolves to a local page", async () => {
+  const targetPageId = "123456781234123412341234567890ab";
+  const targetPage: NotionPage = makeSamplePageObject({
+    slug: undefined,
+    name: "Hello World",
+    id: "12345678-1234-1234-1234-1234567890ab",
+  });
+
+  const results = await getMarkdown(
+    {
+      type: "paragraph",
+      paragraph: {
+        rich_text: [
+          {
+            type: "mention",
+            mention: {
+              type: "page",
+              page: {
+                id: targetPage.pageId,
+              },
+            },
+            annotations: {
+              bold: false,
+              italic: false,
+              strikethrough: false,
+              underline: false,
+              code: false,
+              color: "default",
+            },
+            plain_text: "foo",
+            href: `https://app.notion.com/p/${targetPageId}`,
+          },
+        ],
+        color: "default",
+      },
+    },
+    targetPage
+  );
+
+  expect(results.trim()).toBe(`[foo](/12345678-1234-1234-1234-1234567890ab)`);
+});
+
+test("parseLinkId extracts the page id from app.notion.com URLs", () => {
+  expect(
+    parseLinkId(
+      "https://app.notion.com/p/123456781234123412341234567890ab#heading"
+    )
+  ).toEqual({
+    baseLinkId: "123456781234123412341234567890ab",
+    fragmentId: "#heading",
+  });
+
+  expect(
+    parseLinkId(
+      "https://app.notion.com/Interesting-page-123456781234123412341234567890ab"
+    )
+  ).toEqual({
+    baseLinkId: "123456781234123412341234567890ab",
+    fragmentId: "",
+  });
 });
 
 test("link to an existing page on this site that has no slug", async () => {

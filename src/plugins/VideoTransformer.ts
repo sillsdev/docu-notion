@@ -1,5 +1,5 @@
 import * as Path from "path";
-import { VideoBlockObjectResponse } from "@notionhq/client/build/src/api-endpoints";
+import { VideoBlockObjectResponse } from "@notionhq/client";
 import { ListBlockChildrenResponseResult } from "notion-to-md/build/types";
 import { IDocuNotionContext, IPlugin } from "./pluginTypes";
 import { warning } from "../log";
