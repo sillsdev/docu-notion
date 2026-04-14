@@ -41,7 +41,7 @@
   "devDependencies": {
     "@types/fs-extra": "^9.0.13",
     "@types/markdown-table": "^2.0.0",
-    "@types/node": "^18.15.11",
+    "@types/node": "^22.15.21",
     "@typescript-eslint/eslint-plugin": "^4.22.0",
     "@typescript-eslint/parser": "^4.22.0",
     "@vitest/ui": "^0.30.1",
