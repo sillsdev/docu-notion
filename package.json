@@ -20,7 +20,6 @@
     "pull-sample-with-paths": "npm run ts -- -n $DOCU_NOTION_INTEGRATION_TOKEN -r $DOCU_NOTION_SAMPLE_ROOT_PAGE -m ./sample --img-output-path ./sample_img",
     "lint": "eslint . --ext .ts"
   },
-  "//file-type": "have to use this version before they switched to ESM, which gives a compile error related to require()",
   "//chalk@4": "also ESM related problem",
   "//note: ts-node": "really is a runtime dependency",
   "dependencies": {
@@ -29,7 +28,7 @@
     "commander": "^9.2.0",
     "cosmiconfig": "^8.0.0",
     "cosmiconfig-typescript-loader": "^4.3.0",
-    "file-type": "16.5.3",
+    "file-type": "^21.0.0",
     "fs-extra": "^10.1.0",
     "limiter": "^2.1.0",
     "markdown-table": "^2.0.0",
@@ -86,6 +85,9 @@
   ],
   "publishConfig": {
     "access": "public"
+  },
+  "engines": {
+    "node": ">=20"
   },
   "volta": {
     "node": "22.21.0"
