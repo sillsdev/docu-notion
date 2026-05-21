@@ -43,7 +43,17 @@ export type DocuNotionOptions = {
   statusTag: string;
   requireSlugs?: boolean;
   imageFileNameFormat?: ImageFileNameFormat;
+  docusaurusV2?: boolean;
 };
+
+export function getOptionsForLogging<T extends { notionToken: string }>(
+  options: T
+): T {
+  return {
+    ...options,
+    notionToken: options.notionToken.substring(0, 10) + "...",
+  };
+}
 
 const kNotionApiVersion = "2026-03-11";
 
@@ -60,11 +70,7 @@ const counts = {
 
 export async function notionPull(options: DocuNotionOptions): Promise<void> {
   // It's helpful when troubleshooting CI secrets and environment variables to see what options actually made it to docu-notion.
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-  const optionsForLogging = { ...options };
-  // Just show the first few letters of the notion token, which start with "secret" anyhow.
-  optionsForLogging.notionToken =
-    optionsForLogging.notionToken.substring(0, 10) + "...";
+  const optionsForLogging = getOptionsForLogging(options);
 
   const config = await loadConfigAsync();
 
