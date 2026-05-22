@@ -616,7 +616,7 @@ test("internal link inside callout", async () => {
     targetPage
   );
   expect(results.trim()).toBe(
-    `:::caution
+    `:::warning[Caution]
 
 Callouts inline [great page](/hello-world).
 

@@ -59,6 +59,18 @@ export async function getMarkdownFromNotionBlocks(
   // simple regex-based tweaks. These are usually related to docusaurus
   const body = await doTransformsOnMarkdown(context, config, markdown);
 
+  const h1Headings = getMarkdownH1Headings(body);
+  if (h1Headings.length > 1) {
+    const pageLabel = context.pageInfo.slug || "(unknown page)";
+    warning(
+      `[docu-notion] Generated page "${pageLabel}" contains ${
+        h1Headings.length
+      } H1 headings. Docusaurus pages should have at most one H1. H1 headings: ${h1Headings
+        .map(heading => `"${heading}"`)
+        .join(", ")}.`
+    );
+  }
+
   // console.log("markdown after regex fixes", markdown);
   // console.log("body after regex", body);
 
@@ -66,6 +78,39 @@ export async function getMarkdownFromNotionBlocks(
   const imports = uniqueImports.join("\n");
   context.imports = []; // reset for next page
   return `${imports}\n${body}`;
+}
+
+function getMarkdownH1Headings(body: string): string[] {
+  const headings: string[] = [];
+  let activeFenceMarker: "```" | "~~~" | undefined;
+
+  for (const line of body.split(/\r?\n/)) {
+    const trimmedLine = line.trimStart();
+
+    if (trimmedLine.startsWith("```")) {
+      activeFenceMarker = activeFenceMarker === "```" ? undefined : "```";
+      continue;
+    }
+
+    if (trimmedLine.startsWith("~~~")) {
+      activeFenceMarker = activeFenceMarker === "~~~" ? undefined : "~~~";
+      continue;
+    }
+
+    if (activeFenceMarker || !/^#\s+/.test(line)) {
+      continue;
+    }
+
+    headings.push(
+      line
+        .replace(/^#\s+/, "")
+        .replace(/\s+\{\/\*\s*#.*?\*\/\}\s*$/, "")
+        .replace(/\s+\{#.*?\}\s*$/, "")
+        .trim()
+    );
+  }
+
+  return headings;
 }
 
 // operations on notion blocks before they are converted to markdown

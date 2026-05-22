@@ -51,6 +51,7 @@ test("Latex Rendering", async () => {
       imgOutputPath: "",
       imgPrefixInMarkdown: "",
       statusTag: "",
+      docusaurusV2: false,
     },
 
     pages: pages,

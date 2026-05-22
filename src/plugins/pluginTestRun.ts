@@ -6,6 +6,7 @@ import { HierarchicalNamedLayoutStrategy } from "../HierarchicalNamedLayoutStrat
 import { NotionPage } from "../NotionPage";
 import { getMarkdownFromNotionBlocks } from "../transform";
 import { IDocuNotionConfig } from "../config/configuration";
+import { DocuNotionOptions } from "../pull";
 import { NotionBlock } from "../types";
 import { convertInternalUrl } from "./internalLinks";
 import { numberChildrenIfNumberedList } from "../pull";
@@ -21,7 +22,8 @@ export async function blocksToMarkdown(
   //   - If you are passing in children, it is probably because your parent block has has_children=true.
   //     In that case, notion-to-md will make an API call... you'll need to set any validApiKey.
   children?: NotionBlock[],
-  validApiKey?: string
+  validApiKey?: string,
+  optionsOverrides?: Partial<DocuNotionOptions>
 ): Promise<string> {
   const notionClient = new Client({
     auth: validApiKey || "unused",
@@ -64,6 +66,8 @@ export async function blocksToMarkdown(
       imgOutputPath: "",
       imgPrefixInMarkdown: "",
       statusTag: "",
+      docusaurusV2: false,
+      ...optionsOverrides,
     },
     pages: pages ?? [],
     counts: {
@@ -244,7 +248,8 @@ export async function oneBlockToMarkdown(
   config: IDocuNotionConfig,
   block: Record<string, unknown>,
   targetPage?: NotionPage,
-  targetPage2?: NotionPage
+  targetPage2?: NotionPage,
+  optionsOverrides?: Partial<DocuNotionOptions>
 ): Promise<string> {
   // just in case someone expects these other properties that aren't normally relevant,
   // we merge the given block properties into an actual, full block
@@ -283,6 +288,11 @@ export async function oneBlockToMarkdown(
   return await blocksToMarkdown(
     config,
     [fullBlock as NotionBlock],
-    targetPage ? [dummyPage1, targetPage, targetPage2 ?? dummyPage2] : undefined
+    targetPage
+      ? [dummyPage1, targetPage, targetPage2 ?? dummyPage2]
+      : undefined,
+    undefined,
+    undefined,
+    optionsOverrides
   );
 }

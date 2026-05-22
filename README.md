@@ -4,6 +4,24 @@ docu-notion lets you use Notion as your editor for [Docusaurus](https://docusaur
 
 Example Site: https://sillsdev.github.io/docu-notion-sample-site/
 
+# Docusaurus 3 Output
+
+docu-notion emits Docusaurus v3-compatible markdown by default.
+
+The default output changed in these ways:
+
+- Heading anchors are emitted with Docusaurus v3's MDX-comment syntax, for example `# Heading {/* #my-explicit-id */}`, instead of Docusaurus v2's `{#...}` syntax.
+- `⚠️` callouts now emit `:::warning[Caution]` instead of the deprecated `:::caution` syntax.
+- Callouts with unrecognized emojis now emit `:::note[emoji]` instead of using the emoji itself as a custom admonition keyword.
+- Named Notion callout icons that are not returned by the API as emoji are ignored and fall back to a plain `:::note` admonition.
+- docu-notion now warns when a generated page contains more than one Markdown H1, and the warning lists the H1 headings it found.
+
+If you need the previous output, pass `--docusaurus-v2`. This restores the legacy heading ID syntax, the `:::caution` output, and the raw-emoji admonition fallback.
+
+If you use `--docusaurus-v2` on Docusaurus v3, keep the `markdown.mdx1Compat.headingIds` and `markdown.mdx1Compat.admonitions` compatibility options enabled. They are on by default in Docusaurus v3, but some sites turn them off during migration.
+
+When upgrading an existing Docusaurus site to v3, it is also worth running `npx docusaurus-mdx-checker` on the site to catch MDX v3 issues in any hand-written docs or custom plugin output.
+
 # Instructions
 
 ## 1. Set up your documentation site
@@ -122,19 +140,20 @@ Usage: `docu-notion -n <token> -r <root> [options]`
 
 Options:
 
-| flag                                  | required? | description                                                                                                                                                                                                        |
-| ------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `-n, --notion-token <string>`           | required  | notion api token, which looks like `secret_3bc1b50XFYb15123RHF243x43450XFY33250XFYa343`                                                                                                                            |
-| `-r, --root-page <string>`              | required  | The 31 character ID of the page which is the root of your docs page in notion. The code will look like `9120ec9960244ead80fa2ef4bc1bba25`. This page must have a child page named 'Outline'                        |
-| `-m, --markdown-output-path <string>`   |           | Root of the hierarchy for md files. WARNING: node-pull-mdx will delete files from this directory. Note also that if it finds localized images, it will create an i18n/ directory as a sibling. (default: `./docs`) |
-| `-t, --status-tag <string>`             |           | Database pages without a Notion page property 'status' matching this will be ignored. Use '\*' to ignore status altogether. (default: `Publish`)                                                                   |
-| `--locales <codes>`                     |           | Comma-separated list of iso 639-2 codes, the same list as in docusaurus.config.js, minus the primary (i.e. 'en'). This is needed for image localization. (default: `[]`)                                             |
-| `-l, --log-level <level>`               |           | Log level (choices: `info`, `verbose`, `debug`)                                                                                                                                                                    |
-| `-i, --img-output-path <string>`        |           | Path to directory where images will be stored. If this is not included, images will be placed in the same directory as the document that uses them, which then allows for localization of screenshots.             |
-| `-p, --img-prefix-in-markdown <string>` |           | When referencing an image from markdown, prefix with this path instead of the full img-output-path. Should be used only in conjunction with --img-output-path.                                                     |
-| `--require-slugs`                       |           | If set, docu-notion will fail if any pages it would otherwise publish are missing a slug in Notion. |
+| flag                                    | required? | description                                                                                                                                                                                                                                                                                                         |
+| --------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `-n, --notion-token <string>`           | required  | notion api token, which looks like `secret_3bc1b50XFYb15123RHF243x43450XFY33250XFYa343`                                                                                                                                                                                                                             |
+| `-r, --root-page <string>`              | required  | The 31 character ID of the page which is the root of your docs page in notion. The code will look like `9120ec9960244ead80fa2ef4bc1bba25`. This page must have a child page named 'Outline'                                                                                                                         |
+| `-m, --markdown-output-path <string>`   |           | Root of the hierarchy for md files. WARNING: node-pull-mdx will delete files from this directory. Note also that if it finds localized images, it will create an i18n/ directory as a sibling. (default: `./docs`)                                                                                                  |
+| `-t, --status-tag <string>`             |           | Database pages without a Notion page property 'status' matching this will be ignored. Use '\*' to ignore status altogether. (default: `Publish`)                                                                                                                                                                    |
+| `--locales <codes>`                     |           | Comma-separated list of iso 639-2 codes, the same list as in docusaurus.config.js, minus the primary (i.e. 'en'). This is needed for image localization. (default: `[]`)                                                                                                                                            |
+| `-l, --log-level <level>`               |           | Log level (choices: `info`, `verbose`, `debug`)                                                                                                                                                                                                                                                                     |
+| `-i, --img-output-path <string>`        |           | Path to directory where images will be stored. If this is not included, images will be placed in the same directory as the document that uses them, which then allows for localization of screenshots.                                                                                                              |
+| `-p, --img-prefix-in-markdown <string>` |           | When referencing an image from markdown, prefix with this path instead of the full img-output-path. Should be used only in conjunction with --img-output-path.                                                                                                                                                      |
+| `--require-slugs`                       |           | If set, docu-notion will fail if any pages it would otherwise publish are missing a slug in Notion.                                                                                                                                                                                                                 |
+| `--docusaurus-v2`                       |           | Emit Docusaurus v2-compatible markdown instead of the default Docusaurus v3-compatible output. This preserves legacy heading IDs, `:::caution`, and raw-emoji admonition keywords.                                                                                                                                  |
 | `--image-file-name-format <format>`     |           | choices:<ul><li>`default`: {page slug (if any)}.{image block ID}</li><li>`content-hash`: Use a hash of the image content.</li><li>`legacy`: Use the legacy (before v0.16) method of determining file names. Set this to maintain backward compatibility.</li></ul>All formats will use the original file extension. |
-| `-h, --help`                            |           | display help for command                              |
+| `-h, --help`                            |           | display help for command                                                                                                                                                                                                                                                                                            |
 
 # Plugins
 
@@ -142,16 +161,19 @@ If your project needs some processing that docu-notion doesn't already provide, 
 
 # Callouts ➜ Admonitions
 
-To map Notion callouts to Docusaurus admonitions, ensure the icon is for the type you want.
+To map Notion callouts to Docusaurus admonitions, ensure the icon is an emoji for the type you want.
 
 - ℹ️ ➜ note
 - 📝➜ note
 - 💡➜ tip
 - ❗➜ info
-- ⚠️➜ caution
+- ⚠️➜ warning[Caution]
 - 🔥➜ danger
+- unknown emoji ➜ note[emoji]
 
-The default admonition type, if no matching icon is found, is "note".
+If a Notion callout uses a named Notion icon instead of an emoji, docu-notion does not try to synthesize an equivalent symbol from the icon name or color. Those callouts fall back to a plain `:::note` admonition.
+
+The default admonition type, if no matching icon is found, is "note". Use `--docusaurus-v2` to keep the legacy `⚠️ ➜ caution` behavior and the old raw-emoji fallback.
 
 # Known Workarounds
 

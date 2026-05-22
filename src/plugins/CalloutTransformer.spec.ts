@@ -111,7 +111,7 @@ test("external link inside callout, bold preserved", async () => {
     } as unknown as NotionBlock,
   ]);
   expect(results.trim()).toBe(
-    `:::caution
+    `:::warning[Caution]
 
 Callouts inline [**great page**](https://github.com).
 
@@ -193,9 +193,62 @@ test("internal link inside callout, bold preserved", async () => {
     [slugTargetPage]
   );
   expect(results.trim()).toBe(
-    `:::caution
+    `:::warning[Caution]
 
 Callouts inline [**great page**](/hello-world#456) the end.
+
+:::`
+  );
+});
+
+test("unknown emoji callout falls back to note with title in docusaurus v3 mode", async () => {
+  const config = { plugins: [standardCalloutTransformer] };
+  block.callout.icon.emoji = "🧪";
+  const results = await blocksToMarkdown(config, [
+    block as unknown as NotionBlock,
+  ]);
+  expect(results.trim()).toBe(
+    `:::note[🧪]
+
+This is the callout
+
+:::`
+  );
+});
+
+test("named notion icon callout falls back to plain note in docusaurus v3 mode", async () => {
+  const config = { plugins: [standardCalloutTransformer] };
+  block.callout.icon = {
+    type: "icon",
+    icon: { name: "airplane", color: "purple" },
+  };
+  const results = await blocksToMarkdown(config, [
+    block as unknown as NotionBlock,
+  ]);
+  expect(results.trim()).toBe(
+    `:::note
+
+This is the callout
+
+:::`
+  );
+});
+
+test("docusaurus-v2 flag keeps legacy callout syntax", async () => {
+  const config = { plugins: [standardCalloutTransformer] };
+  block.callout.icon.emoji = "⚠️";
+  const results = await blocksToMarkdown(
+    config,
+    [block as unknown as NotionBlock],
+    undefined,
+    undefined,
+    undefined,
+    { docusaurusV2: true }
+  );
+  expect(results.trim()).toBe(
+    `:::caution
+
+This is the callout
 
 :::`
   );

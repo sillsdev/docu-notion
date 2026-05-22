@@ -1,27 +1,27 @@
 import { NotionToMarkdown } from "notion-to-md";
 import { NotionBlock } from "../types";
-import { IPlugin } from "./pluginTypes";
+import { IDocuNotionContext, IPlugin } from "./pluginTypes";
 import { logDebug } from "../log";
 
 // Makes links to headings work in docusaurus
 // https://github.com/sillsdev/docu-notion/issues/20
 async function headingTransformer(
-  notionToMarkdown: NotionToMarkdown,
+  context: IDocuNotionContext,
   block: NotionBlock
 ): Promise<string> {
   // First, remove the prefix we added to the heading type
   (block as any).type = block.type.replace("DN_", "");
 
-  const markdown = await notionToMarkdown.blockToMarkdown(block);
+  const markdown = await context.notionToMarkdown.blockToMarkdown(block);
 
   logDebug(
     "headingTransformer, markdown of a heading before adding id",
     markdown
   );
 
-  // To make heading links work in docusaurus, we append an id. E.g.
-  //  ### Hello World {#my-explicit-id}
-  // See https://docusaurus.io/docs/markdown-features/toc#heading-ids.
+  // To make heading links work in Docusaurus, we add a stable block-id anchor.
+  // Docusaurus v2 uses explicit heading IDs, while the v3 default can use the
+  // MDX comment syntax at the end of the heading.
 
   // For some reason, inline links come in without the dashes, so we have to strip
   // dashes here to match them.
@@ -29,7 +29,9 @@ async function headingTransformer(
   const blockIdWithoutDashes = block.id.replaceAll("-", "");
 
   // Finally, append the block id so that it can be the target of a link.
-  return `${markdown} {#${blockIdWithoutDashes}}`;
+  if (context.options.docusaurusV2)
+    return `${markdown} {#${blockIdWithoutDashes}}`;
+  return `${markdown} {/* #${blockIdWithoutDashes} */}`;
 }
 
 export const standardHeadingTransformer: IPlugin = {
@@ -53,17 +55,17 @@ export const standardHeadingTransformer: IPlugin = {
     {
       type: "DN_heading_1",
       getStringFromBlock: (context, block) =>
-        headingTransformer(context.notionToMarkdown, block),
+        headingTransformer(context, block),
     },
     {
       type: "DN_heading_2",
       getStringFromBlock: (context, block) =>
-        headingTransformer(context.notionToMarkdown, block),
+        headingTransformer(context, block),
     },
     {
       type: "DN_heading_3",
       getStringFromBlock: (context, block) =>
-        headingTransformer(context.notionToMarkdown, block),
+        headingTransformer(context, block),
     },
   ],
 };
