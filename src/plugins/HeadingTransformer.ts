@@ -1,7 +1,56 @@
-import { NotionToMarkdown } from "notion-to-md";
 import { NotionBlock } from "../types";
 import { IDocuNotionContext, IPlugin } from "./pluginTypes";
 import { logDebug } from "../log";
+
+type HeadingContent = {
+  type: string;
+  plain_text: string;
+  annotations: Parameters<
+    IDocuNotionContext["notionToMarkdown"]["annotatePlainText"]
+  >[1];
+  href?: string | null;
+  equation?: {
+    expression: string;
+  };
+};
+
+type HeadingBlockData = {
+  text?: HeadingContent[];
+  rich_text?: HeadingContent[];
+};
+
+function renderHeadingText(
+  context: IDocuNotionContext,
+  block: NotionBlock,
+  type: string
+): string {
+  // Work around notion-to-md only shipping built-in heading renderers for
+  // heading_1 through heading_3. For heading_4 and above we still reuse its
+  // inline annotation logic, but we assemble the heading markdown ourselves.
+  const headingBlock = (block as Record<string, HeadingBlockData | unknown>)[
+    type
+  ] as HeadingBlockData | undefined;
+  const blockContent = headingBlock?.text || headingBlock?.rich_text || [];
+
+  return blockContent
+    .map((content: HeadingContent) => {
+      if (content.type === "equation" && content.equation) {
+        return `$${content.equation.expression}$`;
+      }
+
+      let plainText = context.notionToMarkdown.annotatePlainText(
+        content.plain_text,
+        content.annotations
+      );
+
+      if (content.href) {
+        plainText = `[${plainText}](${content.href})`;
+      }
+
+      return plainText;
+    })
+    .join("");
+}
 
 // Makes links to headings work in docusaurus
 // https://github.com/sillsdev/docu-notion/issues/20
@@ -10,9 +59,16 @@ async function headingTransformer(
   block: NotionBlock
 ): Promise<string> {
   // First, remove the prefix we added to the heading type
-  (block as any).type = block.type.replace("DN_", "");
+  const type = block.type.replace("DN_", "");
+  (block as any).type = type;
 
-  const markdown = await context.notionToMarkdown.blockToMarkdown(block);
+  const headingLevel = Number(type.replace("heading_", ""));
+  const markdown =
+    headingLevel <= 3
+      ? await context.notionToMarkdown.blockToMarkdown(block)
+      // notion-to-md 3.1.1 falls through on heading_4+ and crashes trying to
+      // read block[type].text, so render those levels locally.
+      : `${"#".repeat(headingLevel)} ${renderHeadingText(context, block, type)}`;
 
   logDebug(
     "headingTransformer, markdown of a heading before adding id",
@@ -44,7 +100,7 @@ export const standardHeadingTransformer: IPlugin = {
   // result, to which we will append the block ID to enable heading links.
   notionBlockModifications: [
     {
-      modify: (block: NotionBlock) => {
+      modify: (block: NotionBlock): void => {
         // "as any" needed because we're putting a value in that is not allowed by the real type
         (block as any).type = block.type.replace("heading", "DN_heading");
       },
@@ -64,6 +120,13 @@ export const standardHeadingTransformer: IPlugin = {
     },
     {
       type: "DN_heading_3",
+      getStringFromBlock: (context, block) =>
+        headingTransformer(context, block),
+    },
+    {
+      type: "DN_heading_4",
+      // Keep this explicit so H4 blocks take the local workaround path instead
+      // of being handed back to notion-to-md's unsupported default branch.
       getStringFromBlock: (context, block) =>
         headingTransformer(context, block),
     },

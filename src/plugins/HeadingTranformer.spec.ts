@@ -5,7 +5,8 @@ import { standardHeadingTransformer } from "./HeadingTransformer";
 function makeHeadingBlock(
   headingBlockId: string,
   text: string,
-  type: "heading_1" | "heading_2" | "heading_3" = "heading_1"
+  type: "heading_1" | "heading_2" | "heading_3" | "heading_4" =
+    "heading_1"
 ): NotionBlock {
   return {
     object: "block",
@@ -71,6 +72,17 @@ test("Adds anchor to headings", async () => {
   ]);
   expect(result.trim()).toBe(
     `# Heading One {/* #${headingBlockId.replaceAll("-", "")} */}`
+  );
+});
+
+test("Adds anchor to H4 headings", async () => {
+  const headingBlockId = "86f746f4-1c79-4ba1-a2f6-a1d59c2f9d23";
+  const config = { plugins: [standardHeadingTransformer] };
+  const result = await blocksToMarkdown(config, [
+    makeHeadingBlock(headingBlockId, "Heading Four", "heading_4"),
+  ]);
+  expect(result.trim()).toBe(
+    `#### Heading Four {/* #${headingBlockId.replaceAll("-", "")} */}`
   );
 });
 
