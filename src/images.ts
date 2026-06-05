@@ -1,5 +1,5 @@
 import * as fs from "fs-extra";
-import FileType, { FileTypeResult } from "file-type";
+import { detectFileType, type FileTypeResult } from "./fileType";
 import { makeImagePersistencePlan } from "./MakeImagePersistencePlan";
 import { logDebug, verbose } from "./log";
 import { ListBlockChildrenResponseResult } from "notion-to-md/build/types";
@@ -158,7 +158,7 @@ async function readPrimaryImage(imageSet: ImageSet) {
   const response = await fetch(imageSet.primaryUrl);
   const arrayBuffer = await response.arrayBuffer();
   imageSet.primaryBuffer = Buffer.from(arrayBuffer);
-  imageSet.fileType = await FileType.fromBuffer(imageSet.primaryBuffer);
+  imageSet.fileType = await detectFileType(imageSet.primaryBuffer);
 }
 
 async function saveImage(imageSet: ImageSet): Promise<void> {
