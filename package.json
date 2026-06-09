@@ -54,6 +54,7 @@
     "lint-staged": "^10.5.4",
     "prettier": "^2.2.1",
     "rimraf": "^4.1.2",
+    "semantic-release": "25.0.3",
     "typescript": "^5.9.3",
     "vite": "^4.2.1",
     "vitest": "^0.30.1"
@@ -87,7 +88,14 @@
   "publishConfig": {
     "access": "public"
   },
+  "packageManager": "npm@11.16.0",
   "volta": {
-    "node": "22.21.0"
+    "node": "24.16.0",
+    "npm": "11.16.0"
+  },
+  "allowScripts": {
+    "core-js@2.6.12": true,
+    "esbuild@0.17.17": true,
+    "fsevents": false
   }
 }
