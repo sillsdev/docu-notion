@@ -28,7 +28,7 @@ import {
 import { RateLimiter } from "limiter";
 import { exit } from "process";
 import { IDocuNotionConfig, loadConfigAsync } from "./config/configuration";
-import { NotionBlock } from "./types";
+import { ICounts, NotionBlock } from "./types";
 import { convertInternalUrl } from "./plugins/internalLinks";
 import { ListBlockChildrenResponseResults } from "notion-to-md/build/types";
 
@@ -59,16 +59,24 @@ const kNotionApiVersion = "2026-03-11";
 
 let layoutStrategy: LayoutStrategy;
 let notionToMarkdown: NotionToMarkdown;
-const pages = new Array<NotionPage>();
-const counts = {
-  output_normally: 0,
-  skipped_because_empty: 0,
-  skipped_because_status: 0,
-  skipped_because_level_cannot_have_content: 0,
-  error_because_no_slug: 0,
-};
+
+// Counts tracked across a single pull. error_because_no_slug is local to
+// pull.ts; the other fields make up the shared ICounts that plugins see.
+type Counts = ICounts & { error_because_no_slug: number };
 
 export async function notionPull(options: DocuNotionOptions): Promise<void> {
+  // These are local to each pull so that repeated calls (e.g. in tests or
+  // programmatic multi-run scenarios) don't accumulate pages or counts from
+  // previous runs.
+  const pages = new Array<NotionPage>();
+  const counts: Counts = {
+    output_normally: 0,
+    skipped_because_empty: 0,
+    skipped_because_status: 0,
+    skipped_because_level_cannot_have_content: 0,
+    error_because_no_slug: 0,
+  };
+
   // It's helpful when troubleshooting CI secrets and environment variables to see what options actually made it to docu-notion.
   const optionsForLogging = getOptionsForLogging(options);
 
@@ -112,14 +120,14 @@ export async function notionPull(options: DocuNotionOptions): Promise<void> {
   group(
     "Stage 1: walk children of the page named 'Outline', looking for pages..."
   );
-  await getPagesRecursively(options, "", options.rootPage, 0, true);
+  await getPagesRecursively(options, "", options.rootPage, 0, true, pages, counts);
   logDebug("getPagesRecursively", JSON.stringify(pages, null, 2));
   info(`Found ${pages.length} pages`);
   endGroup();
   group(
     `Stage 2: convert ${pages.length} Notion pages to markdown and save locally...`
   );
-  await outputPages(options, config, pages);
+  await outputPages(options, config, pages, counts);
   endGroup();
   group("Stage 3: clean up old files & images...");
   await layoutStrategy.cleanupOldFiles();
@@ -130,7 +138,8 @@ export async function notionPull(options: DocuNotionOptions): Promise<void> {
 async function outputPages(
   options: DocuNotionOptions,
   config: IDocuNotionConfig,
-  pages: Array<NotionPage>
+  pages: Array<NotionPage>,
+  counts: Counts
 ) {
   const context: IDocuNotionContext = {
     getBlockChildren: getBlockChildren,
@@ -144,7 +153,7 @@ async function outputPages(
     notionToMarkdown: notionToMarkdown,
     options: options,
     pages: pages,
-    counts: counts, // review will this get copied or pointed to?
+    counts: counts,
     imports: [],
     convertNotionLinkToLocalDocusaurusLink: (url: string) =>
       convertInternalUrl(context, url),
@@ -170,7 +179,7 @@ async function outputPages(
       verbose(
         `Skipping page because status is not '${context.options.statusTag}': ${page.nameOrTitle}`
       );
-      ++context.counts.skipped_because_status;
+      ++counts.skipped_because_status;
     } else {
       if (options.requireSlugs && !page.hasExplicitSlug) {
         error(
@@ -180,7 +189,7 @@ async function outputPages(
       }
 
       const markdown = await getMarkdownForPage(config, context, page);
-      writePage(page, markdown);
+      writePage(page, markdown, counts);
     }
   }
 
@@ -201,7 +210,9 @@ async function getPagesRecursively(
   incomingContext: string,
   pageIdOfThisParent: string,
   orderOfThisParent: number,
-  rootLevel: boolean
+  rootLevel: boolean,
+  pages: Array<NotionPage>,
+  counts: Counts
 ) {
   const pageInTheOutline = await fromPageId(
     incomingContext,
@@ -262,7 +273,9 @@ async function getPagesRecursively(
         layoutContext,
         childPageInfo.id,
         childPageInfo.order,
-        false
+        false,
+        pages,
+        counts
       );
     }
 
@@ -286,7 +299,7 @@ async function getPagesRecursively(
   }
 }
 
-function writePage(page: NotionPage, finalMarkdown: string) {
+function writePage(page: NotionPage, finalMarkdown: string, counts: Counts) {
   const mdPath = layoutStrategy.getPathForPage(page, ".md");
   verbose(`writing ${mdPath}`);
   fs.writeFileSync(mdPath, finalMarkdown, {});
