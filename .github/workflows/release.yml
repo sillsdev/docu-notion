@@ -29,4 +29,8 @@ jobs:
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # semantic-release publishes via `npm publish <dir>`, which npm treats as a
+          # non-root directory spec and rejects under .npmrc's allow-directory=root.
+          # Relax it for the publish step only; npm ci keeps full install hardening.
+          NPM_CONFIG_ALLOW_DIRECTORY: all
         run: npm run semantic-release
