@@ -152,13 +152,19 @@ async function doTransformsOnMarkdown(
   //console.log("body before regex: " + body);
   let match;
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   for (const mod of regexMods) {
-    let replacement = undefined;
     // regex.exec is stateful, so we don't want to mess up the plugin's use of its own regex, so we clone it.
     // we also add the "g" flag to make sure we get all matches
     const regex = new RegExp(`${codeBlocks.source}|(${mod.regex.source})`, "g");
-    while ((match = regex.exec(input)) !== null) {
+    // We match against `source` (a snapshot of the current body) and build up a
+    // fresh `result`. Mutating the string we're iterating over would invalidate
+    // `match.index` for every subsequent match once a replacement changes the
+    // length, so instead we copy the spans between matches using indices that
+    // always refer to the unchanged `source`.
+    const source = body;
+    let result = "";
+    let lastIndex = 0;
+    while ((match = regex.exec(source)) !== null) {
       if (match[0]) {
         const original = match[0];
         if (
@@ -168,6 +174,7 @@ async function doTransformsOnMarkdown(
         ) {
           continue; // code block, and they didn't say to include them
         }
+        let replacement = undefined;
         if (mod.getReplacement) {
           // our match here has an extra group, which is an implementation detail
           // that shouldn't be made visible to the plugin
@@ -182,11 +189,11 @@ async function doTransformsOnMarkdown(
         if (replacement !== undefined) {
           verbose(`[${(mod as any).name}] ${original} --> ${replacement}`);
 
-          const precedingPart = body.substring(0, match.index); // ?
-          const partStartingFromThisMatch = body.substring(match.index); // ?
-          body =
-            precedingPart +
-            partStartingFromThisMatch.replace(original, replacement);
+          // copy everything since the last match, then the replacement (the
+          // replacement is appended literally, so `$` sequences in it are not
+          // given any special meaning)
+          result += source.substring(lastIndex, match.index) + replacement;
+          lastIndex = match.index + original.length;
 
           // add any library imports
           if (!context.imports) context.imports = [];
@@ -194,6 +201,9 @@ async function doTransformsOnMarkdown(
         }
       }
     }
+    // copy whatever follows the last replacement (including any skipped code blocks)
+    result += source.substring(lastIndex);
+    body = result;
   }
   logDebug("doTransformsOnMarkdown", "body after regex: " + body);
   return body;
