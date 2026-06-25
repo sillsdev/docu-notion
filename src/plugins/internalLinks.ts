@@ -33,7 +33,10 @@ function normalizeLinkBaseId(baseLinkId: string): string {
   }
 
   const withoutLeadingSlash = withoutQuery.replace(/^\/+/, "");
-  return withoutLeadingSlash;
+  // Newer Notion links can also use a relative "/p/<page-id>" form.
+  return withoutLeadingSlash.startsWith("p/")
+    ? withoutLeadingSlash.substring(2)
+    : withoutLeadingSlash;
 }
 
 // converts a url to a local link, if it is a link to a page in the Notion site
@@ -163,7 +166,7 @@ export const standardInternalLinkConversion: IPlugin = {
     // Newer Notion links can also use app.notion.com, including /p/<page-id> URLs.
     // YOu can create them either with @+the name of a page, or by pasting a URL and then selecting the "Mention" option.
     match:
-      /\[([^\]]+)?\]\((?!mailto:)(https?:\/\/(?:www\.)?notion\.so\/[^),^/]+|https?:\/\/app\.notion\.com\/(?:p\/)?[^),^/]+|\/?[^),^/]+)\)/,
+      /\[([^\]]+)?\]\((?!mailto:)(https?:\/\/(?:www\.)?notion\.so\/[^),^/]+|https?:\/\/app\.notion\.com\/(?:p\/)?[^),^/]+|\/?(?:p\/)?[^),^/]+)\)/,
     convert: convertInternalLink,
   },
 };

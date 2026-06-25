@@ -135,6 +135,22 @@ test("parseLinkId extracts the page id from app.notion.com URLs", () => {
   });
 });
 
+test("parseLinkId extracts the page id from relative /p/ links", () => {
+  expect(
+    parseLinkId("/p/123456781234123412341234567890ab")
+  ).toEqual({
+    baseLinkId: "123456781234123412341234567890ab",
+    fragmentId: "",
+  });
+
+  expect(
+    parseLinkId("/p/123456781234123412341234567890ab#heading")
+  ).toEqual({
+    baseLinkId: "123456781234123412341234567890ab",
+    fragmentId: "#heading",
+  });
+});
+
 test("link to an existing page on this site that has no slug", async () => {
   const targetPageId = "123";
   const targetPage: NotionPage = makeSamplePageObject({
@@ -178,6 +194,73 @@ test("link to an existing page on this site that has no slug", async () => {
             },
             plain_text: "great page",
             href: `/${targetPageId}`,
+          },
+          {
+            type: "text",
+            text: { content: " the end.", link: null },
+            annotations: {
+              bold: false,
+              italic: false,
+              strikethrough: false,
+              underline: false,
+              code: false,
+              color: "default",
+            },
+            plain_text: " the end.",
+            href: null,
+          },
+        ],
+        color: "default",
+      },
+    },
+    targetPage
+  );
+  expect(results.trim()).toBe(`Inline [great page](/${targetPageId}) the end.`);
+});
+
+test("inline link using the newer relative /p/ form", async () => {
+  const targetPageId = "123";
+  const targetPage: NotionPage = makeSamplePageObject({
+    slug: undefined,
+    name: "Hello World",
+    id: targetPageId,
+  });
+
+  const results = await getMarkdown(
+    {
+      type: "paragraph",
+      paragraph: {
+        rich_text: [
+          {
+            type: "text",
+            text: { content: "Inline ", link: null },
+            annotations: {
+              bold: false,
+              italic: false,
+              strikethrough: false,
+              underline: false,
+              code: false,
+              color: "default",
+            },
+            plain_text: "Inline ",
+            href: null,
+          },
+          {
+            type: "text",
+            text: {
+              content: "great page",
+              link: { url: `/p/${targetPageId}` },
+            },
+            annotations: {
+              bold: false,
+              italic: false,
+              strikethrough: false,
+              underline: false,
+              code: false,
+              color: "default",
+            },
+            plain_text: "great page",
+            href: `/p/${targetPageId}`,
           },
           {
             type: "text",
