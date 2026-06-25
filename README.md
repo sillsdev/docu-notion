@@ -58,7 +58,7 @@ means that the ID is `0456aa5842946PRETEND4f37c97a0e5`.
 Try it out:
 
 ```
-npx @sillsdev/docu-notion -n secret_PRETEND123456789PRETEND123456789PRETEND6789 -r 0456aa5842946PRETEND4f37c97a0e5"
+npx @sillsdev/docu-notion -n secret_PRETEND123456789PRETEND123456789PRETEND6789 -r 0456aa5842946PRETEND4f37c97a0e5
 ```
 
 Likely, you will want to store these codes in your environment variables and then use them like this:
