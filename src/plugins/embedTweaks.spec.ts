@@ -18,6 +18,24 @@ test("imgur", async () => {
   expect(result.trim()).toBe(`![](https://imgur.com/gallery/U8TTNuI.gif)`);
 });
 
+// Regression test for the "!![](...)" bug: with both plugins active (the
+// default config order), the imgur mod turns a bare imgur link into an image,
+// then the gif mod sees that ".gif" image and must not prepend a second "!".
+test("imgur + gif together produce a single leading bang", async () => {
+  setLogLevel("verbose");
+  const config = { plugins: [imgurGifEmbed, gifEmbed] };
+  const result = await blocksToMarkdown(config, [
+    {
+      object: "block",
+      id: "e36710d8-98ad-40dc-b41b-b376ebdd6894",
+      type: "bookmark",
+      bookmark: { caption: [], url: "https://imgur.com/E83qLj6" },
+    } as unknown as NotionBlock,
+  ]);
+  expect(result.trim()).toBe(`![](https://imgur.com/E83qLj6.gif)`);
+  expect(result).not.toContain("!![]");
+});
+
 test("gif", async () => {
   setLogLevel("verbose");
   const config = { plugins: [gifEmbed] };
