@@ -3,6 +3,31 @@ import { IPlugin } from "./pluginTypes";
 import { setLogLevel } from "../log";
 import { blocksToMarkdown } from "./pluginTestRun";
 import { gifEmbed, imgurGifEmbed } from "./embedTweaks";
+import { NotionBlock as NB } from "../types";
+
+function paragraph(text: string): NB {
+  return {
+    type: "paragraph",
+    paragraph: {
+      rich_text: [
+        {
+          type: "text",
+          text: { content: text, link: null },
+          annotations: {
+            bold: false,
+            italic: false,
+            strikethrough: false,
+            underline: false,
+            code: false,
+            color: "default",
+          },
+          plain_text: text,
+          href: null,
+        },
+      ],
+    },
+  } as unknown as NB;
+}
 
 test("imgur", async () => {
   setLogLevel("verbose");
@@ -34,6 +59,29 @@ test("imgur + gif together produce a single leading bang", async () => {
   ]);
   expect(result.trim()).toBe(`![](https://imgur.com/E83qLj6.gif)`);
   expect(result).not.toContain("!![]");
+});
+
+// An inline link the user gave real text to must stay a clickable link: we must
+// not turn it into an image (which also discards the text). Uses the default
+// config order so both mods get a crack at it.
+test("imgur link with author text is left as a clickable link", async () => {
+  setLogLevel("verbose");
+  const config = { plugins: [imgurGifEmbed, gifEmbed] };
+  const result = await blocksToMarkdown(config, [
+    paragraph(
+      "all at once ([see animation](https://imgur.com/gcrxl5k))."
+    ),
+    paragraph(
+      "(See an animation of these [new overlay features](https://imgur.com/E83qLj6))"
+    ),
+  ]);
+  expect(result).toContain("[see animation](https://imgur.com/gcrxl5k)");
+  expect(result).toContain(
+    "[new overlay features](https://imgur.com/E83qLj6)"
+  );
+  // nothing should have been turned into an image
+  expect(result).not.toContain("![]");
+  expect(result).not.toContain(".gif");
 });
 
 test("gif", async () => {
