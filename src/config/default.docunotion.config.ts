@@ -10,6 +10,7 @@ import { standardTableTransformer } from "../plugins/TableTransformer";
 import { standardVideoTransformer } from "../plugins/VideoTransformer";
 import { standardExternalLinkConversion } from "../plugins/externalLinks";
 import { IDocuNotionConfig } from "./configuration";
+import { standardFrontmatterTransformer } from "../plugins/FrontMatterTransformer";
 
 const defaultConfig: IDocuNotionConfig = {
   plugins: [
@@ -29,6 +30,9 @@ const defaultConfig: IDocuNotionConfig = {
     // Link modifiers, which are special because they can read metadata from all the pages in order to figure out the correct url
     standardInternalLinkConversion,
     standardExternalLinkConversion,
+
+    // Frontmatter transformers, add information to the page frontMatter
+    standardFrontmatterTransformer,
 
     // Regexps plus javascript `import`s that operate on the Markdown output
     imgurGifEmbed,
