@@ -1,4 +1,4 @@
-import { BlockObjectResponse } from "@notionhq/client/build/src/api-endpoints";
+import { BlockObjectResponse } from "@notionhq/client";
 
 export type NotionBlock = BlockObjectResponse;
 export type ICounts = {

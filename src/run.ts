@@ -2,8 +2,13 @@ import * as fs from "fs-extra";
 import { Option, program } from "commander";
 import { setLogLevel } from "./log";
 
-import { notionPull } from "./pull";
+import { DocuNotionOptions, getOptionsForLogging, notionPull } from "./pull";
 import path from "path";
+
+type CliOptions = DocuNotionOptions & {
+  cssOutputDirectory: string;
+  logLevel: "info" | "verbose" | "debug";
+};
 
 export async function run(): Promise<void> {
   const pkg = require("../package.json");
@@ -62,6 +67,11 @@ export async function run(): Promise<void> {
       "If set, docu-notion will fail if any pages it would otherwise publish are missing a slug in Notion.",
       false
     )
+    .option(
+      "--docusaurus-v2",
+      "Emit Docusaurus v2-compatible markdown. By default docu-notion emits Docusaurus v3-compatible output.",
+      false
+    )
     .addOption(
       new Option(
         "--image-file-name-format <format>",
@@ -73,8 +83,9 @@ export async function run(): Promise<void> {
 
   program.showHelpAfterError();
   program.parse();
-  setLogLevel(program.opts().logLevel);
-  console.log(JSON.stringify(program.opts()));
+  const parsedOptions = program.opts() as CliOptions;
+  setLogLevel(parsedOptions.logLevel);
+  console.log(JSON.stringify(getOptionsForLogging(parsedOptions)));
 
   // copy in the this version of the css needed to make columns (and maybe other things?) work
   let pathToCss = "";
@@ -87,14 +98,14 @@ export async function run(): Promise<void> {
     pathToCss = "./src/css/docu-notion-styles.css";
   }
   // make any missing parts of the path exist
-  fs.ensureDirSync(program.opts().cssOutputDirectory);
+  fs.ensureDirSync(parsedOptions.cssOutputDirectory);
   fs.copyFileSync(
     pathToCss,
-    path.join(program.opts().cssOutputDirectory, "docu-notion-styles.css")
+    path.join(parsedOptions.cssOutputDirectory, "docu-notion-styles.css")
   );
 
   // pull and convert
-  await notionPull(program.opts()).then(() =>
+  await notionPull(parsedOptions).then(() =>
     console.log("docu-notion Finished.")
   );
 }

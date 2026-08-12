@@ -1,6 +1,10 @@
 import { NotionBlock } from "../types";
 import { blocksToMarkdown } from "./pluginTestRun";
-import { standardColumnTransformer } from "./ColumnTransformer";
+import {
+  getColumnWidth,
+  rememberColumnListChildren,
+  standardColumnTransformer,
+} from "./ColumnTransformer";
 
 // Even though we can set up most tests with our own children
 // so that we aren't relying on real data from Notion,
@@ -38,6 +42,103 @@ const columnWrapperStart =
   "<div class='notion-column' style=\\{\\{width: '.*?'\\}\\}>\\n\\n";
 const columnWrapperEnd =
   "\\n\\n<\\/div><div className='notion-spacer'><\\/div>";
+
+test("getColumnWidth preserves docs-compliant normalized ratios", () => {
+  rememberColumnListChildren([
+    {
+      id: "column-1",
+      type: "column",
+      column: {
+        width_ratio: 0.25,
+      },
+    } as unknown as NotionBlock,
+    {
+      id: "column-2",
+      type: "column",
+      column: {
+        width_ratio: 0.75,
+      },
+    } as unknown as NotionBlock,
+  ]);
+
+  const width = getColumnWidth({
+    id: "column-1",
+    type: "column",
+    column: {
+      width_ratio: 0.25,
+    },
+  } as unknown as import("notion-to-md/build/types").ListBlockChildrenResponseResult);
+
+  expect(width).toBe("calc((100% - (min(32px, 4vw) * 1)) * 0.25)");
+});
+
+test("getColumnWidth normalizes missing ratios as equal weights", () => {
+  rememberColumnListChildren([
+    {
+      id: "column-1",
+      type: "column",
+      column: {},
+    } as NotionBlock,
+    {
+      id: "column-2",
+      type: "column",
+      column: {},
+    } as NotionBlock,
+    {
+      id: "column-3",
+      type: "column",
+      column: {},
+    } as NotionBlock,
+  ]);
+
+  const width = getColumnWidth({
+    id: "column-2",
+    type: "column",
+    column: {},
+  } as unknown as import("notion-to-md/build/types").ListBlockChildrenResponseResult);
+
+  expect(width).toBe(
+    "calc((100% - (min(32px, 4vw) * 2)) * 0.3333333333333333)"
+  );
+});
+
+test("getColumnWidth normalizes mixed explicit and missing ratios", () => {
+  rememberColumnListChildren([
+    {
+      id: "column-1",
+      type: "column",
+      column: {
+        width_ratio: 1,
+      },
+    } as unknown as NotionBlock,
+    {
+      id: "column-2",
+      type: "column",
+      column: {
+        width_ratio: 0.375,
+      },
+    } as unknown as NotionBlock,
+    {
+      id: "column-3",
+      type: "column",
+      column: {
+        width_ratio: 1,
+      },
+    } as unknown as NotionBlock,
+  ]);
+
+  const width = getColumnWidth({
+    id: "column-2",
+    type: "column",
+    column: {
+      width_ratio: 0.375,
+    },
+  } as unknown as import("notion-to-md/build/types").ListBlockChildrenResponseResult);
+
+  expect(width).toBe(
+    "calc((100% - (min(32px, 4vw) * 2)) * 0.15789473684210525)"
+  );
+});
 
 if (runTestsWhichRequireAnyValidApiKey) {
   columnBlock.has_children = true;

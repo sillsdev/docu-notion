@@ -59,6 +59,18 @@ export async function getMarkdownFromNotionBlocks(
   // simple regex-based tweaks. These are usually related to docusaurus
   const body = await doTransformsOnMarkdown(context, config, markdown);
 
+  const h1Headings = getMarkdownH1Headings(body);
+  if (h1Headings.length > 1) {
+    const pageLabel = context.pageInfo.slug || "(unknown page)";
+    warning(
+      `[docu-notion] Generated page "${pageLabel}" contains ${
+        h1Headings.length
+      } H1 headings. Docusaurus pages should have at most one H1. H1 headings: ${h1Headings
+        .map(heading => `"${heading}"`)
+        .join(", ")}.`
+    );
+  }
+
   // console.log("markdown after regex fixes", markdown);
   // console.log("body after regex", body);
 
@@ -66,6 +78,39 @@ export async function getMarkdownFromNotionBlocks(
   const imports = uniqueImports.join("\n");
   context.imports = []; // reset for next page
   return `${imports}\n${body}`;
+}
+
+function getMarkdownH1Headings(body: string): string[] {
+  const headings: string[] = [];
+  let activeFenceMarker: "```" | "~~~" | undefined;
+
+  for (const line of body.split(/\r?\n/)) {
+    const trimmedLine = line.trimStart();
+
+    if (trimmedLine.startsWith("```")) {
+      activeFenceMarker = activeFenceMarker === "```" ? undefined : "```";
+      continue;
+    }
+
+    if (trimmedLine.startsWith("~~~")) {
+      activeFenceMarker = activeFenceMarker === "~~~" ? undefined : "~~~";
+      continue;
+    }
+
+    if (activeFenceMarker || !/^#\s+/.test(line)) {
+      continue;
+    }
+
+    headings.push(
+      line
+        .replace(/^#\s+/, "")
+        .replace(/\s+\{\/\*\s*#.*?\*\/\}\s*$/, "")
+        .replace(/\s+\{#.*?\}\s*$/, "")
+        .trim()
+    );
+  }
+
+  return headings;
 }
 
 // operations on notion blocks before they are converted to markdown
@@ -107,13 +152,19 @@ async function doTransformsOnMarkdown(
   //console.log("body before regex: " + body);
   let match;
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   for (const mod of regexMods) {
-    let replacement = undefined;
     // regex.exec is stateful, so we don't want to mess up the plugin's use of its own regex, so we clone it.
     // we also add the "g" flag to make sure we get all matches
     const regex = new RegExp(`${codeBlocks.source}|(${mod.regex.source})`, "g");
-    while ((match = regex.exec(input)) !== null) {
+    // We match against `source` (a snapshot of the current body) and build up a
+    // fresh `result`. Mutating the string we're iterating over would invalidate
+    // `match.index` for every subsequent match once a replacement changes the
+    // length, so instead we copy the spans between matches using indices that
+    // always refer to the unchanged `source`.
+    const source = body;
+    let result = "";
+    let lastIndex = 0;
+    while ((match = regex.exec(source)) !== null) {
       if (match[0]) {
         const original = match[0];
         if (
@@ -123,6 +174,7 @@ async function doTransformsOnMarkdown(
         ) {
           continue; // code block, and they didn't say to include them
         }
+        let replacement = undefined;
         if (mod.getReplacement) {
           // our match here has an extra group, which is an implementation detail
           // that shouldn't be made visible to the plugin
@@ -137,11 +189,11 @@ async function doTransformsOnMarkdown(
         if (replacement !== undefined) {
           verbose(`[${(mod as any).name}] ${original} --> ${replacement}`);
 
-          const precedingPart = body.substring(0, match.index); // ?
-          const partStartingFromThisMatch = body.substring(match.index); // ?
-          body =
-            precedingPart +
-            partStartingFromThisMatch.replace(original, replacement);
+          // copy everything since the last match, then the replacement (the
+          // replacement is appended literally, so `$` sequences in it are not
+          // given any special meaning)
+          result += source.substring(lastIndex, match.index) + replacement;
+          lastIndex = match.index + original.length;
 
           // add any library imports
           if (!context.imports) context.imports = [];
@@ -149,6 +201,9 @@ async function doTransformsOnMarkdown(
         }
       }
     }
+    // copy whatever follows the last replacement (including any skipped code blocks)
+    result += source.substring(lastIndex);
+    body = result;
   }
   logDebug("doTransformsOnMarkdown", "body after regex: " + body);
   return body;
@@ -158,20 +213,10 @@ async function doNotionToMarkdown(
   docunotionContext: IDocuNotionContext,
   blocks: Array<NotionBlock>
 ) {
-  let mdBlocks: any;
-  await executeWithRateLimitAndRetries(
-    "notionToMarkdown.blocksToMarkdown",
-    async () => {
-      mdBlocks = await docunotionContext.notionToMarkdown.blocksToMarkdown(
-        // We need to provide a copy of blocks.
-        // Calling blocksToMarkdown can modify the values in the blocks. If it does, and then
-        // we have to retry, we end up retrying with the modified values, which
-        // causes various issues (like using the transformed image url instead of the original one).
-        // Note, currently, we don't do anything else with blocks after this.
-        // If that changes, we'll need to figure out a more sophisticated approach.
-        JSON.parse(JSON.stringify(blocks))
-      );
-    }
+  const mdBlocks = await docunotionContext.notionToMarkdown.blocksToMarkdown(
+    // We need to provide a copy of blocks.
+    // Calling blocksToMarkdown can modify the values in the blocks.
+    JSON.parse(JSON.stringify(blocks))
   );
 
   const markdown =

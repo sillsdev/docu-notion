@@ -1,17 +1,16 @@
 import { NotionToMarkdown } from "notion-to-md";
 import { NotionBlock } from "../types";
-import { IPlugin } from "./pluginTypes";
+import { IDocuNotionContext, IPlugin } from "./pluginTypes";
 
-// In Notion, you can make a callout and change its emoji. We map 5 of these
-// to the 5 Docusaurus admonition styles.
+// In Notion, you can make a callout and change its emoji. We map common callout
+// emojis to the built-in Docusaurus admonition styles.
 // This is mostly a copy of the callout code from notion-to-md. The change is to output docusaurus
 // admonitions instead of emulating a callout with markdown > syntax.
 // Note: I haven't yet tested this with any emoji except "💡"/"tip", nor the case where the
 // callout has-children. Not even sure what that would mean, since the document I was testing
 // with has quite complex markup inside the callout, but still takes the no-children branch.
 async function notionCalloutToAdmonition(
-  notionToMarkdown: NotionToMarkdown,
-  getBlockChildren: (id: string) => Promise<NotionBlock[]>,
+  context: IDocuNotionContext,
   block: NotionBlock
 ): Promise<string> {
   // In this case typescript is not able to index the types properly, hence ignoring the error
@@ -24,7 +23,10 @@ async function notionCalloutToAdmonition(
     const annotations = content.annotations;
     let plain_text = content.plain_text;
 
-    plain_text = notionToMarkdown.annotatePlainText(plain_text, annotations);
+    plain_text = context.notionToMarkdown.annotatePlainText(
+      plain_text,
+      annotations
+    );
 
     if (content["href"]) plain_text = `[${plain_text}](${content["href"]})`;
 
@@ -34,14 +36,14 @@ async function notionCalloutToAdmonition(
   let callout_string = "";
   const { id, has_children } = block as any;
   if (!has_children) {
-    const result1 = callout(parsedData, icon);
+    const result1 = callout(parsedData, icon, context.options);
     return result1;
   }
 
-  const callout_children_object = await getBlockChildren(id);
+  const callout_children_object = await context.getBlockChildren(id);
 
   // // parse children blocks to md object
-  const callout_children = await notionToMarkdown.blocksToMarkdown(
+  const callout_children = await context.notionToMarkdown.blocksToMarkdown(
     callout_children_object
   );
 
@@ -50,7 +52,7 @@ async function notionCalloutToAdmonition(
     callout_string += `${child.parent}\n\n`;
   });
 
-  const result = callout(callout_string.trim(), icon);
+  const result = callout(callout_string.trim(), icon, context.options);
   return result;
 }
 
@@ -108,27 +110,51 @@ const calloutsToAdmonitions = {
   "📝": "note",
   "💡": "tip",
   "❗": "info",
-  "⚠️": "caution",
+  "⚠️": "warning",
   "🔥": "danger",
 };
 
+type DocusaurusOutputOptions = Pick<
+  IDocuNotionContext["options"],
+  "docusaurusV2"
+>;
+
 // This is the main change from the notion-to-md code.
-function callout(text: string, icon?: CalloutIcon) {
+function callout(
+  text: string,
+  icon: CalloutIcon,
+  options: DocusaurusOutputOptions
+) {
   let emoji: string | undefined;
   if (icon?.type === "emoji") {
     emoji = icon.emoji;
   }
+  const docusaurusV2 = options.docusaurusV2 ?? false;
   let docusaurusAdmonition = "note";
+  let admonitionTitle = "";
   if (emoji) {
+    if (docusaurusV2) {
+      docusaurusAdmonition =
+        calloutsToAdmonitions[emoji as keyof typeof calloutsToAdmonitions] ??
+        emoji;
+      if (docusaurusAdmonition === "warning") {
+        docusaurusAdmonition = "caution";
+      }
+      return `:::${docusaurusAdmonition}\n\n${text}\n\n:::\n\n`;
+    }
+
     // the keyof typeof magic persuades typescript that it really is OK to use emoji as a key into calloutsToAdmonitions
     docusaurusAdmonition =
       calloutsToAdmonitions[emoji as keyof typeof calloutsToAdmonitions] ??
-      // For Notion callouts with other emojis, pass them through using hte emoji as the name.
-      // For this to work on a Docusaurus site, it will need to define that time on the remark-admonitions options in the docusaurus.config.js.
-      // See https://github.com/elviswolcott/remark-admonitions and https://docusaurus.io/docs/using-plugins#using-presets.
-      emoji;
+      "note";
+
+    if (emoji === "⚠️") {
+      admonitionTitle = "[Caution]";
+    } else if (!(emoji in calloutsToAdmonitions)) {
+      admonitionTitle = `[${emoji}]`;
+    }
   }
-  return `:::${docusaurusAdmonition}\n\n${text}\n\n:::\n\n`;
+  return `:::${docusaurusAdmonition}${admonitionTitle}\n\n${text}\n\n:::\n\n`;
 }
 
 export const standardCalloutTransformer: IPlugin = {
@@ -137,11 +163,7 @@ export const standardCalloutTransformer: IPlugin = {
     {
       type: "callout",
       getStringFromBlock: (context, block) =>
-        notionCalloutToAdmonition(
-          context.notionToMarkdown,
-          context.getBlockChildren,
-          block
-        ),
+        notionCalloutToAdmonition(context, block),
     },
   ],
 };

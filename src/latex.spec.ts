@@ -51,6 +51,7 @@ test("Latex Rendering", async () => {
       imgOutputPath: "",
       imgPrefixInMarkdown: "",
       statusTag: "",
+      docusaurusV2: false,
     },
 
     pages: pages,
@@ -80,6 +81,7 @@ test("Latex Rendering", async () => {
       },
       has_children: false,
       archived: false,
+      in_trash: false,
       type: "paragraph",
       paragraph: {
         rich_text: [
@@ -98,6 +100,7 @@ test("Latex Rendering", async () => {
             href: null,
           },
         ],
+        icon: null,
         color: "default",
       },
     },
